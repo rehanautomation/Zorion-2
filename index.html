@@ -82,8 +82,7 @@ body.is-results{background:var(--white)}
   position:fixed;top:0;left:0;right:0;z-index:2;
   height:var(--header-h);
   background:var(--navy);
-  display:flex;align-items:center;
-  padding-left:var(--logo-inset);
+  display:flex;align-items:center;justify-content:center;
 }
 .logo{
   font-family:Archivo,sans-serif;font-weight:700;font-size:18px;line-height:1;
@@ -91,13 +90,46 @@ body.is-results{background:var(--white)}
 }
 .logo b{font-weight:600;opacity:0.6}
 
-/* progress bar */
-.progress{height:4px;border-radius:var(--radius-button);background:var(--line);overflow:hidden}
-.progress-fill{
-  height:100%;width:15%;
-  background:var(--blue);border-radius:var(--radius-button);
-  transition:width 150ms ease;
+/* ---------------------------------------------------------------
+   2b. PROGRESS — detached from the header, full-width of the
+   content column, labelled with step + percent (position + context
+   beats a bare bar for perceived-effort / goal-gradient reasons).
+   --------------------------------------------------------------- */
+.progress-wrap{
+  margin-top:var(--sp-6);
+  padding-top:var(--sp-2);
 }
+body.is-results .progress-wrap{display:none}
+.progress-meta{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:var(--sp-2);
+}
+.progress-label{
+  font-family:Inter,sans-serif;font-weight:600;font-size:12px;line-height:1.3;
+  letter-spacing:0.06em;text-transform:uppercase;color:var(--slate-light);
+}
+.progress-label b{color:var(--slate);font-weight:600}
+.progress-nudge{
+  font-family:Inter,sans-serif;font-weight:600;font-size:12px;
+  color:var(--amber);opacity:0;transition:opacity 200ms ease;
+}
+.progress-nudge.is-visible{opacity:1}
+.progress-pct{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:14px;
+  color:var(--blue);font-variant-numeric:tabular-nums;
+}
+.progress-track{display:flex;gap:5px}
+.progress-seg{
+  flex:1 1 0;height:6px;border-radius:99px;
+  background:var(--line);overflow:hidden;
+}
+.progress-seg i{
+  display:block;height:100%;width:0%;border-radius:99px;
+  background:var(--blue);
+  transition:width 350ms cubic-bezier(.4,0,.2,1);
+}
+.progress-seg.is-complete i{width:100%}
+.progress-seg.is-current i{width:100%;background:var(--amber)}
 
 /* screens */
 .screen{display:none;opacity:1;transition:opacity 150ms ease;padding-top:var(--sp-7)}
@@ -169,6 +201,21 @@ body.is-results{background:var(--white)}
 .option:has(input:checked) svg{stroke:var(--amber)}
 .option:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
 
+/* box/card grid variant — used wherever a 2-up grid reads faster than
+   a stacked list (not on the amount question: numbers scan better as
+   a vertical list you can compare top-to-bottom) */
+.options.is-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);
+}
+.options.is-grid .option{
+  flex-direction:column;justify-content:center;text-align:center;
+  gap:var(--sp-3);min-height:136px;padding:var(--sp-5) var(--sp-3);
+}
+.options.is-grid .option.span-2{grid-column:1 / -1;flex-direction:row;min-height:64px;text-align:left}
+.options.is-grid .option svg{flex:0 0 32px;width:32px;height:32px}
+.options.is-grid .option span{font-size:15px;line-height:1.3}
+@media (min-width:768px){ .options.is-grid .option svg{width:36px;height:36px} }
+
 /* ---------------------------------------------------------------
    5. BUTTONS
    --------------------------------------------------------------- */
@@ -213,10 +260,80 @@ body.is-results{background:var(--white)}
 .card .rule{margin:var(--sp-4) 0}
 .photo{display:block;margin:0 auto;width:88px;height:88px;border-radius:50%;object-fit:cover}
 
+/* advisor stat row — the credibility signal, not a paragraph */
+.stats{
+  display:flex;justify-content:center;gap:var(--sp-6);margin-top:var(--sp-4);
+}
+.stat{text-align:center}
+.stat-num{
+  display:block;font-family:Archivo,sans-serif;font-weight:700;font-size:22px;
+  letter-spacing:-0.02em;color:var(--amber);line-height:1;
+}
+.stat-label{
+  display:block;margin-top:var(--sp-1);font-size:11px;font-weight:600;
+  letter-spacing:0.04em;text-transform:uppercase;color:var(--slate-light);
+}
+@media (min-width:768px){ .stat-num{font-size:26px} }
+
+/* carrier trust strip */
+.carriers{margin-top:var(--sp-6);text-align:center}
+.carriers-label{
+  font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--slate-light);margin:0 0 var(--sp-3);
+}
+.carriers-viewport{
+  overflow:hidden;margin-top:var(--sp-3);
+  -webkit-mask-image:linear-gradient(90deg,transparent,black 10%,black 90%,transparent);
+          mask-image:linear-gradient(90deg,transparent,black 10%,black 90%,transparent);
+}
+.carriers-track{
+  display:flex;width:max-content;align-items:center;
+  gap:var(--sp-7);padding:var(--sp-2) 0;
+  animation:carriers-scroll 28s linear infinite;
+}
+.carriers-viewport:hover .carriers-track{animation-play-state:paused}
+@keyframes carriers-scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+.carriers-track span{
+  flex:0 0 auto;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:21px;
+  letter-spacing:-0.015em;white-space:nowrap;
+  color:var(--slate-light);opacity:0.55;filter:saturate(0);
+  transition:color 200ms ease,opacity 200ms ease,filter 200ms ease;
+  cursor:default;
+}
+.carriers-track span:hover{opacity:1;filter:saturate(1)}
+/* replace these five with <img> tags once real logo files are dropped in */
+.carriers-track span[data-brand="manulife"]:hover{color:#00874E}
+.carriers-track span[data-brand="sunlife"]:hover{color:#D22630}
+.carriers-track span[data-brand="canadalife"]:hover{color:#00563F}
+.carriers-track span[data-brand="ia"]:hover{color:#D0111B}
+.carriers-track span[data-brand="equitable"]:hover{color:#003DA5}
+@media (min-width:768px){ .carriers-track span{font-size:26px} }
+
 /* ---------------------------------------------------------------
    8. FOOTER
    --------------------------------------------------------------- */
 .legal{margin-top:var(--sp-8);padding-bottom:var(--sp-8);text-align:center}
+
+.site-footer{
+  background:var(--navy);
+  padding:var(--sp-6) var(--page-pad) var(--sp-7);
+  text-align:center;
+}
+.site-footer__text{
+  max-width:var(--content-max);margin:0 auto;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:16px;line-height:1.4;
+  letter-spacing:-0.01em;color:var(--white);
+}
+.site-footer__brand{
+  display:block;margin-top:var(--sp-3);
+  font-family:Archivo,sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:0.08em;color:var(--white);opacity:0.55;
+}
+@media (min-width:768px){ .site-footer__text{font-size:18px} }
 </style>
 </head>
 
@@ -227,16 +344,29 @@ body.is-results{background:var(--white)}
 </header>
 
 <div class="wrap">
-  <div class="progress"><div class="progress-fill" id="progress"></div></div>
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-label"><b id="progressStep">Step 1</b> of 6<span class="progress-nudge" id="progressNudge"> · almost there</span></span>
+      <span class="progress-pct" id="progressPct">17%</span>
+    </div>
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+    </div>
+  </div>
 
   <!-- ============================================================
        SCREEN 1 — Owner qualifier
        ============================================================ -->
-  <section class="screen is-active" id="s1" data-progress="15" data-advance="auto">
-    <h1 class="t-question">Which one is you?</h1>
-    <p class="t-helper mt-2">Tap to continue.</p>
+  <section class="screen is-active" id="s1" data-step="1" data-advance="auto">
+    <h1 class="t-question">What's your role in the business?</h1>
+    <p class="t-helper mt-2">90 seconds from now, you'll know exactly what you're personally on the hook for — and how to protect your family from it.</p>
 
-    <div class="options">
+    <div class="options is-grid">
       <label class="option">
         <input type="radio" name="q1" value="owner-crew">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -247,11 +377,29 @@ body.is-results{background:var(--white)}
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span>I own the business, it's just me</span>
       </label>
-      <label class="option">
+      <label class="option span-2">
         <input type="radio" name="q1" value="employee">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1z"/><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/><path d="M4 15v-3a6 6 0 0 1 6-6"/><path d="M14 6a6 6 0 0 1 6 6v3"/></svg>
         <span>I work for someone else</span>
       </label>
+    </div>
+
+    <div class="carriers">
+      <p class="carriers-label">Our advisors place coverage with</p>
+      <div class="carriers-viewport">
+        <div class="carriers-track">
+          <span data-brand="manulife">Manulife</span>
+          <span data-brand="sunlife">Sun Life</span>
+          <span data-brand="canadalife">Canada Life</span>
+          <span data-brand="ia">iA Financial</span>
+          <span data-brand="equitable">Equitable Life</span>
+          <span data-brand="manulife">Manulife</span>
+          <span data-brand="sunlife">Sun Life</span>
+          <span data-brand="canadalife">Canada Life</span>
+          <span data-brand="ia">iA Financial</span>
+          <span data-brand="equitable">Equitable Life</span>
+        </div>
+      </div>
     </div>
 
     <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
@@ -260,11 +408,11 @@ body.is-results{background:var(--white)}
   <!-- ============================================================
        SCREEN 2 — What he signed (multi-select)
        ============================================================ -->
-  <section class="screen" id="s2" data-progress="32">
+  <section class="screen" id="s2" data-step="2">
     <h1 class="t-question">Which of these have you signed for personally?</h1>
     <p class="t-helper mt-2">Select all that apply.</p>
 
-    <div class="options" id="q2options">
+    <div class="options is-grid" id="q2options">
       <label class="option">
         <input type="checkbox" name="q2" value="Equipment or business loan">
         <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
@@ -295,7 +443,7 @@ body.is-results{background:var(--white)}
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
         <span>Business credit card</span>
       </label>
-      <label class="option">
+      <label class="option span-2">
         <input type="checkbox" name="q2" value="None of these" data-none="true">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="9" y1="15" x2="15" y2="9"/></svg>
         <span>None of these</span>
@@ -310,7 +458,7 @@ body.is-results{background:var(--white)}
   <!-- ============================================================
        SCREEN 3 — The total
        ============================================================ -->
-  <section class="screen" id="s3" data-progress="49" data-advance="auto">
+  <section class="screen" id="s3" data-step="3" data-advance="auto">
     <h1 class="t-question">Roughly, what do those add up to?</h1>
     <p class="t-helper mt-2">A rough number is fine.</p>
 
@@ -348,11 +496,11 @@ body.is-results{background:var(--white)}
   <!-- ============================================================
        SCREEN 4 — Existing coverage
        ============================================================ -->
-  <section class="screen" id="s4" data-progress="66" data-advance="auto">
+  <section class="screen" id="s4" data-step="4" data-advance="auto">
     <h1 class="t-question">What have you got in place right now?</h1>
     <p class="t-helper mt-2">Tap to continue.</p>
 
-    <div class="options">
+    <div class="options is-grid">
       <label class="option">
         <input type="radio" name="q4" value="mortgage-insurance">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -373,7 +521,7 @@ body.is-results{background:var(--white)}
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="9" y1="15" x2="15" y2="9"/></svg>
         <span>Nothing</span>
       </label>
-      <label class="option">
+      <label class="option span-2">
         <input type="radio" name="q4" value="not-sure">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
         <span>Not sure</span>
@@ -386,11 +534,11 @@ body.is-results{background:var(--white)}
   <!-- ============================================================
        SCREEN 5 — Who's left
        ============================================================ -->
-  <section class="screen" id="s5" data-progress="83" data-advance="auto">
+  <section class="screen" id="s5" data-step="5" data-advance="auto">
     <h1 class="t-question">If something happened to you tomorrow, who'd be left holding it?</h1>
     <p class="t-helper mt-2">Tap to continue.</p>
 
-    <div class="options">
+    <div class="options is-grid">
       <label class="option">
         <input type="radio" name="q5" value="wife">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
@@ -419,7 +567,7 @@ body.is-results{background:var(--white)}
   <!-- ============================================================
        SCREEN 6 — Contact
        ============================================================ -->
-  <section class="screen" id="s6" data-progress="85">
+  <section class="screen" id="s6" data-step="6">
     <h1 class="t-h2">Almost done. Where should we reach you?</h1>
     <p class="t-helper on-slate mt-2">A licensed advisor will call to walk through your numbers.</p>
 
@@ -449,7 +597,7 @@ body.is-results{background:var(--white)}
   <!-- ============================================================
        SCREEN 7 — Results
        ============================================================ -->
-  <section class="screen" id="s7" data-progress="100">
+  <section class="screen" id="s7" data-step="6">
     <p class="t-helper">Based on what you told us</p>
     <p class="t-figure mt-2" id="figure">$375,000</p>
     <h1 class="t-h2 mt-2" id="figure-caption">in debt you've personally signed for.</h1>
@@ -459,9 +607,15 @@ body.is-results{background:var(--white)}
     <p class="t-body" id="result-body">That balance doesn't disappear if you do — the bank still collects, and whoever signed beside you is left paying it. Most owners are surprised by how little it takes to cover a number this size.</p>
 
     <div class="card">
-      <img class="photo" src="assets/advisor.svg" alt="Danielle Roy, licensed life insurance advisor">
-      <p class="t-h2 mt-3">Danielle Roy</p>
-      <p class="t-helper on-slate mt-1">Licensed life insurance advisor, 11 years in Ontario</p>
+      <img class="photo" src="assets/advisor.svg" alt="Alicia Samuel, licensed life insurance advisor" onerror="this.style.display='none'">
+      <p class="t-h2 mt-3">Alicia Samuel</p>
+      <p class="t-helper on-slate mt-1">Licensed life insurance advisor, Ontario</p>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-num">12</span><span class="stat-label">Years in Ontario</span></div>
+        <div class="stat"><span class="stat-num">640+</span><span class="stat-label">Owners Helped</span></div>
+        <div class="stat"><span class="stat-num">4.9★</span><span class="stat-label">Client Rating</span></div>
+      </div>
 
       <hr class="rule">
 
@@ -469,18 +623,98 @@ body.is-results{background:var(--white)}
       <p class="t-helper on-slate mt-2">Calls come from an Ontario number, usually within a few hours.</p>
     </div>
 
+    <div class="carriers">
+      <p class="carriers-label">Backed by coverage from</p>
+      <div class="carriers-viewport">
+        <div class="carriers-track">
+          <span data-brand="manulife">Manulife</span>
+          <span data-brand="sunlife">Sun Life</span>
+          <span data-brand="canadalife">Canada Life</span>
+          <span data-brand="ia">iA Financial</span>
+          <span data-brand="equitable">Equitable Life</span>
+          <span data-brand="manulife">Manulife</span>
+          <span data-brand="sunlife">Sun Life</span>
+          <span data-brand="canadalife">Canada Life</span>
+          <span data-brand="ia">iA Financial</span>
+          <span data-brand="equitable">Equitable Life</span>
+        </div>
+      </div>
+    </div>
+
     <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
   </section>
 </div>
 
+<footer class="site-footer">
+  <p class="site-footer__text">See exactly what you're personally on the hook for — and how to protect your family from it.</p>
+  <span class="site-footer__brand">ZORION LIFE</span>
+</footer>
+
 <script>
 (function(){
-  var screens  = Array.prototype.slice.call(document.querySelectorAll('.screen'));
-  var progress = document.getElementById('progress');
-  var current  = 0;
+  /* -------------------------------------------------------------
+     First-party analytics — no external tracker.
+     One anonymous session id, a view event, and a step event each
+     time a screen is reached. Dashboard lives at /report.
+     ------------------------------------------------------------- */
+  var SID = (function(){
+    try{
+      var k = 'zl_sid', v = sessionStorage.getItem(k);
+      if (!v){
+        v = Date.now().toString(36) + Math.random().toString(36).slice(2,10);
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    }catch(_){ return Date.now().toString(36) + Math.random().toString(36).slice(2,10); }
+  })();
+
+  var sentSteps = {};
+  function track(type, data){
+    try{
+      var payload = JSON.stringify(Object.assign({ type:type, sid:SID }, data || {}));
+      if (navigator.sendBeacon){
+        navigator.sendBeacon('/api/track', new Blob([payload], {type:'application/json'}));
+      } else {
+        fetch('/api/track', {method:'POST', headers:{'Content-Type':'application/json'}, body:payload, keepalive:true}).catch(function(){});
+      }
+    }catch(_){}
+  }
+  track('view', { ref: document.referrer || '' });
+
+  var screens   = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var totalSteps = 6; /* s1–s6 are the counted steps; s7 is the results screen */
+  var segs      = Array.prototype.slice.call(document.querySelectorAll('.progress-seg'));
+  var stepLabel = document.getElementById('progressStep');
+  var pctLabel  = document.getElementById('progressPct');
+  var nudge     = document.getElementById('progressNudge');
+  var current   = 0;
+  var pctShown  = 0;
 
   function paintProgress(i){
-    progress.style.width = screens[i].getAttribute('data-progress') + '%';
+    var step = Number(screens[i].getAttribute('data-step')) || 1;
+    var pct  = Math.round((step / totalSteps) * 100);
+
+    segs.forEach(function(seg, idx){
+      seg.classList.toggle('is-complete', idx < step - 1);
+      seg.classList.toggle('is-current', idx === step - 1);
+    });
+
+    if (!sentSteps[step]){ sentSteps[step] = 1; track('step', { step: step }); }
+
+    stepLabel.textContent = 'Step ' + step;
+    nudge.classList.toggle('is-visible', step >= totalSteps - 1);
+
+    /* count the percentage up rather than snapping it — small motion
+       reads as "live progress" and reinforces the goal-gradient effect */
+    var from = pctShown, to = pct, start = null, duration = 350;
+    function tick(ts){
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / duration);
+      pctLabel.textContent = Math.round(from + (to - from) * t) + '%';
+      if (t < 1) window.requestAnimationFrame(tick);
+      else pctShown = to;
+    }
+    window.requestAnimationFrame(tick);
   }
 
   function go(next){
@@ -492,7 +726,7 @@ body.is-results{background:var(--white)}
     window.setTimeout(function(){
       from.classList.remove('is-active','is-fading');
       to.classList.add('is-active','is-fading');
-      paintProgress(next);
+      try{ paintProgress(next); }catch(err){}
       current = next;
       document.body.classList.toggle('is-results', to.id === 's7');
       window.scrollTo(0,0);
@@ -541,8 +775,30 @@ body.is-results{background:var(--white)}
     e.preventDefault();
     var fields = Array.prototype.slice.call(form.querySelectorAll('input'));
     var bad = fields.filter(function(f){ return !f.checkValidity(); })[0];
-    if (bad){ bad.focus(); form.reportValidity(); return; }
-    buildResults();
+    if (bad){ bad.focus(); try{ form.reportValidity(); }catch(_){} return; }
+
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn){ btn.disabled = true; btn.textContent = 'Getting your numbers…'; }
+
+    var lead = {
+      name:  (document.getElementById('name')  || {}).value || '',
+      email: (document.getElementById('email') || {}).value || '',
+      phone: (document.getElementById('phone') || {}).value || ''
+    };
+
+    /* fire-and-forget — the results screen NEVER waits on the network */
+    try{
+      lead.answers = window.zorionAnswers();
+      lead.sid = SID;
+      fetch('/api/lead', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(lead),
+        keepalive:true
+      }).catch(function(){});
+    }catch(err){ /* never block the funnel */ }
+
+    try{ buildResults(); }catch(err){ /* results screen still shows defaults */ }
     go(6);
   });
 
