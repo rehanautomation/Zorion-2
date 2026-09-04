@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zorion Life — What have you personally signed for?</title>
+<meta name="description" content="A two-minute intake for Ontario HVAC owners. Five questions, then a licensed advisor calls with your numbers.">
+<meta name="robots" content="noindex">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+/* ---------------------------------------------------------------
+   1. TOKENS — nothing below this block is hardcoded.
+   --------------------------------------------------------------- */
+:root{
+  /* colour */
+  --navy:#10243A;
+  --slate:#52657A;
+  --slate-light:#8698A9;
+  --sky-bg:#F4F8FB;
+  --white:#FFFFFF;
+  --line:#D6E3EE;
+  --blue:#1D6FB8;
+  --blue-dark:#175A96;
+  --amber:#D9822B;
+  --amber-tint:#FDF4EA;
+
+  /* spacing */
+  --sp-1:4px;
+  --sp-2:8px;
+  --sp-3:12px;
+  --sp-4:16px;
+  --sp-5:24px;
+  --sp-6:32px;
+  --sp-7:48px;
+  --sp-8:64px;
+
+  /* shape */
+  --radius-card:12px;
+  --radius-button:8px;
+  --radius-input:8px;
+  --border-default:1px solid var(--line);
+  --border-selected:2px solid var(--amber);
+  --shadow-option:0 1px 2px rgba(16,36,58,0.04); /* the only shadow on the page */
+
+  /* structure */
+  --header-h:56px;
+  --page-pad:20px;
+  --logo-inset:20px;   /* logo sits 20px from the edge at every width */
+  --content-max:560px;
+}
+@media (min-width:768px){
+  :root{ --header-h:64px; --page-pad:24px; }
+}
+
+/* ---------------------------------------------------------------
+   2. GLOBAL
+   --------------------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  padding-top:var(--header-h);
+  background:var(--sky-bg);
+  color:var(--slate);
+  font-family:Inter,sans-serif;
+  font-weight:400;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+body.is-results{background:var(--white)}
+
+.wrap{max-width:var(--content-max);margin:0 auto;padding:0 var(--page-pad)}
+
+/* header band */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:2;
+  height:var(--header-h);
+  background:var(--navy);
+  display:flex;align-items:center;
+  padding-left:var(--logo-inset);
+}
+.logo{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:18px;line-height:1;
+  letter-spacing:0.08em;color:var(--white);
+}
+.logo b{font-weight:600;opacity:0.6}
+
+/* progress bar */
+.progress{height:4px;border-radius:var(--radius-button);background:var(--line);overflow:hidden}
+.progress-fill{
+  height:100%;width:15%;
+  background:var(--blue);border-radius:var(--radius-button);
+  transition:width 150ms ease;
+}
+
+/* screens */
+.screen{display:none;opacity:1;transition:opacity 150ms ease;padding-top:var(--sp-7)}
+.screen.is-active{display:block}
+.screen.is-fading{opacity:0}
+@media (min-width:768px){ .screen{padding-top:var(--sp-8)} }
+
+/* ---------------------------------------------------------------
+   3. TYPE
+   --------------------------------------------------------------- */
+.t-h2{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:22px;line-height:1.25;
+  letter-spacing:-0.015em;color:var(--navy);margin:0;
+}
+.t-question{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:24px;line-height:1.25;
+  letter-spacing:-0.015em;color:var(--navy);margin:0;
+}
+.t-figure{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:40px;line-height:1.05;
+  letter-spacing:-0.03em;color:var(--amber);margin:0;
+}
+.t-body{font-size:16px;line-height:1.55;color:var(--slate);margin:0}
+.t-helper{font-size:14px;line-height:1.45;color:var(--slate-light);margin:0}
+.t-helper.on-slate{color:var(--slate)}
+.t-legal{font-size:12px;line-height:1.45;color:var(--slate-light);margin:0}
+@media (min-width:768px){
+  .t-h2{font-size:28px;line-height:1.20}
+  .t-question{font-size:30px;line-height:1.20}
+  .t-figure{font-size:56px}
+  .t-body{font-size:17px}
+  .t-helper{font-size:15px}
+}
+
+.mt-1{margin-top:var(--sp-1)}
+.mt-2{margin-top:var(--sp-2)}
+.mt-3{margin-top:var(--sp-3)}
+.mt-4{margin-top:var(--sp-4)}
+.mt-5{margin-top:var(--sp-5)}
+.mt-6{margin-top:var(--sp-6)}
+.centre{text-align:center}
+
+/* ---------------------------------------------------------------
+   4. OPTION CARDS
+   --------------------------------------------------------------- */
+.options{margin:var(--sp-5) 0 0;display:flex;flex-direction:column;gap:var(--sp-3)}
+.option{
+  position:relative;display:flex;align-items:center;gap:var(--sp-4);
+  min-height:64px;padding:var(--sp-4);
+  background:var(--white);border:var(--border-default);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-option);
+  font-family:Inter,sans-serif;font-weight:500;font-size:16px;line-height:1.35;
+  color:var(--slate);cursor:pointer;
+  transition:border-color 150ms ease;
+}
+@media (min-width:768px){ .option{font-size:17px} }
+.option input{
+  position:absolute;top:var(--sp-4);left:var(--sp-4);
+  width:1px;height:1px;opacity:0;margin:0;pointer-events:none;
+}
+.option svg{
+  flex:0 0 28px;width:28px;height:28px;
+  fill:none;stroke:var(--slate);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+}
+@media (hover:hover) and (min-width:768px){
+  .option:hover{border-color:var(--blue)}
+}
+.option:has(input:checked){border:var(--border-selected);background:var(--amber-tint)}
+.option:has(input:checked) svg{stroke:var(--amber)}
+.option:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
+
+/* ---------------------------------------------------------------
+   5. BUTTONS
+   --------------------------------------------------------------- */
+.btn{
+  display:block;width:100%;height:56px;
+  border:0;border-radius:var(--radius-button);
+  background:var(--blue);color:var(--white);
+  font-family:Inter,sans-serif;font-weight:600;font-size:17px;line-height:1;letter-spacing:0.01em;
+  cursor:pointer;transition:background-color 150ms ease;
+}
+.btn:hover{background:var(--blue-dark)}
+.btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.btn:disabled{background:var(--line);color:var(--slate-light);cursor:default}
+.btn:disabled:hover{background:var(--line)}
+
+/* ---------------------------------------------------------------
+   6. INPUTS
+   --------------------------------------------------------------- */
+.fields{margin-top:var(--sp-5)}
+.field+.field{margin-top:var(--sp-4)}
+.field label{display:block;font-size:14px;line-height:1.45;color:var(--slate);margin-bottom:var(--sp-2)}
+@media (min-width:768px){ .field label{font-size:15px} }
+.field input{
+  display:block;width:100%;height:56px;
+  padding-left:var(--sp-4);padding-right:var(--sp-4);
+  background:var(--white);border:var(--border-default);border-radius:var(--radius-input);
+  font-family:Inter,sans-serif;font-weight:400;font-size:16px;line-height:1.55;color:var(--slate);
+}
+@media (min-width:768px){ .field input{font-size:17px} }
+.field input::placeholder{color:var(--slate-light)}
+.field input:focus{border-color:var(--blue);outline:2px solid var(--blue);outline-offset:0}
+
+/* ---------------------------------------------------------------
+   7. RESULTS
+   --------------------------------------------------------------- */
+.rule{height:0;border:0;border-top:1px solid var(--line);margin:var(--sp-5) 0}
+.card{
+  margin-top:var(--sp-6);padding:var(--sp-5);
+  background:var(--sky-bg);border:var(--border-default);border-radius:var(--radius-card);
+  text-align:center;
+}
+.card .rule{margin:var(--sp-4) 0}
+.photo{display:block;margin:0 auto;width:88px;height:88px;border-radius:50%;object-fit:cover}
+
+/* ---------------------------------------------------------------
+   8. FOOTER
+   --------------------------------------------------------------- */
+.legal{margin-top:var(--sp-8);padding-bottom:var(--sp-8);text-align:center}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+  <span class="logo">ZORION <b>LIFE</b></span>
+</header>
+
+<div class="wrap">
+  <div class="progress"><div class="progress-fill" id="progress"></div></div>
+
+  <!-- ============================================================
+       SCREEN 1 — Owner qualifier
+       ============================================================ -->
+  <section class="screen is-active" id="s1" data-progress="15" data-advance="auto">
+    <h1 class="t-question">Which one is you?</h1>
+    <p class="t-helper mt-2">Tap to continue.</p>
+
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q1" value="owner-crew">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>I own the business and run a crew</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q1" value="owner-solo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>I own the business, it's just me</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q1" value="employee">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1z"/><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/><path d="M4 15v-3a6 6 0 0 1 6-6"/><path d="M14 6a6 6 0 0 1 6 6v3"/></svg>
+        <span>I work for someone else</span>
+      </label>
+    </div>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 2 — What he signed (multi-select)
+       ============================================================ -->
+  <section class="screen" id="s2" data-progress="32">
+    <h1 class="t-question">Which of these have you signed for personally?</h1>
+    <p class="t-helper mt-2">Select all that apply.</p>
+
+    <div class="options" id="q2options">
+      <label class="option">
+        <input type="checkbox" name="q2" value="Equipment or business loan">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+        <span>Equipment or business loan</span>
+      </label>
+      <label class="option">
+        <input type="checkbox" name="q2" value="Bank operating line">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Bank operating line</span>
+      </label>
+      <label class="option">
+        <input type="checkbox" name="q2" value="Truck or vehicle financing">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        <span>Truck or vehicle financing</span>
+      </label>
+      <label class="option">
+        <input type="checkbox" name="q2" value="Supplier / wholesaler account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <span>Supplier / wholesaler account</span>
+      </label>
+      <label class="option">
+        <input type="checkbox" name="q2" value="Shop or yard lease">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect x="6" y="10" width="12" height="12"/></svg>
+        <span>Shop or yard lease</span>
+      </label>
+      <label class="option">
+        <input type="checkbox" name="q2" value="Business credit card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+        <span>Business credit card</span>
+      </label>
+      <label class="option">
+        <input type="checkbox" name="q2" value="None of these" data-none="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="9" y1="15" x2="15" y2="9"/></svg>
+        <span>None of these</span>
+      </label>
+    </div>
+
+    <button type="button" class="btn mt-5" id="q2continue" disabled>Continue</button>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 3 — The total
+       ============================================================ -->
+  <section class="screen" id="s3" data-progress="49" data-advance="auto">
+    <h1 class="t-question">Roughly, what do those add up to?</h1>
+    <p class="t-helper mt-2">A rough number is fine.</p>
+
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q3" value="under-100" data-amount="70000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Under $100,000</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q3" value="100-250" data-amount="175000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>$100,000 – $250,000</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q3" value="250-500" data-amount="375000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>$250,000 – $500,000</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q3" value="over-500" data-amount="650000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Over $500,000</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q3" value="not-sure">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span>Not sure</span>
+      </label>
+    </div>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 4 — Existing coverage
+       ============================================================ -->
+  <section class="screen" id="s4" data-progress="66" data-advance="auto">
+    <h1 class="t-question">What have you got in place right now?</h1>
+    <p class="t-helper mt-2">Tap to continue.</p>
+
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q4" value="mortgage-insurance">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Mortgage insurance through the bank</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q4" value="personal-policy">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+        <span>A personal life insurance policy</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q4" value="spouse-work">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        <span>Something through my wife's work</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q4" value="nothing">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="9" y1="15" x2="15" y2="9"/></svg>
+        <span>Nothing</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q4" value="not-sure">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span>Not sure</span>
+      </label>
+    </div>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 5 — Who's left
+       ============================================================ -->
+  <section class="screen" id="s5" data-progress="83" data-advance="auto">
+    <h1 class="t-question">If something happened to you tomorrow, who'd be left holding it?</h1>
+    <p class="t-helper mt-2">Tap to continue.</p>
+
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q5" value="wife">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <span>My wife</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q5" value="partner">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>
+        <span>My business partner</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q5" value="kids">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>My kids</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="q5" value="not-sure">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span>Honestly, not sure</span>
+      </label>
+    </div>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 6 — Contact
+       ============================================================ -->
+  <section class="screen" id="s6" data-progress="85">
+    <h1 class="t-h2">Almost done. Where should we reach you?</h1>
+    <p class="t-helper on-slate mt-2">A licensed advisor will call to walk through your numbers.</p>
+
+    <form id="contact" novalidate>
+      <div class="fields">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" inputmode="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" inputmode="tel" autocomplete="tel" required>
+          <p class="t-legal mt-2">So we can call you.</p>
+        </div>
+      </div>
+
+      <button type="submit" class="btn mt-5">Get my numbers</button>
+    </form>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 7 — Results
+       ============================================================ -->
+  <section class="screen" id="s7" data-progress="100">
+    <p class="t-helper">Based on what you told us</p>
+    <p class="t-figure mt-2" id="figure">$375,000</p>
+    <h1 class="t-h2 mt-2" id="figure-caption">in debt you've personally signed for.</h1>
+
+    <hr class="rule">
+
+    <p class="t-body" id="result-body">That balance doesn't disappear if you do — the bank still collects, and whoever signed beside you is left paying it. Most owners are surprised by how little it takes to cover a number this size.</p>
+
+    <div class="card">
+      <img class="photo" src="assets/advisor.svg" alt="Danielle Roy, licensed life insurance advisor">
+      <p class="t-h2 mt-3">Danielle Roy</p>
+      <p class="t-helper on-slate mt-1">Licensed life insurance advisor, 11 years in Ontario</p>
+
+      <hr class="rule">
+
+      <p class="t-h2">She'll call you today.</p>
+      <p class="t-helper on-slate mt-2">Calls come from an Ontario number, usually within a few hours.</p>
+    </div>
+
+    <p class="t-legal legal">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+  var screens  = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var progress = document.getElementById('progress');
+  var current  = 0;
+
+  function paintProgress(i){
+    progress.style.width = screens[i].getAttribute('data-progress') + '%';
+  }
+
+  function go(next){
+    if (next === current || next >= screens.length) return;
+    var from = screens[current];
+    var to   = screens[next];
+
+    from.classList.add('is-fading');
+    window.setTimeout(function(){
+      from.classList.remove('is-active','is-fading');
+      to.classList.add('is-active','is-fading');
+      paintProgress(next);
+      current = next;
+      document.body.classList.toggle('is-results', to.id === 's7');
+      window.scrollTo(0,0);
+      window.requestAnimationFrame(function(){
+        window.requestAnimationFrame(function(){ to.classList.remove('is-fading'); });
+      });
+    },150);
+  }
+
+  paintProgress(0);
+
+  /* auto-advance screens: 1, 3, 4, 5 */
+  screens.forEach(function(screen, i){
+    if (screen.getAttribute('data-advance') !== 'auto') return;
+    screen.addEventListener('change', function(){
+      window.setTimeout(function(){ go(i + 1); },150);
+    });
+  });
+
+  /* screen 2 — multi-select rules + Continue */
+  var q2boxes   = Array.prototype.slice.call(document.querySelectorAll('#q2options input'));
+  var q2continue = document.getElementById('q2continue');
+
+  q2boxes.forEach(function(box){
+    box.addEventListener('change', function(){
+      if (box.checked){
+        if (box.hasAttribute('data-none')){
+          q2boxes.forEach(function(other){
+            if (other !== box) other.checked = false;
+          });
+        } else {
+          q2boxes.forEach(function(other){
+            if (other.hasAttribute('data-none')) other.checked = false;
+          });
+        }
+      }
+      q2continue.disabled = !q2boxes.some(function(b){ return b.checked; });
+    });
+  });
+
+  q2continue.addEventListener('click', function(){ go(2); });
+
+  /* screen 6 — contact */
+  var form = document.getElementById('contact');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var fields = Array.prototype.slice.call(form.querySelectorAll('input'));
+    var bad = fields.filter(function(f){ return !f.checkValidity(); })[0];
+    if (bad){ bad.focus(); form.reportValidity(); return; }
+    buildResults();
+    go(6);
+  });
+
+  /* results */
+  function checkedValue(name){
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : '';
+  }
+
+  function buildResults(){
+    var figure  = document.getElementById('figure');
+    var caption = document.getElementById('figure-caption');
+    var body    = document.getElementById('result-body');
+
+    var signedNothing = q2boxes.every(function(b){
+      return !b.checked || b.hasAttribute('data-none');
+    });
+    var amountEl = document.querySelector('input[name="q3"]:checked');
+    var amount   = amountEl ? amountEl.getAttribute('data-amount') : null;
+
+    if (signedNothing){
+      figure.textContent  = '$0';
+      caption.textContent = 'in personal guarantees right now.';
+      body.textContent    = "Nothing sits in your name today — that changes the first time you sign a lease, a truck loan or a supplier account. It's worth knowing what that exposure looks like before you sign, not after.";
+      return;
+    }
+
+    if (!amount){
+      figure.textContent  = 'Not yet totalled';
+      caption.textContent = "in debt you've personally signed for.";
+      body.textContent    = "Whatever the exact figure turns out to be, it doesn't disappear if you do — the bank still collects, and whoever signed beside you is left paying it. Your advisor will total it with you on the call.";
+      return;
+    }
+
+    figure.textContent  = '$' + Number(amount).toLocaleString('en-CA');
+    caption.textContent = "in debt you've personally signed for.";
+  }
+
+  /* keep unused reads honest for future wiring */
+  window.zorionAnswers = function(){
+    return {
+      q1: checkedValue('q1'),
+      q2: q2boxes.filter(function(b){ return b.checked; }).map(function(b){ return b.value; }),
+      q3: checkedValue('q3'),
+      q4: checkedValue('q4'),
+      q5: checkedValue('q5')
+    };
+  };
+})();
+</script>
+
+</body>
+</html>
