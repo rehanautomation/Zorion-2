@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zorion Life — What have you personally signed for?</title>
+<meta name="description" content="Five questions for Ontario trades owners. See what your coverage actually pays, and what's missing.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0E1E30">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+/* ===============================================================
+   TOKENS
+   Gold appears exactly once on this page: the gap number.
+   Blue is the only interactive colour. Nothing else competes.
+   =============================================================== */
+:root{
+  --ink:#0E1E30;
+  --ink-2:#43566B;
+  --ink-3:#8195A8;
+  --paper:#FFFFFF;
+  --field:#F2F6FA;
+  --rule:#DDE6EF;
+  --blue:#3A86FF;
+  --blue-deep:#1B5FCC;
+  --blue-wash:#EDF3FF;
+  --gold:#F5B700;
+
+  --sp-1:4px;  --sp-2:8px;  --sp-3:12px; --sp-4:16px;
+  --sp-5:24px; --sp-6:32px; --sp-7:44px; --sp-8:64px;
+
+  --r-card:14px;
+  --r-btn:10px;
+  --header-h:54px;
+  --pad:18px;
+  --max:580px;
+  --tap:56px;
+}
+@media (min-width:768px){ :root{ --header-h:62px; --pad:24px; } }
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  padding-top:var(--header-h);
+  background:var(--field);
+  color:var(--ink-2);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+body.is-results{background:var(--paper)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+
+/* --------------------------------------------------------------
+   HEADER + PROGRESS
+   -------------------------------------------------------------- */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:5;
+  height:var(--header-h);background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+}
+.logo{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:17px;
+  letter-spacing:0.09em;color:var(--paper);line-height:1;
+}
+.logo b{font-weight:500;opacity:0.55}
+
+.progress-wrap{margin-top:var(--sp-5)}
+body.is-results .progress-wrap{display:none}
+.progress-meta{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--sp-2)}
+.progress-label{font-size:13px;font-weight:500;color:var(--ink-3)}
+.progress-label b{color:var(--ink-2);font-weight:600}
+.progress-pct{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:14px;
+  color:var(--blue);font-variant-numeric:tabular-nums;
+}
+.progress-rail{height:6px;border-radius:99px;background:var(--rule);overflow:hidden}
+.progress-fill{
+  display:block;height:100%;width:0;border-radius:99px;background:var(--blue);
+  transition:width 420ms cubic-bezier(.22,.61,.36,1);
+}
+@media (prefers-reduced-motion:reduce){ .progress-fill{transition:none} }
+
+/* --------------------------------------------------------------
+   TYPE
+   -------------------------------------------------------------- */
+.t-q{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:25px;line-height:1.22;letter-spacing:-0.02em;
+  color:var(--ink);margin:0;
+}
+@media (min-width:768px){ .t-q{font-size:31px} }
+.t-h2{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:21px;line-height:1.25;letter-spacing:-0.015em;color:var(--ink);margin:0;
+}
+.t-helper{font-size:14px;color:var(--ink-3);margin:var(--sp-2) 0 0}
+.t-legal{font-size:12px;line-height:1.5;color:var(--ink-3)}
+.mt-2{margin-top:var(--sp-2)} .mt-3{margin-top:var(--sp-3)}
+.mt-4{margin-top:var(--sp-4)} .mt-5{margin-top:var(--sp-5)}
+.mt-6{margin-top:var(--sp-6)} .mt-7{margin-top:var(--sp-7)}
+
+/* --------------------------------------------------------------
+   SCREENS
+   -------------------------------------------------------------- */
+.screen{display:none;padding-bottom:var(--sp-8)}
+.screen.is-active{display:block}
+.screen.is-fading{animation:fade 260ms ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .screen.is-fading{animation:none} }
+
+/* --------------------------------------------------------------
+   OPTIONS — 56px minimum tap target, thumb-reachable
+   -------------------------------------------------------------- */
+.options{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-5)}
+.option{
+  position:relative;display:flex;align-items:center;gap:var(--sp-3);
+  min-height:var(--tap);padding:var(--sp-3) var(--sp-4);
+  background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r-btn);
+  font-size:16px;font-weight:500;color:var(--ink);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:border-color 130ms ease, background 130ms ease;
+}
+.option input{position:absolute;opacity:0;width:0;height:0}
+.option .box{
+  flex:0 0 auto;width:21px;height:21px;border:1.5px solid var(--rule);
+  border-radius:6px;background:var(--paper);position:relative;transition:inherit;
+}
+.option.is-radio .box{border-radius:50%}
+.option .box::after{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity 120ms ease;
+  background:no-repeat center/12px 9px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1 4.6l3.2 3L11 1' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.option:has(input:checked){border-color:var(--blue);background:var(--blue-wash)}
+.option:has(input:checked) .box{background:var(--blue);border-color:var(--blue)}
+.option:has(input:checked) .box::after{opacity:1}
+.option:has(input:focus-visible){outline:3px solid var(--blue);outline-offset:2px}
+@media (hover:hover){ .option:hover{border-color:var(--blue)} }
+
+.btn{
+  display:block;width:100%;min-height:var(--tap);
+  background:var(--blue);color:var(--paper);
+  border:0;border-radius:var(--r-btn);
+  font-family:Archivo,sans-serif;font-weight:600;font-size:17px;
+  cursor:pointer;transition:background 130ms ease;
+}
+.btn:hover{background:var(--blue-deep)}
+.btn:disabled{background:var(--rule);color:var(--ink-3);cursor:not-allowed}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* --------------------------------------------------------------
+   FORM
+   -------------------------------------------------------------- */
+.field{margin-top:var(--sp-4)}
+.field label{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:var(--sp-2)}
+.field input,.field select{
+  width:100%;min-height:var(--tap);padding:0 var(--sp-4);
+  font-family:inherit;font-size:16px;color:var(--ink);
+  background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r-btn);
+  appearance:none;
+}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5l5-5' fill='none' stroke='%238195A8' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center;background-size:12px 8px;
+  padding-right:44px;
+}
+.field input:focus,.field select:focus{outline:0;border-color:var(--blue)}
+
+/* --------------------------------------------------------------
+   CARRIER MARQUEE
+   <img> slots. Drop real logo files in and the greyscale→colour
+   hover works with no other change; the text is only a fallback.
+   -------------------------------------------------------------- */
+.carriers{margin-top:var(--sp-7)}
+.carriers-label{font-size:13px;color:var(--ink-3);text-align:center;margin:0 0 var(--sp-3)}
+.carriers-viewport{
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+}
+.carriers-track{
+  display:flex;width:max-content;align-items:center;gap:var(--sp-7);
+  animation:scroll 30s linear infinite;
+}
+.carriers-viewport:hover .carriers-track{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){ .carriers-track{animation:none} }
+@keyframes scroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.carriers-track .mark{
+  display:flex;align-items:center;height:34px;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:20px;
+  letter-spacing:-0.01em;white-space:nowrap;color:var(--ink-3);
+  filter:grayscale(1);opacity:.6;
+  transition:filter 200ms ease,opacity 200ms ease,color 200ms ease;
+}
+.carriers-track .mark img{height:100%;width:auto;display:block}
+.carriers-track .mark:hover{filter:grayscale(0);opacity:1;color:var(--ink)}
+@media (min-width:768px){ .carriers-track .mark{height:40px;font-size:24px} }
+
+/* --------------------------------------------------------------
+   RESULTS
+   Reads like a printout. Flat, factual, his numbers.
+   -------------------------------------------------------------- */
+.r-block{padding:var(--sp-6) 0;border-bottom:1px solid var(--rule)}
+.r-block:first-of-type{padding-top:var(--sp-5)}
+.r-block:last-of-type{border-bottom:0}
+.r-eyebrow{font-size:13px;font-weight:600;color:var(--ink-3);margin:0 0 var(--sp-3)}
+.r-list{list-style:none;margin:0;padding:0}
+.r-list li{
+  display:flex;gap:var(--sp-3);align-items:flex-start;
+  padding:var(--sp-3) 0;border-bottom:1px solid var(--rule);
+  font-size:16px;color:var(--ink);
+}
+.r-list li:last-child{border-bottom:0}
+.r-list li::before{
+  content:'';flex:0 0 auto;width:6px;height:6px;margin-top:9px;
+  border-radius:50%;background:var(--ink-3);
+}
+.r-anchor{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:32px;
+  letter-spacing:-0.02em;color:var(--ink);margin:0;
+}
+
+/* the reveal — most room on the screen */
+.reveal{display:flex;flex-direction:column;gap:var(--sp-3)}
+.reveal-item{
+  background:var(--field);border-radius:var(--r-card);
+  padding:var(--sp-4) var(--sp-5);border-left:3px solid var(--blue);
+}
+.reveal-item h3{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:16px;
+  color:var(--ink);margin:0 0 var(--sp-2);
+}
+.reveal-item p{margin:0;font-size:15.5px;line-height:1.55;color:var(--ink-2)}
+
+/* the gap — the only gold on the page, nothing decorative near it */
+.gap-panel{
+  background:var(--ink);border-radius:var(--r-card);
+  padding:var(--sp-7) var(--sp-5);text-align:center;
+}
+.gap-label{font-size:14px;color:#9FB2C6;margin:0}
+.gap-figure{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:clamp(40px,13vw,64px);line-height:1.02;letter-spacing:-0.03em;
+  color:var(--gold);margin:var(--sp-3) 0 0;
+}
+.gap-sub{font-size:15px;color:#C3D2E0;margin:var(--sp-3) 0 0}
+
+.price{
+  display:flex;flex-direction:column;gap:var(--sp-1);
+  background:var(--blue-wash);border-radius:var(--r-card);padding:var(--sp-5);
+}
+.price-figure{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:29px;
+  letter-spacing:-0.02em;color:var(--ink);margin:0;
+}
+.price-note{font-size:13px;line-height:1.5;color:var(--ink-2);margin:var(--sp-2) 0 0}
+
+.takeaway{font-size:18px;line-height:1.5;color:var(--ink);margin:0;font-weight:500}
+
+.call{
+  background:var(--paper);border:1.5px solid var(--ink);
+  border-radius:var(--r-card);padding:var(--sp-5);
+}
+.call h2{font-family:Archivo,sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin:0}
+.call p{font-size:15.5px;color:var(--ink-2);margin:var(--sp-3) 0 0}
+.advisor{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-5)}
+.advisor img{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--field)}
+.advisor-name{font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:var(--ink)}
+.advisor-role{font-size:13.5px;color:var(--ink-3)}
+
+.footer{
+  margin-top:var(--sp-8);background:var(--ink);color:#9FB2C6;
+  padding:var(--sp-6) 0;text-align:center;
+}
+.footer p{margin:0;font-size:12.5px;line-height:1.6}
+.footer .wrap{max-width:520px}
+</style>
+</head>
+<body>
+
+<header class="header"><span class="logo">ZORION<b> LIFE</b></span></header>
+
+<div class="wrap">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">Question <b id="stepNow">1</b> of 6</span>
+      <span class="progress-pct" id="pct">17%</span>
+    </div>
+    <div class="progress-rail"><i class="progress-fill" id="fill"></i></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+<!-- Q1 — what he's signed for -->
+<section class="screen is-active" id="s1" data-step="1">
+  <h1 class="t-q">Which of these have you signed for personally?</h1>
+  <p class="t-helper">Select all that apply.</p>
+  <div class="options" id="q1opts">
+    <label class="option"><input type="checkbox" name="q1" value="Equipment or business loan"><span class="box"></span><span>Equipment or business loan</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Bank operating line"><span class="box"></span><span>Bank operating line</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Truck or vehicle financing"><span class="box"></span><span>Truck or vehicle financing</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Supplier / wholesaler account"><span class="box"></span><span>Supplier / wholesaler account</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Shop or yard lease"><span class="box"></span><span>Shop or yard lease</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Business credit card"><span class="box"></span><span>Business credit card</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="None of these" data-clear="1"><span class="box"></span><span>None of these</span></label>
+  </div>
+  <button class="btn mt-5" id="q1next" disabled>Continue</button>
+
+  <div class="carriers">
+    <p class="carriers-label">Our advisors place coverage with</p>
+    <div class="carriers-viewport"><div class="carriers-track" id="track"></div></div>
+  </div>
+  <p class="t-legal mt-6">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+</section>
+
+<!-- Q2 — the total -->
+<section class="screen" id="s2" data-step="2" data-auto="1">
+  <h1 class="t-q">Roughly, what do those add up to?</h1>
+  <p class="t-helper">A rough number is fine.</p>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q2" value="under-100"><span class="box"></span><span>Under $100,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="100-250"><span class="box"></span><span>$100,000 – $250,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="250-500"><span class="box"></span><span>$250,000 – $500,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="over-500"><span class="box"></span><span>Over $500,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="not-sure"><span class="box"></span><span>Not sure</span></label>
+  </div>
+</section>
+
+<!-- Q3 — what he has now (the reveal input) -->
+<section class="screen" id="s3" data-step="3">
+  <h1 class="t-q">What have you got in place right now?</h1>
+  <p class="t-helper">Select all that apply.</p>
+  <div class="options" id="q3opts">
+    <label class="option"><input type="checkbox" name="q3" value="mortgage"><span class="box"></span><span>Mortgage insurance through the bank</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="personal"><span class="box"></span><span>A personal life insurance policy</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="spouse"><span class="box"></span><span>Something through my wife's work</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="nothing" data-clear="1"><span class="box"></span><span>Nothing</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="unsure" data-clear="1"><span class="box"></span><span>Not sure</span></label>
+  </div>
+  <button class="btn mt-5" id="q3next" disabled>Continue</button>
+</section>
+
+<!-- Q4 — who's left -->
+<section class="screen" id="s4" data-step="4" data-auto="1">
+  <h1 class="t-q">If something happened to you tomorrow, who'd be left holding it?</h1>
+  <p class="t-helper">Tap to continue.</p>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q4" value="wife"><span class="box"></span><span>My wife</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="partner"><span class="box"></span><span>My business partner</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="kids"><span class="box"></span><span>My kids</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="unsure"><span class="box"></span><span>Honestly, not sure</span></label>
+  </div>
+</section>
+
+<!-- Q5 — age -->
+<section class="screen" id="s5" data-step="5" data-auto="1">
+  <h1 class="t-q">How old are you?</h1>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q5" value="25-34"><span class="box"></span><span>25 – 34</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="35-44"><span class="box"></span><span>35 – 44</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="45-54"><span class="box"></span><span>45 – 54</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="55+"><span class="box"></span><span>55+</span></label>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="screen" id="s6" data-step="6">
+  <h1 class="t-h2">Last step. Where should we reach you?</h1>
+  <p class="t-helper">A licensed advisor calls to walk through your numbers.</p>
+  <form id="contact" novalidate>
+    <div class="field">
+      <label for="name">Full name</label>
+      <input id="name" name="name" type="text" autocomplete="name" required>
+    </div>
+    <div class="field">
+      <label for="trade">Your trade</label>
+      <select id="trade" name="trade" required>
+        <option value="">Select one</option>
+        <option>HVAC</option>
+        <option>Plumbing</option>
+        <option>Electrical</option>
+        <option>Roofing</option>
+        <option>Excavation &amp; septic</option>
+        <option>Restoration</option>
+        <option>General contracting &amp; renovation</option>
+        <option>Landscaping</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+    </div>
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+    </div>
+    <button class="btn mt-5" type="submit">See my numbers</button>
+  </form>
+  <p class="t-legal mt-5">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+</section>
+
+<!-- Results -->
+<section class="screen" id="s7" data-step="6">
+
+  <div class="r-block" id="rSigned">
+    <p class="r-eyebrow">What you've personally signed for</p>
+    <ul class="r-list" id="signedList"></ul>
+  </div>
+
+  <div class="r-block" id="rAnchor">
+    <p class="r-eyebrow">Roughly what it adds up to</p>
+    <p class="r-anchor" id="anchorFigure">—</p>
+  </div>
+
+  <div class="r-block">
+    <p class="r-eyebrow">What your coverage actually pays them</p>
+    <div class="reveal" id="revealList"></div>
+  </div>
+
+  <div class="r-block" id="rGap">
+    <div class="gap-panel">
+      <p class="gap-label" id="gapLabel">Not covered</p>
+      <p class="gap-figure" id="gapFigure">—</p>
+      <p class="gap-sub" id="gapSub"></p>
+    </div>
+  </div>
+
+  <div class="r-block">
+    <p class="r-eyebrow">What closing it looks like</p>
+    <p class="r-anchor mt-2" id="needFigure">—</p>
+    <p class="t-helper" id="needCaption">in coverage, payable to the people you named.</p>
+    <div class="price mt-5" id="priceBox">
+      <p class="price-figure" id="priceFigure">—</p>
+      <p class="price-note" id="priceNote"></p>
+    </div>
+  </div>
+
+  <div class="r-block">
+    <p class="takeaway" id="takeaway"></p>
+  </div>
+
+  <div class="r-block">
+    <div class="call">
+      <h2 id="callHead">One thing this page can't tell you</h2>
+      <p id="callBody"></p>
+      <div class="advisor">
+        <img src="assets/advisor.svg" alt="" onerror="this.style.display='none'">
+        <div>
+          <div class="advisor-name">Alicia Samuel</div>
+          <div class="advisor-role">Licensed life insurance advisor, Ontario</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="carriers">
+    <p class="carriers-label">Backed by coverage from</p>
+    <div class="carriers-viewport"><div class="carriers-track" id="track2"></div></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p>Zorion Life works with licensed life insurance advisors in Ontario. Figures shown are estimates based on the answers you gave, not an offer of insurance or a quote. Coverage is subject to application and approval.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- analytics ---------------- */
+var SID = (function(){
+  try{
+    var k='zl_sid', v=sessionStorage.getItem(k);
+    if(!v){ v=Date.now().toString(36)+Math.random().toString(36).slice(2,10); sessionStorage.setItem(k,v); }
+    return v;
+  }catch(_){ return Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+})();
+var sent={};
+function track(type,data){
+  try{
+    var p=JSON.stringify(Object.assign({type:type,sid:SID},data||{}));
+    if(navigator.sendBeacon){ navigator.sendBeacon('/api/track',new Blob([p],{type:'application/json'})); }
+    else{ fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:p,keepalive:true}).catch(function(){}); }
+  }catch(_){}
+}
+track('view',{ref:document.referrer||''});
+
+/* ---------------- carrier marquee ----------------
+   Swap src to real files when the logo pack arrives.
+   Text inside each .mark is the fallback until then. */
+var CARRIERS=[
+  {name:'Industrial Alliance', file:'assets/logos/ia.svg'},
+  {name:'Assumption Life',     file:'assets/logos/assumption.svg'},
+  {name:'Beneva',              file:'assets/logos/beneva.svg'},
+  {name:'B2B Bank',            file:'assets/logos/b2b.svg'}
+];
+function buildTrack(el){
+  if(!el) return;
+  var html='';
+  for(var pass=0;pass<2;pass++){
+    CARRIERS.forEach(function(c){
+      html+='<span class="mark" aria-hidden="'+(pass?'true':'false')+'">'
+          + '<img src="'+c.file+'" alt="'+c.name+'" onerror="this.replaceWith(document.createTextNode(this.alt))">'
+          + '</span>';
+    });
+  }
+  el.innerHTML=html;
+}
+buildTrack(document.getElementById('track'));
+buildTrack(document.getElementById('track2'));
+
+/* ---------------- navigation ---------------- */
+var screens=[].slice.call(document.querySelectorAll('.screen'));
+var current=0;
+var fill=document.getElementById('fill');
+var pct=document.getElementById('pct');
+var stepNow=document.getElementById('stepNow');
+
+function paint(i){
+  var step=parseInt(screens[i].getAttribute('data-step'),10)||1;
+  if(!sent[step]){ sent[step]=1; track('step',{step:step}); }
+  var p=Math.round((step/6)*100);
+  if(stepNow) stepNow.textContent=step;
+  if(pct) pct.textContent=p+'%';
+  if(fill) fill.style.width=p+'%';
+  document.body.classList.toggle('is-results', screens[i].id==='s7');
+}
+function go(next){
+  if(next===current||next>=screens.length) return;
+  var from=screens[current], to=screens[next];
+  from.classList.remove('is-active','is-fading');
+  to.classList.add('is-active','is-fading');
+  try{ paint(next); }catch(_){}
+  current=next;
+  window.scrollTo(0,0);
+}
+paint(0);
+
+/* auto-advance radios */
+screens.forEach(function(sc,i){
+  if(sc.getAttribute('data-auto')!=='1') return;
+  sc.addEventListener('change',function(e){
+    if(e.target && e.target.type==='radio'){ setTimeout(function(){ go(i+1); },200); }
+  });
+});
+
+/* multi-select with mutually exclusive options */
+function wireMulti(wrapId, btnId, nextIndex){
+  var wrap=document.getElementById(wrapId), btn=document.getElementById(btnId);
+  if(!wrap||!btn) return;
+  var boxes=[].slice.call(wrap.querySelectorAll('input[type=checkbox]'));
+  wrap.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.checked && t.dataset.clear){
+      boxes.forEach(function(b){ if(b!==t) b.checked=false; });
+    } else if(t.checked){
+      boxes.forEach(function(b){ if(b.dataset.clear) b.checked=false; });
+    }
+    btn.disabled=!boxes.some(function(b){ return b.checked; });
+  });
+  btn.addEventListener('click',function(){ go(nextIndex); });
+}
+wireMulti('q1opts','q1next',1);
+wireMulti('q3opts','q3next',3);
+
+/* ---------------- answers ---------------- */
+function checkedVals(name){
+  return [].slice.call(document.querySelectorAll('input[name="'+name+'"]:checked')).map(function(i){ return i.value; });
+}
+function radioVal(name){
+  var el=document.querySelector('input[name="'+name+'"]:checked');
+  return el?el.value:'';
+}
+function answers(){
+  return {
+    q1:checkedVals('q1'),
+    q2:radioVal('q2'),
+    q3:checkedVals('q3'),
+    q4:radioVal('q4'),
+    q5:radioVal('q5'),
+    trade:(document.getElementById('trade')||{}).value||''
+  };
+}
+
+/* ---------------- results data ---------------- */
+var BANDS={
+  'under-100':{label:'Under $100,000', price:100000},
+  '100-250'  :{label:'$100,000 – $250,000', price:250000},
+  '250-500'  :{label:'$250,000 – $500,000', price:500000},
+  'over-500' :{label:'Over $500,000', price:750000}
+};
+
+/* Monthly ranges, 20-year term, healthy male non-smoker, Ontario.
+   Built from published Canadian market averages, Sept 2026.
+   Illustrative only — never presented as a quote. */
+var RATES={
+  100000:{'25-34':[9,15],  '35-44':[12,20], '45-54':[22,38],  '55+':[50,85]},
+  250000:{'25-34':[15,25], '35-44':[20,35], '45-54':[40,70],  '55+':[95,160]},
+  500000:{'25-34':[22,35], '35-44':[30,50], '45-54':[70,120], '55+':[175,290]},
+  750000:{'25-34':[30,48], '35-44':[42,70], '45-54':[100,170],'55+':[250,420]}
+};
+
+var SUBJECT={
+  wife   :{who:'your wife',           them:'her',   gap:'that would land on your wife'},
+  partner:{who:'your business partner',them:'them',  gap:"that would land on your partner"},
+  kids   :{who:'your kids',           them:'them',  gap:'that would land on your kids'},
+  unsure :{who:'your family',         them:'them',  gap:'that would land on your family'}
+};
+
+var REVEAL={
+  mortgage:{
+    h:'Mortgage insurance through the bank',
+    p:'Mortgage insurance from a lender is written to clear their loan. It shrinks as the mortgage does, and it pays the lender.'
+  },
+  spouse:{
+    h:"Something through your wife's work",
+    p:'Group coverage through an employer ends when the job does.'
+  },
+  personal:{
+    h:'A personal life insurance policy',
+    p:'Worth checking what it was written for. Most were bought before the crew, the trucks and the supplier account existed.'
+  },
+  nothing:{
+    h:'Nothing in place',
+    p:'Nothing named. Nothing reaching them.'
+  },
+  unsure:{
+    h:"You're not sure what you have",
+    p:"If you don't know what it pays, assume they don't either."
+  }
+};
+
+/* trades priced outside standard bands — show the gap, hold the range */
+var GATED_TRADES=['Roofing','Excavation & septic'];
+
+function money(n){ return '$'+n.toLocaleString('en-CA'); }
+
+/* ---------------- build results ---------------- */
+function buildResults(){
+  var a=answers();
+  var subj=SUBJECT[a.q4]||SUBJECT.unsure;
+  var band=BANDS[a.q2]||null;
+  var hasGuarantees=a.q1.length>0 && a.q1.indexOf('None of these')===-1;
+
+  /* 1. mirror */
+  var signedBlock=document.getElementById('rSigned');
+  var list=document.getElementById('signedList');
+  if(hasGuarantees){
+    list.innerHTML=a.q1.map(function(v){ return '<li>'+v+'</li>'; }).join('');
+    signedBlock.style.display='';
+  }else{
+    signedBlock.style.display='none';
+  }
+
+  /* 2. anchor */
+  var anchorBlock=document.getElementById('rAnchor');
+  if(band){
+    document.getElementById('anchorFigure').textContent=band.label;
+    anchorBlock.style.display='';
+  }else{
+    anchorBlock.style.display='none';
+  }
+
+  /* 3. the reveal */
+  var order=['mortgage','spouse','personal','nothing','unsure'];
+  var picked=order.filter(function(k){ return a.q3.indexOf(k)!==-1; });
+  if(!picked.length) picked=['unsure'];
+  document.getElementById('revealList').innerHTML=picked.map(function(k){
+    var r=REVEAL[k];
+    return '<div class="reveal-item"><h3>'+r.h+'</h3><p>'+r.p+'</p></div>';
+  }).join('');
+
+  /* 4. the gap */
+  var gapFigure=document.getElementById('gapFigure');
+  var gapLabel=document.getElementById('gapLabel');
+  var gapSub=document.getElementById('gapSub');
+  if(band){
+    gapLabel.textContent='Reaching '+subj.who+' today';
+    gapFigure.textContent='$0';
+    gapSub.textContent='Against '+band.label.toLowerCase().replace('under ','under ')+' '+subj.gap+'.';
+  }else{
+    gapLabel.textContent='Reaching '+subj.who+' today';
+    gapFigure.textContent='$0';
+    gapSub.textContent='Whatever the total turns out to be, none of it is currently written to reach '+subj.them+'.';
+  }
+
+  /* 5. closing it */
+  var needFigure=document.getElementById('needFigure');
+  var needCaption=document.getElementById('needCaption');
+  var priceBox=document.getElementById('priceBox');
+  var priceFigure=document.getElementById('priceFigure');
+  var priceNote=document.getElementById('priceNote');
+  var gated=GATED_TRADES.indexOf(a.trade)!==-1;
+
+  needFigure.textContent = band ? band.label : 'Enough to clear it';
+  needCaption.textContent = 'in coverage, payable to '+subj.who+' instead of a lender.';
+
+  var rate = (band && a.q5 && RATES[band.price]) ? RATES[band.price][a.q5] : null;
+  if(rate && !gated){
+    priceFigure.textContent='About $'+rate[0]+' – $'+rate[1]+' a month';
+    priceNote.textContent='20-year term, healthy non-smoker, age '+a.q5+', Ontario. An estimate based on current market rates, not a quote — your own number depends on health and underwriting.';
+    priceBox.style.display='';
+  }else if(gated){
+    priceFigure.textContent='Your trade prices differently';
+    priceNote.textContent='At-height and heavy-equipment work is rated separately by most carriers. Alicia will give you the real range on the call rather than a number that moves once you apply.';
+    priceBox.style.display='';
+  }else{
+    priceBox.style.display='none';
+  }
+
+  /* 6. takeaway */
+  var t;
+  if(hasGuarantees && band){
+    t='You\u2019ve personally signed for '+band.label.toLowerCase()+'. Nothing you have today is written to reach '+subj.who+'. '+
+      (rate&&!gated ? 'Closing that runs about $'+rate[0]+' \u2013 $'+rate[1]+' a month.' : 'Closing it is the part worth pricing.');
+  }else if(band){
+    t='You\u2019re carrying '+band.label.toLowerCase()+', and none of it is currently written to reach '+subj.who+'.';
+  }else{
+    t='You don\u2019t have a number yet. What you do have is a gap, and '+subj.who+' would be the one to find it.';
+  }
+  document.getElementById('takeaway').textContent=t;
+
+  /* 7. the call */
+  document.getElementById('callBody').textContent=
+    'What you qualify for depends on your age, your health and your trade \u2014 and that can only be confirmed by a licensed advisor, not a form. '+
+    'Alicia is the licensed advisor for Ontario on this. She works this list herself, so the call is short and there\u2019s no queue. '+
+    'Your rate moves with age and health, so the number you get this week is the best one you\u2019ll see.';
+
+  document.getElementById('callHead').textContent='One thing this page can\u2019t tell you';
+}
+
+/* ---------------- submit ---------------- */
+var form=document.getElementById('contact');
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  var fields=[].slice.call(form.querySelectorAll('input,select'));
+  var bad=fields.filter(function(f){ return !f.checkValidity(); })[0];
+  if(bad){ bad.focus(); try{ form.reportValidity(); }catch(_){} return; }
+
+  var btn=form.querySelector('button[type=submit]');
+  if(btn){ btn.disabled=true; btn.textContent='Getting your numbers…'; }
+
+  try{
+    fetch('/api/lead',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name:document.getElementById('name').value,
+        email:document.getElementById('email').value,
+        phone:document.getElementById('phone').value,
+        answers:answers(),
+        sid:SID
+      }),
+      keepalive:true
+    }).catch(function(){});
+  }catch(_){}
+
+  try{ buildResults(); }catch(_){}
+  go(screens.length-1);
+});
+
+})();
+</script>
+</body>
+</html>
