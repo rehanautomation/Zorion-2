@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zorion Life — What have you personally signed for?</title>
+<meta name="description" content="Five questions for Ontario trades owners. See what your coverage actually pays, and what's missing.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0E1E30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ink:#0E1E30;
+  --ink-2:#3E5062;
+  --ink-3:#7A8DA0;
+  --paper:#FFFFFF;
+  --field:#F1F5F9;
+  --rule:#DCE5EE;
+  --blue:#3A86FF;
+  --blue-deep:#1B5FCC;
+  --blue-wash:#ECF3FF;
+  --gold:#F5B700;
+
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:24px; --sp-6:32px; --sp-7:44px; --sp-8:64px;
+
+  --r:12px;
+  --header-h:56px;
+  --pad:18px;
+  --quiz-max:600px;
+  --res-max:900px;
+  --tap:58px;
+}
+@media (min-width:900px){ :root{ --header-h:66px; --pad:32px; --tap:60px; } }
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;padding-top:var(--header-h);
+  background:var(--field);color:var(--ink-2);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+body.is-results{background:var(--paper)}
+.wrap{max-width:var(--quiz-max);margin:0 auto;padding:0 var(--pad)}
+.wrap-wide{max-width:960px;margin:0 auto;padding:0 var(--pad)}
+
+/* ---------- header + progress ---------- */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:20;height:var(--header-h);
+  background:var(--ink);display:flex;align-items:center;justify-content:center;
+}
+.logo{font-family:Archivo,sans-serif;font-weight:700;font-size:17px;letter-spacing:.09em;color:var(--paper);line-height:1}
+.logo b{font-weight:500;opacity:.55}
+
+.progress-wrap{margin-top:var(--sp-5)}
+body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
+.progress-meta{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--sp-2)}
+.progress-label{font-size:14px;font-weight:500;color:var(--ink-3)}
+.progress-label b{color:var(--ink-2);font-weight:600}
+.progress-pct{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;color:var(--blue);font-variant-numeric:tabular-nums}
+.progress-rail{height:6px;border-radius:99px;background:var(--rule);overflow:hidden}
+.progress-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);transition:width 420ms cubic-bezier(.22,.61,.36,1)}
+@media (prefers-reduced-motion:reduce){.progress-fill{transition:none}}
+
+/* ---------- type ---------- */
+.t-q{font-family:Archivo,sans-serif;font-weight:700;font-size:26px;line-height:1.2;letter-spacing:-.02em;color:var(--ink);margin:0}
+@media (min-width:900px){ .t-q{font-size:34px} }
+.t-helper{font-size:15px;color:var(--ink-3);margin:var(--sp-2) 0 0}
+.t-legal{font-size:13px;line-height:1.5;color:var(--ink-3)}
+.mt-4{margin-top:var(--sp-4)} .mt-5{margin-top:var(--sp-5)} .mt-6{margin-top:var(--sp-6)}
+
+/* ---------- screens ---------- */
+.screen{display:none;padding-bottom:var(--sp-8)}
+.screen.is-active{display:block}
+.screen.is-fading{animation:fade 240ms ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen.is-fading{animation:none}}
+
+/* ---------- options ---------- */
+.options{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-5)}
+@media (min-width:900px){
+  .options.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+  .options.two .full{grid-column:1/-1}
+}
+.option{
+  position:relative;display:flex;align-items:center;gap:var(--sp-3);
+  min-height:var(--tap);padding:var(--sp-3) var(--sp-4);
+  background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);
+  font-size:17px;font-weight:500;color:var(--ink);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:border-color 130ms ease,background 130ms ease;
+}
+.option input{position:absolute;opacity:0;width:0;height:0}
+.option .box{flex:0 0 auto;width:22px;height:22px;border:1.5px solid var(--rule);border-radius:6px;background:var(--paper);position:relative;transition:inherit}
+.option.is-radio .box{border-radius:50%}
+.option .box::after{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity 120ms ease;
+  background:no-repeat center/12px 9px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1 4.6l3.2 3L11 1' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.option:has(input:checked){border-color:var(--blue);background:var(--blue-wash)}
+.option:has(input:checked) .box{background:var(--blue);border-color:var(--blue)}
+.option:has(input:checked) .box::after{opacity:1}
+.option:has(input:focus-visible){outline:3px solid var(--blue);outline-offset:2px}
+@media (hover:hover){.option:hover{border-color:var(--blue)}}
+
+.btn{
+  display:block;width:100%;min-height:var(--tap);background:var(--blue);color:var(--paper);
+  border:0;border-radius:var(--r);font-family:Archivo,sans-serif;font-weight:600;font-size:18px;
+  cursor:pointer;transition:background 130ms ease;
+}
+.btn:hover{background:var(--blue-deep)}
+.btn:disabled{background:var(--rule);color:var(--ink-3);cursor:not-allowed}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* ---------- form ---------- */
+.form-grid{display:flex;flex-direction:column}
+@media (min-width:900px){
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--sp-4)}
+  .form-grid .full{grid-column:1/-1}
+}
+.field{margin-top:var(--sp-4)}
+.field label{display:block;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:var(--sp-2)}
+.field input{
+  width:100%;min-height:var(--tap);padding:0 var(--sp-4);font-family:inherit;font-size:17px;
+  color:var(--ink);background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);
+}
+.field input:focus{outline:0;border-color:var(--blue)}
+
+/* custom select — the native one looked like 2010 */
+.select{position:relative}
+.select-btn{
+  width:100%;min-height:var(--tap);padding:0 46px 0 var(--sp-4);
+  display:flex;align-items:center;text-align:left;
+  font-family:inherit;font-size:17px;color:var(--ink-3);
+  background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);cursor:pointer;
+}
+.select-btn.has-value{color:var(--ink);font-weight:500}
+.select-btn:focus-visible{outline:0;border-color:var(--blue)}
+.select-btn::after{
+  content:'';position:absolute;right:18px;top:50%;width:11px;height:7px;margin-top:-3px;
+  background:var(--ink-3);transition:transform 180ms ease;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+}
+.select.is-open .select-btn{border-color:var(--blue)}
+.select.is-open .select-btn::after{transform:rotate(180deg)}
+.select-list{
+  position:absolute;z-index:15;left:0;right:0;top:calc(100% + 6px);
+  max-height:290px;overflow:auto;padding:var(--sp-1);margin:0;list-style:none;
+  background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);
+  box-shadow:0 12px 28px rgba(14,30,48,.13);display:none;
+}
+.select.is-open .select-list{display:block}
+.select-list li{
+  padding:13px var(--sp-4);border-radius:9px;font-size:16.5px;color:var(--ink);cursor:pointer;
+}
+.select-list li:hover,.select-list li.is-active{background:var(--blue-wash)}
+.select-list li[aria-selected=true]{background:var(--blue);color:var(--paper);font-weight:500}
+
+/* ---------- carriers: static row, no marquee (3 marks fit) ---------- */
+.carriers{margin-top:var(--sp-7)}
+.carriers-label{font-size:14px;color:var(--ink-3);text-align:center;margin:0 0 var(--sp-4)}
+.carriers-row{
+  display:flex;align-items:center;justify-content:center;
+  gap:var(--sp-6);flex-wrap:wrap;
+}
+@media (min-width:600px){ .carriers-row{gap:var(--sp-8)} }
+.carriers-row img{
+  display:block;width:auto;opacity:.42;
+  transition:opacity 200ms ease;
+}
+.carriers-row img:hover{opacity:.85}
+.carriers-row img[data-mark=ia]{height:26px}
+.carriers-row img[data-mark=assumption]{height:42px}
+.carriers-row img[data-mark=beneva]{height:19px}
+@media (min-width:600px){
+  .carriers-row img[data-mark=ia]{height:32px}
+  .carriers-row img[data-mark=assumption]{height:52px}
+  .carriers-row img[data-mark=beneva]{height:23px}
+}
+
+/* ---------- processing ---------- */
+.loading{padding:var(--sp-8) 0;text-align:center}
+.loading h2{font-family:Archivo,sans-serif;font-weight:700;font-size:23px;color:var(--ink);margin:0}
+.load-steps{list-style:none;margin:var(--sp-6) 0 0;padding:0;display:inline-flex;flex-direction:column;gap:var(--sp-3);text-align:left}
+.load-steps li{display:flex;align-items:center;gap:var(--sp-3);font-size:16.5px;color:var(--ink-3);opacity:.4;transition:opacity 250ms ease,color 250ms ease}
+.load-steps li.is-on{opacity:1;color:var(--ink)}
+.dot{flex:0 0 auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--rule);position:relative}
+.load-steps li.is-on .dot{border-color:var(--blue);background:var(--blue)}
+.load-steps li.is-on .dot::after{
+  content:'';position:absolute;inset:0;
+  background:no-repeat center/10px 8px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1 4.6l3.2 3L11 1' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ---------- results ---------- */
+.res-head{padding:var(--sp-6) 0 var(--sp-5);border-bottom:1px solid var(--rule)}
+.res-head h1{font-family:Archivo,sans-serif;font-weight:700;font-size:24px;letter-spacing:-.02em;color:var(--ink);margin:0}
+@media (min-width:900px){ .res-head h1{font-size:30px} }
+
+.rb{padding:var(--sp-6) 0;border-bottom:1px solid var(--rule)}
+.rb:last-of-type{border-bottom:0}
+.eyebrow{font-size:14px;font-weight:600;color:var(--ink-3);margin:0 0 var(--sp-3)}
+
+.exposure{display:grid;gap:var(--sp-5)}
+@media (min-width:900px){ .exposure{grid-template-columns:1fr 1fr;align-items:center;gap:var(--sp-8)} }
+.figure{font-family:Archivo,sans-serif;font-weight:700;font-size:34px;letter-spacing:-.025em;color:var(--ink);margin:0;line-height:1.05}
+@media (min-width:900px){ .figure{font-size:42px} }
+.chips{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:0;padding:0;list-style:none}
+.chips li{background:var(--field);border-radius:99px;padding:7px 15px;font-size:15px;color:var(--ink)}
+
+.reveal{display:grid;gap:var(--sp-3)}
+@media (min-width:900px){ .reveal.multi{grid-template-columns:1fr 1fr} }
+.reveal-item{background:var(--field);border-radius:var(--r);padding:var(--sp-5);border-left:3px solid var(--blue)}
+.reveal-item h3{font-family:Archivo,sans-serif;font-weight:600;font-size:18px;color:var(--ink);margin:0 0 var(--sp-2)}
+.reveal-item p{margin:0;font-size:17px;line-height:1.5;color:var(--ink-2)}
+
+.gap-panel{background:var(--ink);border-radius:var(--r);padding:var(--sp-7) var(--sp-5);text-align:center}
+@media (min-width:900px){ .gap-panel{padding:var(--sp-8) var(--sp-6)} }
+.gap-label{font-size:16px;color:#A8BACC;margin:0}
+.gap-figure{font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(52px,16vw,96px);line-height:1;letter-spacing:-.04em;color:var(--gold);margin:var(--sp-3) 0 0}
+.gap-sub{font-size:17px;line-height:1.5;color:#CBD8E4;margin:var(--sp-4) auto 0;max-width:34em}
+
+.close-grid{display:grid;gap:var(--sp-4);align-items:stretch}
+@media (min-width:900px){ .close-grid{grid-template-columns:1fr 1fr;gap:var(--sp-5)} }
+.close-card{background:var(--blue-wash);border-radius:var(--r);padding:var(--sp-5)}
+.close-card .k{font-size:15px;color:var(--ink-2);margin:0}
+.close-card .v{font-family:Archivo,sans-serif;font-weight:700;font-size:29px;letter-spacing:-.02em;color:var(--ink);margin:var(--sp-2) 0 0;line-height:1.1}
+.close-note{font-size:14px;line-height:1.5;color:var(--ink-3);margin:var(--sp-4) 0 0}
+
+.takeaway{font-family:Archivo,sans-serif;font-weight:600;font-size:21px;line-height:1.4;color:var(--ink);margin:0}
+@media (min-width:900px){ .takeaway{font-size:24px} }
+
+.call{background:var(--ink);border-radius:var(--r);padding:var(--sp-6) var(--sp-5);color:#CBD8E4}
+@media (min-width:900px){ .call{padding:var(--sp-7)} }
+.call h2{font-family:Archivo,sans-serif;font-weight:700;font-size:22px;color:var(--paper);margin:0}
+.call p{font-size:17px;line-height:1.55;margin:var(--sp-4) 0 0}
+.advisor{display:flex;align-items:center;gap:var(--sp-4);margin-top:var(--sp-6);padding-top:var(--sp-5);border-top:1px solid rgba(255,255,255,.14)}
+.advisor img{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#1B3350}
+.advisor-name{font-family:Archivo,sans-serif;font-weight:600;font-size:17px;color:var(--paper)}
+.advisor-role{font-size:14.5px;color:#93A8BC}
+
+.footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
+.footer p{margin:0;font-size:13px;line-height:1.6}
+.footer .wrap-wide{max-width:560px}
+
+/* ============ RESULTS ============ */
+.h-sec{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:24px;line-height:1.2;letter-spacing:-.02em;color:var(--ink);
+  margin:var(--sp-7) 0 var(--sp-4);
+}
+@media (min-width:900px){ .h-sec{font-size:32px;margin-top:var(--sp-8)} }
+.h-sec.first{margin-top:var(--sp-6)}
+
+/* ---------- signed for ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:0;padding:0;list-style:none}
+.chips li{
+  background:var(--field);border-radius:99px;padding:9px 18px;
+  font-size:16px;font-weight:500;color:var(--ink);
+}
+
+/* ---------- the sum ---------- */
+.sum{
+  background:var(--ink);border-radius:var(--r);color:#C3D3E1;
+  padding:var(--sp-7) var(--sp-5);margin-top:var(--sp-6);text-align:center;
+}
+@media (min-width:900px){ .sum{padding:var(--sp-8) var(--sp-6)} }
+.sum .kicker{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:17px;letter-spacing:.01em;
+  color:var(--cyan);margin:0 0 var(--sp-4);
+}
+@media (min-width:900px){ .sum .kicker{font-size:19px} }
+.sum .fig{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:clamp(42px,12.5vw,82px);line-height:1;letter-spacing:-.035em;
+  color:var(--gold);margin:0;
+}
+.sum .line{
+  font-family:Archivo,sans-serif;font-weight:600;
+  font-size:clamp(21px,5.8vw,31px);line-height:1.25;letter-spacing:-.02em;
+  color:var(--paper);margin:var(--sp-4) auto 0;max-width:18em;
+}
+.sum .foot{font-size:16px;line-height:1.5;color:#9FB3C6;margin:var(--sp-5) auto 0;max-width:30em}
+
+/* ---------- the reveal ---------- */
+.reveal{display:grid;gap:var(--sp-3)}
+@media (min-width:900px){ .reveal.multi{grid-template-columns:1fr 1fr;gap:var(--sp-4)} }
+.reveal-item{background:var(--field);border-radius:var(--r);padding:var(--sp-5);border-left:4px solid var(--blue)}
+@media (min-width:900px){ .reveal-item{padding:var(--sp-6)} }
+.reveal-item h3{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:18px;
+  color:var(--ink);margin:0 0 var(--sp-3);
+}
+.reveal-item p{margin:0;font-size:20px;line-height:1.42;color:var(--ink-2);font-weight:400}
+@media (min-width:900px){ .reveal-item p{font-size:21px} }
+
+/* ---------- the price + the payoff ---------- */
+.price-fig{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:clamp(34px,9vw,52px);line-height:1.05;letter-spacing:-.03em;
+  color:var(--ink);margin:0;
+}
+.payoff{
+  font-family:Archivo,sans-serif;font-weight:600;
+  font-size:clamp(21px,5.4vw,28px);line-height:1.3;letter-spacing:-.018em;
+  color:var(--blue);margin:var(--sp-4) 0 0;
+}
+.assump{font-size:15px;line-height:1.55;color:var(--ink-3);margin:var(--sp-5) 0 0;max-width:44em}
+
+/* ---------- the call ---------- */
+.call{
+  background:var(--ink);border-radius:var(--r);margin-top:var(--sp-7);
+  padding:var(--sp-6) var(--sp-5);color:#C3D3E1;
+}
+@media (min-width:900px){
+  .call{display:grid;grid-template-columns:1.3fr .85fr;gap:var(--sp-8);align-items:center;padding:var(--sp-8) var(--sp-7)}
+}
+.call h2{font-family:Archivo,sans-serif;font-weight:700;font-size:25px;line-height:1.22;color:var(--paper);margin:0}
+@media (min-width:900px){ .call h2{font-size:30px} }
+.call ul{list-style:none;margin:var(--sp-5) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--sp-4)}
+.call li{display:flex;gap:var(--sp-3);align-items:flex-start;font-size:18px;line-height:1.4;color:#DCE7F0}
+.call li::before{content:'';flex:0 0 auto;width:8px;height:8px;margin-top:9px;border-radius:50%;background:var(--cyan)}
+
+.who{margin-top:var(--sp-6);padding-top:var(--sp-5);border-top:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:var(--sp-4)}
+@media (min-width:900px){ .who{margin:0;padding:0;border:0;flex-direction:column;text-align:center;gap:var(--sp-4)} }
+.avatar{
+  position:relative;flex:0 0 auto;width:68px;height:68px;border-radius:50%;
+  background:#1B3350;border:2px solid rgba(255,255,255,.16);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:22px;color:#7E9AB6;letter-spacing:.02em;
+}
+@media (min-width:900px){ .avatar{width:120px;height:120px;font-size:36px} }
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.who .n{font-family:Archivo,sans-serif;font-weight:600;font-size:19px;color:var(--paper)}
+.who .r{font-size:15px;line-height:1.45;color:#93A8BC;margin-top:3px}
+
+/* ---------- carriers: text wordmark always present, image sits on top ---------- */
+/* mobile: scrolls. desktop: sits still. */
+.carriers{margin-top:var(--sp-8)}
+.carriers-viewport{
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
+}
+.carriers-row{display:flex;align-items:center;width:max-content;gap:var(--sp-7);animation:marquee 20s linear infinite}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){ .carriers-row{animation:none} }
+@media (min-width:900px){
+  .carriers-viewport{-webkit-mask-image:none;mask-image:none}
+  .carriers-row{width:auto;justify-content:center;flex-wrap:wrap;gap:var(--sp-8);animation:none}
+  .carriers-row .dupe{display:none}
+}
+.mark{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;
+  height:34px;padding:0 2px;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:18px;letter-spacing:-.01em;
+  color:var(--ink-3);opacity:.75;white-space:nowrap;
+}
+@media (min-width:600px){ .mark{height:40px;font-size:21px} }
+.mark img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:100%;width:auto;opacity:.45}
+
+.footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
+.footer p{margin:0 auto;font-size:13.5px;line-height:1.6;max-width:560px}
+</style>
+</head>
+<body>
+
+<header class="header"><span class="logo">ZORION<b> LIFE</b></span></header>
+
+<div class="wrap">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">Question <b id="stepNow">1</b> of 6</span>
+      <span class="progress-pct" id="pct">17%</span>
+    </div>
+    <div class="progress-rail"><i class="progress-fill" id="fill"></i></div>
+  </div>
+</div>
+
+<main>
+<div class="wrap" id="quizWrap">
+
+<section class="screen is-active" id="s1" data-step="1">
+  <h1 class="t-q">Which of these have you signed for personally?</h1>
+  <p class="t-helper">Select all that apply.</p>
+  <div class="options two" id="q1opts">
+    <label class="option"><input type="checkbox" name="q1" value="Equipment or business loan"><span class="box"></span><span>Equipment or business loan</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Bank operating line"><span class="box"></span><span>Bank operating line</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Truck or vehicle financing"><span class="box"></span><span>Truck or vehicle financing</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Supplier / wholesaler account"><span class="box"></span><span>Supplier / wholesaler account</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Shop or yard lease"><span class="box"></span><span>Shop or yard lease</span></label>
+    <label class="option"><input type="checkbox" name="q1" value="Business credit card"><span class="box"></span><span>Business credit card</span></label>
+    <label class="option full"><input type="checkbox" name="q1" value="None of these" data-clear="1"><span class="box"></span><span>None of these</span></label>
+  </div>
+  <button class="btn mt-5" id="q1next" disabled>Continue</button>
+
+  <div class="carriers">
+    <p class="carriers-label">Our advisors place coverage with</p>
+    <div class="carriers-viewport"><div class="carriers-row" id="carriersRow1"></div></div>
+  </div>
+  <p class="t-legal mt-6">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+</section>
+
+<section class="screen" id="s2" data-step="2" data-auto="1">
+  <h1 class="t-q">Roughly, what do those add up to?</h1>
+  <p class="t-helper">A rough number is fine.</p>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q2" value="under-100"><span class="box"></span><span>Under $100,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="100-250"><span class="box"></span><span>$100,000 – $250,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="250-500"><span class="box"></span><span>$250,000 – $500,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="over-500"><span class="box"></span><span>Over $500,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="not-sure"><span class="box"></span><span>Not sure</span></label>
+  </div>
+</section>
+
+<section class="screen" id="s3" data-step="3">
+  <h1 class="t-q">What have you got in place right now?</h1>
+  <p class="t-helper">Select all that apply.</p>
+  <div class="options" id="q3opts">
+    <label class="option"><input type="checkbox" name="q3" value="mortgage"><span class="box"></span><span>Mortgage insurance through the bank</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="personal"><span class="box"></span><span>A personal life insurance policy</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="spouse"><span class="box"></span><span>Something through my wife's work</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="nothing" data-clear="1"><span class="box"></span><span>Nothing</span></label>
+    <label class="option"><input type="checkbox" name="q3" value="unsure" data-clear="1"><span class="box"></span><span>Not sure</span></label>
+  </div>
+  <button class="btn mt-5" id="q3next" disabled>Continue</button>
+</section>
+
+<section class="screen" id="s4" data-step="4" data-auto="1">
+  <h1 class="t-q">If something happened to you tomorrow, who'd be left holding it?</h1>
+  <p class="t-helper">Tap to continue.</p>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q4" value="wife"><span class="box"></span><span>My wife</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="partner"><span class="box"></span><span>My business partner</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="kids"><span class="box"></span><span>My kids</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="unsure"><span class="box"></span><span>Honestly, not sure</span></label>
+  </div>
+</section>
+
+<section class="screen" id="s5" data-step="5" data-auto="1">
+  <h1 class="t-q">How old are you?</h1>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q5" value="25-34"><span class="box"></span><span>25 – 34</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="35-44"><span class="box"></span><span>35 – 44</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="45-54"><span class="box"></span><span>45 – 54</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="55+"><span class="box"></span><span>55+</span></label>
+  </div>
+</section>
+
+<section class="screen" id="s6" data-step="6">
+  <h1 class="t-q">Last step. Where should we send them?</h1>
+  <p class="t-helper">Your numbers are ready. A licensed advisor walks you through them.</p>
+  <form id="contact" novalidate>
+    <div class="form-grid">
+      <div class="field full">
+        <label for="name">Full name</label>
+        <input id="name" type="text" autocomplete="name" required>
+      </div>
+      <div class="field full">
+        <label id="tradeLabel">Your trade</label>
+        <div class="select" id="tradeSelect">
+          <button type="button" class="select-btn" id="tradeBtn" aria-haspopup="listbox" aria-expanded="false">Select one</button>
+          <ul class="select-list" id="tradeList" role="listbox" aria-labelledby="tradeLabel"></ul>
+        </div>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" inputmode="email" required>
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+      </div>
+    </div>
+    <button class="btn mt-5" type="submit" id="submitBtn">See my numbers</button>
+  </form>
+  <p class="t-legal mt-5">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
+</section>
+
+<section class="screen" id="s7" data-step="6">
+  <div class="loading">
+    <h2 id="loadHead">Building your numbers</h2>
+    <ul class="load-steps" id="loadSteps">
+      <li><span class="dot"></span><span>Reading what you've signed for</span></li>
+      <li><span class="dot"></span><span>Checking what your coverage pays</span></li>
+      <li><span class="dot"></span><span>Pricing the gap for your age</span></li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /quizWrap -->
+
+<div class="wrap-wide">
+<section class="screen" id="s8" data-step="6">
+
+  <h2 class="h-sec first">What you've signed for personally</h2>
+  <ul class="chips" id="chips"></ul>
+
+  <div class="sum">
+    <p class="kicker" id="sumKicker">Where that leaves her</p>
+    <p class="fig" id="sumFig">$250,000 – $500,000</p>
+    <p class="line" id="sumLine">personally signed for. Nothing named to cover it.</p>
+    <p class="foot" id="sumFoot"></p>
+  </div>
+
+  <h2 class="h-sec" id="revealHead">What your coverage actually pays her</h2>
+  <div class="reveal" id="reveal"></div>
+
+  <h2 class="h-sec">Roughly what closing it costs</h2>
+  <p class="price-fig" id="priceFig">$30 – $50 a month</p>
+  <p class="payoff" id="payoff"></p>
+  <p class="assump" id="priceAssump"></p>
+
+  <div class="call">
+    <div>
+      <h2>She goes to the carriers. You don't.</h2>
+      <ul>
+        <li>Shops your file across every carrier she's contracted with</li>
+        <li>Knows which ones price trades fairly. They don't all do</li>
+        <li>Fifteen minutes on the phone and you'll have your number</li>
+      </ul>
+    </div>
+    <div class="who">
+      <div class="avatar">AS<img src="assets/advisor.jpg" alt="" onerror="this.remove()"></div>
+      <div>
+        <div class="n">Alicia Samuel</div>
+        <div class="r">Licensed life insurance advisor<br>Ontario</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="carriers">
+    <div class="carriers-viewport"><div class="carriers-row" id="carriersRow2"></div></div>
+  </div>
+
+</section>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="wrap-wide">
+    <p>Zorion Life works with licensed life insurance advisors in Ontario. Figures shown are estimates based on the answers you gave, not an offer of insurance or a quote. Coverage is subject to application and approval.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =============================================================
+   TESTING SWITCH
+   false = no Discord notification, nothing posted to /api/lead.
+   Flip to true when you're done testing.
+   ============================================================= */
+var SEND_LEADS = false;
+
+/* ---------------- analytics ---------------- */
+var SID=(function(){
+  try{ var k='zl_sid',v=sessionStorage.getItem(k);
+    if(!v){v=Date.now().toString(36)+Math.random().toString(36).slice(2,10);sessionStorage.setItem(k,v);}
+    return v;
+  }catch(_){return Date.now().toString(36)+Math.random().toString(36).slice(2,10);}
+})();
+var sent={};
+function track(t,d){
+  try{
+    var p=JSON.stringify(Object.assign({type:t,sid:SID},d||{}));
+    if(navigator.sendBeacon) navigator.sendBeacon('/api/track',new Blob([p],{type:'application/json'}));
+    else fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:p,keepalive:true}).catch(function(){});
+  }catch(_){}
+}
+
+/* ---------------- custom trade dropdown ---------------- */
+var TRADES=['HVAC','Plumbing','Electrical','Roofing','Excavation & septic','Restoration','General contracting & renovation','Landscaping','Other'];
+var tradeValue='';
+var sel=document.getElementById('tradeSelect'),
+    selBtn=document.getElementById('tradeBtn'),
+    selList=document.getElementById('tradeList');
+
+selList.innerHTML=TRADES.map(function(t,i){
+  return '<li role="option" data-v="'+t+'" aria-selected="false" tabindex="-1">'+t+'</li>';
+}).join('');
+
+function openSel(o){
+  sel.classList.toggle('is-open',o);
+  selBtn.setAttribute('aria-expanded',o?'true':'false');
+}
+selBtn.addEventListener('click',function(){ openSel(!sel.classList.contains('is-open')); });
+selList.addEventListener('click',function(e){
+  var li=e.target.closest('li'); if(!li) return;
+  tradeValue=li.dataset.v;
+  [].forEach.call(selList.children,function(x){ x.setAttribute('aria-selected', x===li?'true':'false'); });
+  selBtn.textContent=tradeValue;
+  selBtn.classList.add('has-value');
+  openSel(false);
+});
+document.addEventListener('click',function(e){ if(!sel.contains(e.target)) openSel(false); });
+selBtn.addEventListener('keydown',function(e){
+  if(e.key==='Enter'||e.key===' '||e.key==='ArrowDown'){ e.preventDefault(); openSel(true); selList.firstElementChild.focus(); }
+});
+selList.addEventListener('keydown',function(e){
+  var items=[].slice.call(selList.children), i=items.indexOf(document.activeElement);
+  if(e.key==='ArrowDown'){ e.preventDefault(); (items[i+1]||items[0]).focus(); }
+  if(e.key==='ArrowUp'){ e.preventDefault(); (items[i-1]||items[items.length-1]).focus(); }
+  if(e.key==='Enter'||e.key===' '){ e.preventDefault(); document.activeElement.click(); selBtn.focus(); }
+  if(e.key==='Escape'){ openSel(false); selBtn.focus(); }
+});
+
+/* ---------------- navigation ---------------- */
+var screens=[].slice.call(document.querySelectorAll('.screen'));
+var LOADING=6, RESULTS=7;
+var current=0;
+var fill=document.getElementById('fill'),pct=document.getElementById('pct'),stepNow=document.getElementById('stepNow');
+
+function paint(i){
+  var step=parseInt(screens[i].getAttribute('data-step'),10)||1;
+  if(!sent[step]){ sent[step]=1; track('step',{step:step}); }
+  var p=Math.round((step/6)*100);
+  if(stepNow) stepNow.textContent=step;
+  if(pct) pct.textContent=p+'%';
+  if(fill) fill.style.width=p+'%';
+  document.body.classList.toggle('is-results', i===RESULTS);
+  document.body.classList.toggle('is-loading', i===LOADING);
+}
+function go(next){
+  if(next===current||next>=screens.length) return;
+  screens[current].classList.remove('is-active','is-fading');
+  screens[next].classList.add('is-active','is-fading');
+  try{ paint(next); }catch(_){}
+  current=next;
+  window.scrollTo(0,0);
+}
+paint(0);
+
+screens.forEach(function(sc,i){
+  if(sc.getAttribute('data-auto')!=='1') return;
+  sc.addEventListener('change',function(e){
+    if(e.target&&e.target.type==='radio') setTimeout(function(){ go(i+1); },200);
+  });
+});
+
+function wireMulti(wrapId,btnId,nextIndex){
+  var wrap=document.getElementById(wrapId),btn=document.getElementById(btnId);
+  if(!wrap||!btn) return;
+  var boxes=[].slice.call(wrap.querySelectorAll('input[type=checkbox]'));
+  function sync(){ btn.disabled=!boxes.some(function(b){return b.checked;}); }
+  wrap.addEventListener('change',function(e){
+    var t=e.target; if(!t||t.type!=='checkbox') return;
+    if(t.checked&&t.dataset.clear) boxes.forEach(function(b){ if(b!==t) b.checked=false; });
+    else if(t.checked) boxes.forEach(function(b){ if(b.dataset.clear) b.checked=false; });
+    sync();
+  });
+  wrap.addEventListener('click',function(){ setTimeout(sync,0); });
+  btn.addEventListener('click',function(){ go(nextIndex); });
+  sync();
+}
+wireMulti('q1opts','q1next',1);
+wireMulti('q3opts','q3next',3);
+
+/* ---------------- answers ---------------- */
+function multi(n){ return [].slice.call(document.querySelectorAll('input[name="'+n+'"]:checked')).map(function(i){return i.value;}); }
+function one(n){ var e=document.querySelector('input[name="'+n+'"]:checked'); return e?e.value:''; }
+function answers(){
+  return {q1:multi('q1'),q2:one('q2'),q3:multi('q3'),q4:one('q4'),q5:one('q5'),trade:tradeValue};
+}
+
+/* ---------------- data ---------------- */
+var BANDS={
+  'under-100':{label:'Under $100,000',price:100000},
+  '100-250':{label:'$100,000 – $250,000',price:250000},
+  '250-500':{label:'$250,000 – $500,000',price:500000},
+  'over-500':{label:'Over $500,000',price:750000}
+};
+var RATES={
+  100000:{'25-34':[9,15],'35-44':[12,20],'45-54':[22,38],'55+':[50,85]},
+  250000:{'25-34':[15,25],'35-44':[20,35],'45-54':[40,70],'55+':[95,160]},
+  500000:{'25-34':[22,35],'35-44':[30,50],'45-54':[70,120],'55+':[175,290]},
+  750000:{'25-34':[30,48],'35-44':[42,70],'45-54':[100,170],'55+':[250,420]}
+};
+var SUBJ={
+  wife   :{them:'her',  who:'your wife',             where:'Where that leaves her',
+           payoff:"She doesn't have to sell the trucks."},
+  partner:{them:'them', who:'your business partner', where:'Where that leaves your partner',
+           payoff:"He doesn't have to buy you out with money he doesn't have."},
+  kids   :{them:'them', who:'your kids',             where:'Where that leaves your kids',
+           payoff:'They inherit what you built, not what you owe.'},
+  unsure :{them:'them', who:'your family',           where:'Where that leaves them',
+           payoff:'Nobody has to sell anything to settle it.'}
+};
+var REVEAL={
+  mortgage:{h:'Mortgage insurance through the bank',
+            p:'Mortgage insurance from a lender is written to clear their loan. It shrinks as the mortgage does, and it pays the lender.'},
+  spouse  :{h:"Something through your wife's work",
+            p:'Group coverage through an employer ends when the job does.'},
+  personal:{h:'A personal life insurance policy',
+            p:'Worth checking what it was written for. Most were bought before the crew, the trucks and the supplier account existed.'},
+  nothing :{h:'Nothing in place',
+            p:'Nothing named. Nothing reaching them.'},
+  unsure  :{h:"Not sure what's in place",
+            p:"If you don't know what it pays, assume they don't either."}
+};
+var GATED=['Roofing','Excavation & septic'];
+
+function buildResults(a){
+  var s=SUBJ[a.q4]||SUBJ.unsure;
+  var band=BANDS[a.q2]||null;
+  var openItem=a.q3.indexOf('personal')!==-1;
+
+  document.getElementById('chips').innerHTML =
+    a.q1.length && a.q1.indexOf('None of these')===-1
+      ? a.q1.map(function(v){return '<li>'+v+'</li>';}).join('')
+      : '<li>No personal guarantees</li>';
+
+  document.getElementById('sumKicker').textContent=s.where;
+  var fig=document.getElementById('sumFig'),line=document.getElementById('sumLine'),foot=document.getElementById('sumFoot');
+  if(band){
+    fig.textContent=band.label;
+    line.textContent = openItem
+      ? 'personally signed for, and one policy nobody has checked.'
+      : 'personally signed for. Nothing named to cover it.';
+  }else{
+    fig.textContent='You weren\u2019t sure';
+    line.textContent='and that\u2019s the part '+s.who+' would have to work out.';
+  }
+  foot.textContent = openItem
+    ? 'What your own policy would actually pay is the one number this page can\u2019t work out. Alicia can, in about ten minutes.'
+    : '';
+
+  document.getElementById('revealHead').textContent='What your coverage actually pays '+s.them;
+  var order=['mortgage','spouse','personal','nothing','unsure'];
+  var picked=order.filter(function(k){return a.q3.indexOf(k)!==-1;});
+  if(!picked.length) picked=['unsure'];
+  var rv=document.getElementById('reveal');
+  rv.className='reveal'+(picked.length>1?' multi':'');
+  rv.innerHTML=picked.map(function(k){
+    return '<div class="reveal-item"><h3>'+REVEAL[k].h+'</h3><p>'+REVEAL[k].p+'</p></div>';
+  }).join('');
+
+  var gated=GATED.indexOf(a.trade)!==-1;
+  var rate=(band&&a.q5&&RATES[band.price])?RATES[band.price][a.q5]:null;
+  var pf=document.getElementById('priceFig'),pa=document.getElementById('priceAssump'),po=document.getElementById('payoff');
+  po.textContent=s.payoff;
+  if(rate&&!gated){
+    pf.textContent='$'+rate[0]+' \u2013 $'+rate[1]+' a month';
+    pa.textContent='Coverage matching what you\u2019ve signed for. 20-year term, non-smoker, standard health, age '+a.q5+', Ontario. An estimate from current market rates, not a quote.';
+  }else if(gated){
+    pf.textContent='Your trade is priced separately';
+    pa.textContent='At-height and heavy-equipment work is rated differently by every carrier. Alicia gives you the real range on the call rather than a number that moves once you apply.';
+  }else{
+    pf.textContent='Priced on the call';
+    pa.textContent='Without a total there\u2019s nothing to price against. Alicia builds the number with you.';
+  }
+}
+
+/* carrier strip: duplicated set so the mobile marquee loops seamlessly */
+var CARRIERS=[
+  {name:'Industrial Alliance', file:'assets/logos/ia.png'},
+  {name:'Assumption Life',     file:'assets/logos/assumption.png'},
+  {name:'Beneva',              file:'assets/logos/beneva.png'}
+];
+function buildCarriers(el){
+  if(!el) return;
+  el.innerHTML=[0,1].map(function(pass){
+    return CARRIERS.map(function(c){
+      return '<span class="mark'+(pass?' dupe':'')+'"'+(pass?' aria-hidden="true"':'')+'>'+c.name
+        +'<img src="'+c.file+'" alt="'+(pass?'':c.name)+'"'
+        +' onload="this.parentNode.firstChild.textContent=\'\'" onerror="this.remove()"></span>';
+    }).join('');
+  }).join('');
+}
+buildCarriers(document.getElementById('carriersRow1'));
+buildCarriers(document.getElementById('carriersRow2'));
+
+/* ---------------- processing, then results ---------------- */
+function runLoading(a,firstName){
+  go(LOADING);
+  var items=[].slice.call(document.querySelectorAll('#loadSteps li'));
+  var delays=[350,1200,2050];
+  items.forEach(function(li,i){ setTimeout(function(){ li.classList.add('is-on'); },delays[i]); });
+  setTimeout(function(){
+    try{ buildResults(a); }catch(_){}
+    go(RESULTS);
+  },2900);
+}
+
+/* ---------------- submit ---------------- */
+var form=document.getElementById('contact');
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  var inputs=[].slice.call(form.querySelectorAll('input'));
+  var bad=inputs.filter(function(f){return !f.checkValidity();})[0];
+  if(bad){ bad.focus(); try{form.reportValidity();}catch(_){} return; }
+  if(!tradeValue){ selBtn.focus(); selBtn.style.borderColor='#D9534F'; return; }
+
+  var btn=document.getElementById('submitBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Building your numbers…'; }
+
+  var a=answers();
+  var name=document.getElementById('name').value.trim();
+  var firstName=name.split(' ')[0]||'';
+
+  if(SEND_LEADS){
+    try{
+      fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:name,email:document.getElementById('email').value,
+          phone:document.getElementById('phone').value,answers:a,sid:SID}),keepalive:true}).catch(function(){});
+    }catch(_){}
+  }
+
+  try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a,n:firstName})); }catch(_){}
+  runLoading(a,firstName);
+});
+
+/* ---------------- /result preview ----------------
+   Opens the results screen directly, using the last real run if there
+   is one, otherwise sample answers. Works at /result, /result.html
+   or #result. */
+function isPreview(){
+  return /(^|\/)result(\.html)?$/.test(location.pathname) || location.hash==='#result';
+}
+if(isPreview()){
+  var stored=null;
+  try{ stored=JSON.parse(sessionStorage.getItem('zl_last')||'null'); }catch(_){}
+  var demo=stored||{n:'Dave',a:{q1:['Equipment or business loan','Bank operating line','Truck or vehicle financing'],
+    q2:'250-500',q3:['mortgage','spouse'],q4:'wife',q5:'35-44',trade:'HVAC'}};
+  try{ buildResults(demo.a); }catch(_){}
+  screens[0].classList.remove('is-active');
+  screens[RESULTS].classList.add('is-active');
+  current=RESULTS; paint(RESULTS);
+}else{
+  track('view',{ref:document.referrer||''});
+}
+
+})();
+</script>
+</body>
+</html>
