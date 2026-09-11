@@ -338,29 +338,44 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .who .r{font-size:15px;line-height:1.45;color:#93A8BC;margin-top:3px}
 
 /* ---------- carriers: text wordmark always present, image sits on top ---------- */
-/* mobile: scrolls. desktop: sits still. */
+/* mobile: scrolls. desktop: sits still.
+   plain <img> children. no wrapper span, no absolute positioning,
+   no JS touching widths. each logo is sized explicitly. */
 .carriers{margin-top:var(--sp-8)}
 .carriers-viewport{
   overflow:hidden;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
           mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
 }
-.carriers-row{display:flex;align-items:center;width:max-content;gap:var(--sp-7);animation:marquee 20s linear infinite}
+.carriers-row{
+  display:flex;align-items:center;width:max-content;
+  gap:44px;padding:4px 22px;
+  animation:marquee 20s linear infinite;
+}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){ .carriers-row{animation:none} }
+.carriers-row img{
+  flex:0 0 auto;display:block;width:auto;opacity:.45;
+}
+.carriers-row img[data-mark=ia]{height:28px}
+.carriers-row img[data-mark=assumption]{height:44px}
+.carriers-row img[data-mark=beneva]{height:20px}
+.carriers-row .mark-text{
+  flex:0 0 auto;white-space:nowrap;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:19px;
+  color:var(--ink-3);opacity:.75;
+}
 @media (min-width:900px){
   .carriers-viewport{-webkit-mask-image:none;mask-image:none}
-  .carriers-row{width:auto;justify-content:center;flex-wrap:wrap;gap:var(--sp-8);animation:none}
+  .carriers-row{width:auto;justify-content:center;flex-wrap:wrap;gap:72px;animation:none}
   .carriers-row .dupe{display:none}
+  .carriers-row img[data-mark=ia]{height:34px}
+  .carriers-row img[data-mark=assumption]{height:54px}
+  .carriers-row img[data-mark=beneva]{height:24px}
 }
-.mark{
-  display:inline-flex;align-items:center;justify-content:center;
-  flex:0 0 auto;height:34px;padding:0 2px;
-  font-family:Archivo,sans-serif;font-weight:600;font-size:18px;letter-spacing:-.01em;
-  color:var(--ink-3);opacity:.75;white-space:nowrap;
-}
-@media (min-width:600px){ .mark{height:40px;font-size:21px} }
-.mark img{display:block;height:100%;width:auto;opacity:.45}
+.footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
+.footer p{margin:0;font-size:13px;line-height:1.6}
+.footer .wrap-wide{max-width:560px}
 
 .footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
 .foot-links{margin:var(--sp-4) auto 0;display:flex;gap:var(--sp-5);justify-content:center}
@@ -760,21 +775,33 @@ function buildResults(a){
   }
 }
 
-/* carrier strip: duplicated set so the mobile marquee loops seamlessly */
+/* carrier strip: plain images, duplicated once so the mobile marquee
+   loops seamlessly. if a file is missing the image swaps itself for a
+   styled wordmark. nothing here can collapse to zero width. */
 var CARRIERS=[
-  {name:'Industrial Alliance', file:'assets/logos/ia.png'},
-  {name:'Assumption Life',     file:'assets/logos/assumption.png'},
-  {name:'Beneva',              file:'assets/logos/beneva.png'}
+  {key:'ia',         name:'Industrial Alliance', file:'assets/logos/ia.png'},
+  {key:'assumption', name:'Assumption Life',     file:'assets/logos/assumption.png'},
+  {key:'beneva',     name:'Beneva',              file:'assets/logos/beneva.png'}
 ];
 function buildCarriers(el){
   if(!el) return;
-  el.innerHTML=[0,1].map(function(pass){
-    return CARRIERS.map(function(c){
-      return '<span class="mark'+(pass?' dupe':'')+'"'+(pass?' aria-hidden="true"':'')+'>'+c.name
-        +'<img src="'+c.file+'" alt="'+(pass?'':c.name)+'"'
-        +' onload="this.parentNode.firstChild.textContent=\'\'" onerror="this.remove()"></span>';
-    }).join('');
-  }).join('');
+  el.innerHTML='';
+  [0,1].forEach(function(pass){
+    CARRIERS.forEach(function(c){
+      var img=document.createElement('img');
+      img.src=c.file;
+      img.alt=pass?'':c.name;
+      img.setAttribute('data-mark',c.key);
+      if(pass){ img.className='dupe'; img.setAttribute('aria-hidden','true'); }
+      img.onerror=function(){
+        var s=document.createElement('span');
+        s.className='mark-text'+(pass?' dupe':'');
+        s.textContent=c.name;
+        if(img.parentNode) img.parentNode.replaceChild(s,img);
+      };
+      el.appendChild(img);
+    });
+  });
 }
 buildCarriers(document.getElementById('carriersRow1'));
 buildCarriers(document.getElementById('carriersRow2'));
