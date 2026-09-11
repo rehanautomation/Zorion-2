@@ -354,15 +354,19 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   .carriers-row .dupe{display:none}
 }
 .mark{
-  position:relative;display:inline-flex;align-items:center;justify-content:center;
-  height:34px;padding:0 2px;
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;height:34px;padding:0 2px;
   font-family:Archivo,sans-serif;font-weight:600;font-size:18px;letter-spacing:-.01em;
   color:var(--ink-3);opacity:.75;white-space:nowrap;
 }
 @media (min-width:600px){ .mark{height:40px;font-size:21px} }
-.mark img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:100%;width:auto;opacity:.45}
+.mark img{display:block;height:100%;width:auto;opacity:.45}
 
 .footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
+.foot-links{margin:var(--sp-4) auto 0;display:flex;gap:var(--sp-5);justify-content:center}
+.foot-links a{color:#B8C9D8;text-decoration:none;font-size:13.5px;border-bottom:1px solid rgba(184,201,216,.35);padding-bottom:1px}
+.foot-links a:hover{color:#fff;border-bottom-color:#fff}
+.foot-copy{margin:var(--sp-4) auto 0;font-size:12.5px;color:#6E8399}
 .footer p{margin:0 auto;font-size:13.5px;line-height:1.6;max-width:560px}
 </style>
 </head>
@@ -398,7 +402,6 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   <button class="btn mt-5" id="q1next" disabled>Continue</button>
 
   <div class="carriers">
-    <p class="carriers-label">Our advisors place coverage with</p>
     <div class="carriers-viewport"><div class="carriers-row" id="carriersRow1"></div></div>
   </div>
   <p class="t-legal mt-6">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
@@ -543,6 +546,8 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 <footer class="footer">
   <div class="wrap-wide">
     <p>Zorion Life works with licensed life insurance advisors in Ontario. Figures shown are estimates based on the answers you gave, not an offer of insurance or a quote. Coverage is subject to application and approval.</p>
+    <p class="foot-links"><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a></p>
+    <p class="foot-copy">&copy; 2026 Zorion Life. All rights reserved.</p>
   </div>
 </footer>
 
