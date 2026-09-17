@@ -69,6 +69,19 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 /* ---------- type ---------- */
 .t-q{font-family:Archivo,sans-serif;font-weight:700;font-size:26px;line-height:1.2;letter-spacing:-.02em;color:var(--ink);margin:0}
 @media (min-width:900px){ .t-q{font-size:34px} }
+
+/* Q1 hero heading — one clear level above the question */
+.t-hero{
+  font-family:Archivo,sans-serif;font-weight:600;
+  font-size:26px;line-height:1.22;letter-spacing:-.022em;color:var(--ink);
+  margin:var(--sp-5) 0 var(--sp-4);
+}
+.t-hero em{font-style:normal;font-weight:700;color:var(--blue)}
+.t-q.sub{font-size:20px;font-weight:600;color:var(--ink-2);letter-spacing:-.01em}
+@media (min-width:900px){
+  .t-hero{font-size:38px;margin-top:var(--sp-6)}
+  .t-q.sub{font-size:24px}
+}
 .t-helper{font-size:15px;color:var(--ink-3);margin:var(--sp-2) 0 0}
 .t-legal{font-size:13px;line-height:1.5;color:var(--ink-3)}
 .mt-4{margin-top:var(--sp-4)} .mt-5{margin-top:var(--sp-5)} .mt-6{margin-top:var(--sp-6)}
@@ -242,6 +255,12 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .advisor-name{font-family:Archivo,sans-serif;font-weight:600;font-size:17px;color:var(--paper)}
 .advisor-role{font-size:14.5px;color:#93A8BC}
 
+.variant-note{
+  margin:var(--sp-4) 0 0;padding:var(--sp-5);
+  background:var(--blue-wash);border-radius:var(--r);
+  font-size:17px;line-height:1.5;color:var(--ink-2);
+}
+.variant-note[hidden]{display:none}
 .footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
 .footer p{margin:0;font-size:13px;line-height:1.6}
 .footer .wrap-wide{max-width:560px}
@@ -357,9 +376,9 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .carriers-row img{
   flex:0 0 auto;display:block;width:auto;opacity:.45;
 }
-.carriers-row img[data-mark=ia]{height:28px}
-.carriers-row img[data-mark=assumption]{height:44px}
-.carriers-row img[data-mark=beneva]{height:20px}
+.carriers-row img[data-mark=ia]{width:70px;height:28px}
+.carriers-row img[data-mark=assumption]{width:58px;height:44px}
+.carriers-row img[data-mark=beneva]{width:84px;height:20px}
 .carriers-row .mark-text{
   flex:0 0 auto;white-space:nowrap;
   font-family:Archivo,sans-serif;font-weight:600;font-size:19px;
@@ -369,9 +388,9 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   .carriers-viewport{-webkit-mask-image:none;mask-image:none}
   .carriers-row{width:auto;justify-content:center;flex-wrap:wrap;gap:72px;animation:none}
   .carriers-row .dupe{display:none}
-  .carriers-row img[data-mark=ia]{height:34px}
-  .carriers-row img[data-mark=assumption]{height:54px}
-  .carriers-row img[data-mark=beneva]{height:24px}
+  .carriers-row img[data-mark=ia]{width:85px;height:34px}
+  .carriers-row img[data-mark=assumption]{width:71px;height:54px}
+  .carriers-row img[data-mark=beneva]{width:100px;height:24px}
 }
 .footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
 .footer p{margin:0;font-size:13px;line-height:1.6}
@@ -403,7 +422,8 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 <div class="wrap" id="quizWrap">
 
 <section class="screen is-active" id="s1" data-step="1">
-  <h1 class="t-q">Which of these have you signed for personally?</h1>
+  <h1 class="t-hero" id="hero">In 60 seconds, find out what your family would <em>actually be left with</em>.</h1>
+  <h2 class="t-q sub">Which of these have you signed for personally?</h2>
   <p class="t-helper">Select all that apply.</p>
   <div class="options two" id="q1opts">
     <label class="option"><input type="checkbox" name="q1" value="Equipment or business loan"><span class="box"></span><span>Equipment or business loan</span></label>
@@ -526,6 +546,7 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 
   <h2 class="h-sec" id="revealHead">What your coverage actually pays her</h2>
   <div class="reveal" id="reveal"></div>
+  <p class="variant-note" id="variantNote" hidden></p>
 
   <h2 class="h-sec">Roughly what closing it costs</h2>
   <p class="price-fig" id="priceFig">$30 – $50 a month</p>
@@ -628,6 +649,39 @@ selList.addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.key===' '){ e.preventDefault(); document.activeElement.click(); selBtn.focus(); }
   if(e.key==='Escape'){ openSel(false); selBtn.focus(); }
 });
+
+
+/* ---------------- ad-variant copy ----------------
+   Default heading is already in the HTML, so the page reads
+   correctly if this never runs. */
+var PARAMS=new URLSearchParams(location.search);
+var HEADS={
+  freeze :['In 60 seconds, find out what your family could actually get ','in the first month','.'],
+  nosale :['In 60 seconds, find out what your business would ','actually be worth to them','.'],
+  confront:['In 60 seconds, find out what your wife would ','actually be left with','.']
+};
+(function(){
+  var h=HEADS[PARAMS.get('a')];
+  if(!h) return;
+  var el=document.getElementById('hero');
+  if(!el) return;
+  el.textContent=h[0];
+  var em=document.createElement('em');
+  em.textContent=h[1];
+  el.appendChild(em);
+  el.appendChild(document.createTextNode(h[2]));
+})();
+
+var VARIANT_NOTES={
+  freeze:'Accounts in one person\u2019s name can be frozen until an estate trustee is appointed, which in Ontario often takes months. A policy with a named beneficiary is paid outside that process, usually in weeks.'
+};
+function applyVariantNote(){
+  var el=document.getElementById('variantNote');
+  if(!el) return;
+  var txt=VARIANT_NOTES[PARAMS.get('utm_content')];
+  if(txt){ el.textContent=txt; el.hidden=false; }
+  else { el.hidden=true; }
+}
 
 /* ---------------- navigation ---------------- */
 var screens=[].slice.call(document.querySelectorAll('.screen'));
@@ -805,6 +859,7 @@ function buildCarriers(el){
 }
 buildCarriers(document.getElementById('carriersRow1'));
 buildCarriers(document.getElementById('carriersRow2'));
+applyVariantNote();
 
 /* ---------------- processing, then results ---------------- */
 function runLoading(a,firstName){
