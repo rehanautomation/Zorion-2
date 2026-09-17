@@ -1,0 +1,137 @@
+/* ---------------------------------------------------------------
+   Shared layout for the legal documents (privacy policy, terms).
+   Same tokens and typography as the landing page; plain document
+   layout — one readable column, clear hierarchy, lots of air.
+   --------------------------------------------------------------- */
+:root{
+  --ink:#0E1E30;
+  --ink-2:#3E5062;
+  --ink-3:#7A8DA0;
+  --paper:#FFFFFF;
+  --field:#F1F5F9;
+  --rule:#DCE5EE;
+  --blue:#3A86FF;
+  --blue-deep:#1B5FCC;
+  --blue-wash:#ECF3FF;
+
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:24px; --sp-6:32px; --sp-7:44px; --sp-8:64px;
+
+  --r:12px;
+  --header-h:56px;
+  --pad:20px;
+  --doc-max:720px;
+}
+@media (min-width:900px){ :root{ --header-h:66px; --pad:32px; } }
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--ink)}
+body{
+  margin:0;padding-top:var(--header-h);
+  background:var(--paper);color:var(--ink-2);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+
+.wrap{max-width:var(--doc-max);margin:0 auto;padding:0 var(--pad)}
+
+/* ---------- header ---------- */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:20;height:var(--header-h);
+  background:var(--ink);display:flex;align-items:center;justify-content:center;
+}
+.logo{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:17px;letter-spacing:.09em;
+  color:var(--paper);line-height:1;text-decoration:none;
+}
+.logo b{font-weight:500;opacity:.55}
+
+/* ---------- document ---------- */
+.doc{padding:var(--sp-7) 0 var(--sp-8)}
+@media (min-width:900px){ .doc{padding:var(--sp-8) 0} }
+
+.doc h1{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:32px;line-height:1.15;letter-spacing:-.025em;color:var(--ink);
+  margin:0;
+}
+@media (min-width:900px){ .doc h1{font-size:44px} }
+
+.doc-date{
+  font-size:14.5px;font-weight:600;letter-spacing:.02em;
+  color:var(--ink-3);margin:var(--sp-4) 0 0;
+}
+
+.doc-intro{margin:var(--sp-6) 0 0}
+.doc-intro p{margin:0 0 var(--sp-4)}
+.doc-intro p:last-child{margin-bottom:0}
+
+/* each numbered section sits under a hairline, which is what the
+   markdown rules between sections were doing */
+.doc section{
+  margin-top:var(--sp-7);padding-top:var(--sp-7);
+  border-top:1px solid var(--rule);
+}
+@media (min-width:900px){
+  .doc section{margin-top:var(--sp-8);padding-top:var(--sp-8)}
+}
+.doc h2{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:22px;line-height:1.25;letter-spacing:-.018em;color:var(--ink);
+  margin:0 0 var(--sp-4);
+}
+@media (min-width:900px){ .doc h2{font-size:26px} }
+.doc h2 .num{color:var(--blue);margin-right:.45em}
+
+.doc h3{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:17px;
+  color:var(--ink);margin:var(--sp-5) 0 var(--sp-3);
+}
+
+.doc p{margin:0 0 var(--sp-4)}
+.doc p:last-child{margin-bottom:0}
+.doc strong{color:var(--ink);font-weight:600}
+.doc em{font-style:italic}
+
+.doc ul{margin:0 0 var(--sp-4);padding:0;list-style:none}
+.doc ul:last-child{margin-bottom:0}
+.doc li{position:relative;padding-left:var(--sp-5);margin-bottom:var(--sp-3)}
+.doc li:last-child{margin-bottom:0}
+.doc li::before{
+  content:'';position:absolute;left:2px;top:.62em;
+  width:6px;height:6px;border-radius:50%;background:var(--blue);opacity:.55;
+}
+
+.doc a{color:var(--blue-deep);text-decoration:none;border-bottom:1px solid rgba(27,95,204,.35)}
+.doc a:hover{border-bottom-color:var(--blue-deep)}
+
+/* the one callout line each document leads with */
+.pull{
+  background:var(--blue-wash);border-radius:var(--r);
+  padding:var(--sp-5);margin:var(--sp-5) 0 0;
+  font-family:Archivo,sans-serif;font-weight:600;
+  font-size:18px;line-height:1.45;color:var(--ink);
+}
+@media (min-width:900px){ .pull{font-size:19px;padding:var(--sp-6)} }
+
+.addr{
+  background:var(--field);border-radius:var(--r);
+  padding:var(--sp-5);margin:0 0 var(--sp-4);
+  font-size:16.5px;line-height:1.6;
+}
+.addr:last-child{margin-bottom:0}
+.addr strong{display:block;margin-bottom:var(--sp-1)}
+
+/* ---------- footer ---------- */
+.footer{
+  margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;
+  padding:var(--sp-6) 0 var(--sp-7);text-align:center;
+}
+.foot-links{margin:0 auto;display:flex;gap:var(--sp-5);justify-content:center;flex-wrap:wrap}
+.foot-links a{
+  color:#B8C9D8;text-decoration:none;font-size:13.5px;
+  border-bottom:1px solid rgba(184,201,216,.35);padding-bottom:1px;
+}
+.foot-links a:hover{color:#fff;border-bottom-color:#fff}
+.foot-entity{margin:var(--sp-5) auto 0;font-size:12.5px;line-height:1.55;color:#7C90A4;max-width:560px}
+.foot-copy{margin:var(--sp-3) auto 0;font-size:12.5px;color:#6E8399}

@@ -7,6 +7,7 @@
 <meta name="description" content="Five questions for Ontario trades owners. See what your coverage actually pays, and what's missing.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#0E1E30">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
@@ -85,6 +86,9 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 }
 .t-helper{font-size:15px;color:var(--ink-3);margin:var(--sp-2) 0 0}
 .t-legal{font-size:13px;line-height:1.5;color:var(--ink-3)}
+.t-legal a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid rgba(122,141,160,.45)}
+.t-legal a:hover{color:var(--blue);border-bottom-color:var(--blue)}
+.consent{margin:var(--sp-5) 0 var(--sp-3)}
 .mt-4{margin-top:var(--sp-4)} .mt-5{margin-top:var(--sp-5)} .mt-6{margin-top:var(--sp-6)}
 
 /* ---------- screens ---------- */
@@ -418,7 +422,8 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .foot-links{margin:var(--sp-6) auto 0;display:flex;gap:var(--sp-5);justify-content:center}
 .foot-links a{color:#B8C9D8;text-decoration:none;font-size:13.5px;border-bottom:1px solid rgba(184,201,216,.35);padding-bottom:1px}
 .foot-links a:hover{color:#fff;border-bottom-color:#fff}
-.foot-copy{margin:var(--sp-4) auto 0;font-size:12.5px;color:#6E8399}
+.foot-entity{margin:var(--sp-5) auto 0;font-size:12.5px;line-height:1.55;color:#7C90A4;max-width:560px}
+.foot-copy{margin:var(--sp-3) auto 0;font-size:12.5px;color:#6E8399}
 .footer p{margin:0 auto;font-size:13.5px;line-height:1.6;max-width:560px}
 </style>
 <script>
@@ -552,7 +557,8 @@ window.ZL_PIXEL_ID = '1091428479971058';
         <p class="field-err" id="phoneErr">Enter a 10-digit Canadian or US number, like 416 555 0123</p>
       </div>
     </div>
-    <button class="btn mt-5" type="submit" id="submitBtn">See my numbers</button>
+    <p class="t-legal consent">By continuing you agree to be contacted by a licensed advisor by phone, text or email. See our <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+    <button class="btn" type="submit" id="submitBtn">See my numbers</button>
   </form>
   <p class="t-legal mt-5">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
 </section>
@@ -622,7 +628,8 @@ window.ZL_PIXEL_ID = '1091428479971058';
 <footer class="footer">
   <div class="wrap-wide">
     <p class="foot-meta">This site is not a part of Facebook or Meta Platforms, Inc., and is not endorsed by Meta in any way. FACEBOOK and INSTAGRAM are trademarks of Meta Platforms, Inc.</p>
-    <p class="foot-links"><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a></p>
+    <p class="foot-links"><a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="/terms-of-service" target="_blank" rel="noopener">Terms of Service</a></p>
+    <p class="foot-entity">Zorion Life is a trade name of 1000951316 Ontario Corp.</p>
     <p class="foot-copy">&copy; 2026 Zorion Life. All rights reserved.</p>
   </div>
 </footer>
