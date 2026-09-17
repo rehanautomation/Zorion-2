@@ -37,14 +37,15 @@
 @media (min-width:900px){ :root{ --header-h:66px; --pad:32px; --tap:60px; } }
 
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;background:var(--ink)}
 body{
-  margin:0;padding-top:var(--header-h);
+  margin:0;padding-top:var(--header-h);background-color:var(--ink);
   background:var(--field);color:var(--ink-2);
   font-family:Inter,system-ui,sans-serif;
   font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
 }
 body.is-results{background:var(--paper)}
+main{background:inherit}
 .wrap{max-width:var(--quiz-max);margin:0 auto;padding:0 var(--pad)}
 .wrap-wide{max-width:960px;margin:0 auto;padding:0 var(--pad)}
 
@@ -142,6 +143,9 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   color:var(--ink);background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);
 }
 .field input:focus{outline:0;border-color:var(--blue)}
+.field input.is-bad{border-color:#D9534F;background:#FFF7F6}
+.field-err{margin:var(--sp-2) 0 0;font-size:14px;color:#C9302C;display:none}
+.field-err.show{display:block}
 
 /* custom select — the native one looked like 2010 */
 .select{position:relative}
@@ -261,7 +265,7 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   font-size:17px;line-height:1.5;color:var(--ink-2);
 }
 .variant-note[hidden]{display:none}
-.footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
+.footer{margin:0;background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0 var(--sp-7);text-align:center}
 .footer p{margin:0;font-size:13px;line-height:1.6}
 .footer .wrap-wide{max-width:560px}
 
@@ -341,7 +345,12 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 @media (min-width:900px){ .call h2{font-size:30px} }
 .call ul{list-style:none;margin:var(--sp-5) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--sp-4)}
 .call li{display:flex;gap:var(--sp-3);align-items:flex-start;font-size:18px;line-height:1.4;color:#DCE7F0}
-.call li::before{content:'';flex:0 0 auto;width:8px;height:8px;margin-top:9px;border-radius:50%;background:var(--cyan)}
+.call li::before{
+  content:'';flex:0 0 auto;width:22px;height:22px;margin-top:1px;border-radius:50%;
+  background:rgba(58,214,245,.16);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1 4.6l3.2 3L11 1' fill='none' stroke='%233AD6F5' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;background-size:12px 9px;
+}
 
 .who{margin-top:var(--sp-6);padding-top:var(--sp-5);border-top:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:var(--sp-4)}
 @media (min-width:900px){ .who{margin:0;padding:0;border:0;flex-direction:column;text-align:center;gap:var(--sp-4)} }
@@ -353,14 +362,22 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 }
 @media (min-width:900px){ .avatar{width:120px;height:120px;font-size:36px} }
 .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.who .n{font-family:Archivo,sans-serif;font-weight:600;font-size:19px;color:var(--paper)}
-.who .r{font-size:15px;line-height:1.45;color:#93A8BC;margin-top:3px}
+.who .n{font-family:Archivo,sans-serif;font-weight:700;font-size:23px;letter-spacing:-.015em;color:var(--paper);line-height:1.15}
+@media (min-width:900px){ .who .n{font-size:26px} }
+.who .r{font-size:16px;line-height:1.4;color:#C3D3E1;margin-top:6px;font-weight:500}
+.who .tag{
+  display:inline-flex;align-items:center;gap:7px;margin-top:10px;
+  padding:5px 12px 5px 10px;border-radius:99px;
+  background:rgba(58,214,245,.12);border:1px solid rgba(58,214,245,.3);
+  font-size:13.5px;font-weight:600;letter-spacing:.01em;color:var(--cyan);
+}
+.who .tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--cyan)}
 
 /* ---------- carriers: text wordmark always present, image sits on top ---------- */
 /* mobile: scrolls. desktop: sits still.
    plain <img> children. no wrapper span, no absolute positioning,
    no JS touching widths. each logo is sized explicitly. */
-.carriers{margin-top:var(--sp-8)}
+.carriers{margin-top:var(--sp-7);padding-bottom:var(--sp-6)}
 .carriers-viewport{
   overflow:hidden;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
@@ -392,12 +409,13 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   .carriers-row img[data-mark=assumption]{width:71px;height:54px}
   .carriers-row img[data-mark=beneva]{width:100px;height:24px}
 }
-.footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
+.footer{margin:0;background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0 var(--sp-7);text-align:center}
 .footer p{margin:0;font-size:13px;line-height:1.6}
 .footer .wrap-wide{max-width:560px}
 
-.footer{margin-top:var(--sp-8);background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0;text-align:center}
-.foot-links{margin:var(--sp-4) auto 0;display:flex;gap:var(--sp-5);justify-content:center}
+.footer{margin:0;background:var(--ink);color:#8FA3B7;padding:var(--sp-6) 0 var(--sp-7);text-align:center}
+.foot-meta{margin:0 auto;font-size:12.5px;line-height:1.55;color:#7C90A4;max-width:560px}
+.foot-links{margin:var(--sp-6) auto 0;display:flex;gap:var(--sp-5);justify-content:center}
 .foot-links a{color:#B8C9D8;text-decoration:none;font-size:13.5px;border-bottom:1px solid rgba(184,201,216,.35);padding-bottom:1px}
 .foot-links a:hover{color:#fff;border-bottom-color:#fff}
 .foot-copy{margin:var(--sp-4) auto 0;font-size:12.5px;color:#6E8399}
@@ -506,11 +524,13 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
       </div>
       <div class="field">
         <label for="email">Email</label>
-        <input id="email" type="email" autocomplete="email" inputmode="email" required>
+        <input id="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" autocapitalize="off" required>
+        <p class="field-err" id="emailErr">Enter a valid email address, like name@company.ca</p>
       </div>
       <div class="field">
         <label for="phone">Phone</label>
-        <input id="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+        <input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required>
+        <p class="field-err" id="phoneErr">Enter a 10-digit Canadian or US number, like 416 555 0123</p>
       </div>
     </div>
     <button class="btn mt-5" type="submit" id="submitBtn">See my numbers</button>
@@ -566,7 +586,8 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
       <div class="avatar">AS<img src="assets/advisor.jpg" alt="" onerror="this.remove()"></div>
       <div>
         <div class="n">Alicia Samuel</div>
-        <div class="r">Licensed life insurance advisor<br>Ontario</div>
+        <div class="r">Licensed life insurance advisor</div>
+        <span class="tag">Ontario</span>
       </div>
     </div>
   </div>
@@ -581,7 +602,7 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 
 <footer class="footer">
   <div class="wrap-wide">
-    <p>Zorion Life works with licensed life insurance advisors in Ontario. Figures shown are estimates based on the answers you gave, not an offer of insurance or a quote. Coverage is subject to application and approval.</p>
+    <p class="foot-meta">This site is not a part of Facebook or Meta Platforms, Inc., and is not endorsed by Meta in any way. FACEBOOK and INSTAGRAM are trademarks of Meta Platforms, Inc.</p>
     <p class="foot-links"><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a></p>
     <p class="foot-copy">&copy; 2026 Zorion Life. All rights reserved.</p>
   </div>
@@ -596,7 +617,7 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
    false = no Discord notification, nothing posted to /api/lead.
    Flip to true when you're done testing.
    ============================================================= */
-var SEND_LEADS = false;
+var SEND_LEADS = true;
 
 /* ---------------- analytics ---------------- */
 var SID=(function(){
@@ -862,7 +883,7 @@ buildCarriers(document.getElementById('carriersRow2'));
 applyVariantNote();
 
 /* ---------------- processing, then results ---------------- */
-function runLoading(a,firstName){
+function runLoading(a){
   go(LOADING);
   var items=[].slice.call(document.querySelectorAll('#loadSteps li'));
   var delays=[350,1200,2050];
@@ -875,30 +896,104 @@ function runLoading(a,firstName){
 
 /* ---------------- submit ---------------- */
 var form=document.getElementById('contact');
+
+/* Email: one @, a dotted domain, a 2+ letter TLD, no spaces, no
+   consecutive or edge dots. Deliberately stricter than type="email",
+   which accepts things like a@b. */
+var EMAIL_RE=/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
+function validEmail(v){
+  v=(v||'').trim();
+  if(!v || v.length>254) return false;
+  if(v.indexOf('..')!==-1) return false;
+  var at=v.split('@');
+  if(at.length!==2) return false;
+  if(at[0].charAt(0)==='.'||at[0].slice(-1)==='.') return false;
+  return EMAIL_RE.test(v);
+}
+
+/* Phone: North American Numbering Plan. 10 digits, or 11 starting with 1.
+   Area code and exchange code cannot start with 0 or 1, and the exchange
+   code cannot be N11 (those are service codes, never real numbers). */
+function normPhone(v){
+  var d=(v||'').replace(/\D/g,'');
+  if(d.length===11 && d.charAt(0)==='1') d=d.slice(1);
+  return d;
+}
+function validPhone(v){
+  var d=normPhone(v);
+  if(d.length!==10) return false;
+  var area=d.slice(0,3), exch=d.slice(3,6);
+  if('01'.indexOf(area.charAt(0))!==-1) return false;
+  if('01'.indexOf(exch.charAt(0))!==-1) return false;
+  if(exch.charAt(1)==='1' && exch.charAt(2)==='1') return false;
+  return true;
+}
+function fmtPhone(v){
+  var d=normPhone(v);
+  return d.length===10 ? '('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6) : v;
+}
+
+function setErr(input,errEl,bad){
+  input.classList.toggle('is-bad',bad);
+  errEl.classList.toggle('show',bad);
+}
+var emailEl=document.getElementById('email'), emailErr=document.getElementById('emailErr');
+var phoneEl=document.getElementById('phone'), phoneErr=document.getElementById('phoneErr');
+
+/* validate when they leave the field, and clear the error as they fix it */
+emailEl.addEventListener('blur',function(){ setErr(emailEl,emailErr, emailEl.value.trim()!=='' && !validEmail(emailEl.value)); });
+emailEl.addEventListener('input',function(){ if(emailEl.classList.contains('is-bad') && validEmail(emailEl.value)) setErr(emailEl,emailErr,false); });
+phoneEl.addEventListener('blur',function(){
+  var bad=phoneEl.value.trim()!=='' && !validPhone(phoneEl.value);
+  setErr(phoneEl,phoneErr,bad);
+  if(!bad && phoneEl.value.trim()!=='') phoneEl.value=fmtPhone(phoneEl.value);
+});
+phoneEl.addEventListener('input',function(){ if(phoneEl.classList.contains('is-bad') && validPhone(phoneEl.value)) setErr(phoneEl,phoneErr,false); });
+
 form.addEventListener('submit',function(e){
   e.preventDefault();
-  var inputs=[].slice.call(form.querySelectorAll('input'));
-  var bad=inputs.filter(function(f){return !f.checkValidity();})[0];
-  if(bad){ bad.focus(); try{form.reportValidity();}catch(_){} return; }
-  if(!tradeValue){ selBtn.focus(); selBtn.style.borderColor='#D9534F'; return; }
+
+  var nameEl=document.getElementById('name');
+  var ok=true;
+
+  if(!nameEl.value.trim()){ nameEl.classList.add('is-bad'); ok=false; }
+  else nameEl.classList.remove('is-bad');
+
+  var emailBad=!validEmail(emailEl.value);
+  setErr(emailEl,emailErr,emailBad);
+  if(emailBad) ok=false;
+
+  var phoneBad=!validPhone(phoneEl.value);
+  setErr(phoneEl,phoneErr,phoneBad);
+  if(phoneBad) ok=false;
+
+  if(!tradeValue){ selBtn.style.borderColor='#D9534F'; ok=false; }
+
+  if(!ok){
+    var firstBad=form.querySelector('.is-bad') || (!tradeValue?selBtn:null);
+    if(firstBad && firstBad.focus) firstBad.focus();
+    return;
+  }
 
   var btn=document.getElementById('submitBtn');
   if(btn){ btn.disabled=true; btn.textContent='Building your numbers…'; }
 
   var a=answers();
-  var name=document.getElementById('name').value.trim();
-  var firstName=name.split(' ')[0]||'';
+  var name=nameEl.value.trim();
 
-  if(SEND_LEADS){
+  /* "test" is the only name that skips the webhook. */
+  var isTest = name.toLowerCase()==='test';
+
+  if(SEND_LEADS && !isTest){
     try{
       fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:name,email:document.getElementById('email').value,
-          phone:document.getElementById('phone').value,answers:a,sid:SID}),keepalive:true}).catch(function(){});
+        body:JSON.stringify({name:name,email:emailEl.value.trim(),
+          phone:fmtPhone(phoneEl.value),answers:a,sid:SID}),keepalive:true}).catch(function(){});
     }catch(_){}
   }
 
-  try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a,n:firstName})); }catch(_){}
-  runLoading(a,firstName);
+  try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a})); }catch(_){}
+  runLoading(a);
 });
 
 /* ---------------- /result preview ----------------
