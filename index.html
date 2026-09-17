@@ -1018,12 +1018,11 @@ form.addEventListener('submit',function(e){
   var a=answers();
   var name=nameEl.value.trim();
 
-  /* "test" is the only name that skips the webhook. */
-  var isTest = name.toLowerCase()==='test';
-
-  if(SEND_LEADS && !isTest){
+  if(SEND_LEADS){
     /* One id, used by both the browser event and the server event, so
-       Meta counts this as a single Lead instead of two. */
+       Meta counts this as a single Lead instead of two.
+       A "test" lead still fires Meta — only Discord is skipped, and the
+       server decides that from the name. */
     var eventId=newEventId();
 
     try{
