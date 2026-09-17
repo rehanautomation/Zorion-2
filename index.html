@@ -421,6 +421,25 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .foot-copy{margin:var(--sp-4) auto 0;font-size:12.5px;color:#6E8399}
 .footer p{margin:0 auto;font-size:13.5px;line-height:1.6;max-width:560px}
 </style>
+<script>
+/* ===============================================================
+   META PIXEL
+   Paste your Pixel ID between the quotes below. Nothing loads
+   until you do, so the page stays fast while this is blank.
+   =============================================================== */
+window.ZL_PIXEL_ID = '1091428479971058';
+
+(function(){
+  if(!window.ZL_PIXEL_ID) return;
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', window.ZL_PIXEL_ID);
+  fbq('track', 'PageView');
+})();
+</script>
 </head>
 <body>
 
@@ -704,6 +723,24 @@ function applyVariantNote(){
   else { el.hidden=true; }
 }
 
+
+/* ---------------- Meta tracking helpers ---------------- */
+function getCookie(n){
+  var m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');
+  return m?m.pop():'';
+}
+/* _fbc is built from the fbclid Meta puts on the ad click URL.
+   Only ever built from a real fbclid — never invented. */
+function getFbc(){
+  var c=getCookie('_fbc');
+  if(c) return c;
+  var id=PARAMS.get('fbclid');
+  return id ? 'fb.1.'+Date.now()+'.'+id : '';
+}
+function newEventId(){
+  return 'lead.'+Date.now()+'.'+Math.random().toString(36).slice(2,10);
+}
+
 /* ---------------- navigation ---------------- */
 var screens=[].slice.call(document.querySelectorAll('.screen'));
 var LOADING=6, RESULTS=7;
@@ -985,10 +1022,29 @@ form.addEventListener('submit',function(e){
   var isTest = name.toLowerCase()==='test';
 
   if(SEND_LEADS && !isTest){
+    /* One id, used by both the browser event and the server event, so
+       Meta counts this as a single Lead instead of two. */
+    var eventId=newEventId();
+
+    try{
+      if(window.fbq){
+        fbq('track','Lead',{content_name:'Zorion quiz',content_category:a.trade||''},{eventID:eventId});
+      }
+    }catch(_){}
+
     try{
       fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:name,email:emailEl.value.trim(),
-          phone:fmtPhone(phoneEl.value),answers:a,sid:SID}),keepalive:true}).catch(function(){});
+        body:JSON.stringify({
+          name:name,
+          email:emailEl.value.trim(),
+          phone:fmtPhone(phoneEl.value),
+          answers:a,
+          sid:SID,
+          event_id:eventId,
+          fbp:getCookie('_fbp'),
+          fbc:getFbc(),
+          source_url:location.href
+        }),keepalive:true}).catch(function(){});
     }catch(_){}
   }
 
