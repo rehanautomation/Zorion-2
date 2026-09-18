@@ -24,6 +24,7 @@
   --blue-deep:#1B5FCC;
   --blue-wash:#ECF3FF;
   --gold:#F5B700;
+  --gold-ink:#B07E00;   /* the gold, darkened enough to sit on white */
 
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
   --sp-5:24px; --sp-6:32px; --sp-7:44px; --sp-8:64px;
@@ -148,8 +149,27 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 }
 .field input:focus{outline:0;border-color:var(--blue)}
 .field input.is-bad{border-color:#D9534F;background:#FFF7F6}
+.field-help{margin:var(--sp-2) 0 0;font-size:13.5px;line-height:1.45;color:var(--ink-3)}
 .field-err{margin:var(--sp-2) 0 0;font-size:14px;color:#C9302C;display:none}
 .field-err.show{display:block}
+
+/* delivery screen — the promise above the button, the detail below it */
+.no-spam{
+  margin:var(--sp-6) 0 var(--sp-4);text-align:center;
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:17px;letter-spacing:-.01em;color:var(--ink);
+}
+@media (min-width:900px){ .no-spam{font-size:18px} }
+.after-btn{margin:var(--sp-5) 0 0;text-align:center}
+.after-btn a{white-space:nowrap}
+.fineprint{
+  margin:var(--sp-5) 0 0;text-align:center;
+  font-size:11.5px;line-height:1.5;color:var(--ink-3);opacity:.8;
+}
+.carriers-note{
+  margin:0 0 var(--sp-4);text-align:center;
+  font-size:13px;letter-spacing:.02em;color:var(--ink-3);
+}
 
 /* custom select — the native one looked like 2010 */
 .select{position:relative}
@@ -221,8 +241,6 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .res-head h1{font-family:Archivo,sans-serif;font-weight:700;font-size:24px;letter-spacing:-.02em;color:var(--ink);margin:0}
 @media (min-width:900px){ .res-head h1{font-size:30px} }
 
-.rb{padding:var(--sp-6) 0;border-bottom:1px solid var(--rule)}
-.rb:last-of-type{border-bottom:0}
 .eyebrow{font-size:14px;font-weight:600;color:var(--ink-3);margin:0 0 var(--sp-3)}
 
 .exposure{display:grid;gap:var(--sp-5)}
@@ -274,6 +292,69 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .footer .wrap-wide{max-width:560px}
 
 /* ============ RESULTS ============ */
+/* Five blocks, in the order he needs them: the reveal, his number, the
+   range, the one line, the call. The reveal owns the first screenful —
+   nothing above it but the logo. */
+.rb{padding:var(--sp-7) 0;border-top:1px solid var(--rule)}
+@media (min-width:900px){ .rb{padding:var(--sp-8) 0} }
+.rb-first{padding-top:var(--sp-7);border-top:0}
+@media (min-width:900px){ .rb-first{padding-top:var(--sp-8)} }
+
+.reveal-head{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:clamp(29px,7.6vw,40px);line-height:1.14;letter-spacing:-.03em;
+  color:var(--ink);margin:0;max-width:16em;
+}
+@media (min-width:900px){ .reveal-head{font-size:52px} }
+
+.reveal-list{list-style:none;margin:var(--sp-7) 0 0;padding:0;max-width:34em}
+.reveal-list li{
+  font-size:18px;line-height:1.5;color:var(--ink-2);
+  padding:var(--sp-4) 0;border-bottom:1px solid var(--rule);
+}
+.reveal-list li:first-child{border-top:1px solid var(--rule)}
+.reveal-list li b{color:var(--ink);font-weight:600}
+@media (min-width:900px){ .reveal-list li{font-size:20px;padding:var(--sp-5) 0} }
+
+.reveal-foot{
+  margin:var(--sp-6) 0 0;max-width:30em;
+  font-size:17px;line-height:1.5;color:var(--ink-3);
+}
+.reveal-foot[hidden]{display:none}
+
+/* Short phones: the heading and the lines under it are the flinch, and
+   they have to land without a scroll. Tighten the block rather than let
+   it spill. */
+@media (max-height:720px){
+  .rb-first{padding-top:var(--sp-5)}
+  .reveal-head{font-size:26px}
+  .reveal-list{margin-top:var(--sp-5)}
+  .reveal-list li{font-size:16.5px;padding:var(--sp-3) 0}
+  .reveal-foot{margin-top:var(--sp-5);font-size:16px}
+}
+
+/* 2 — the number */
+.fig-num{
+  font-family:Archivo,sans-serif;font-weight:700;
+  font-size:clamp(30px,7.6vw,44px);line-height:1.1;letter-spacing:-.03em;
+  color:var(--ink);margin:0;
+}
+.fig-num .band{color:var(--gold-ink)}
+.fig-num .tail{display:block;font-size:.5em;font-weight:600;color:var(--ink-3);margin-top:var(--sp-2);letter-spacing:-.01em}
+.fig-items{margin:var(--sp-5) 0 0;font-size:16px;line-height:1.6;color:var(--ink-2)}
+.fig-items[hidden]{display:none}
+.fig-note{margin:var(--sp-4) 0 0;font-size:17px;line-height:1.5;color:var(--ink)}
+
+/* 4 — the one line he repeats */
+.rb-line{padding:var(--sp-7) 0}
+@media (min-width:900px){ .rb-line{padding:var(--sp-8) 0} }
+.big-line{
+  font-family:Archivo,sans-serif;font-weight:600;
+  font-size:clamp(23px,6vw,32px);line-height:1.28;letter-spacing:-.022em;
+  color:var(--ink);margin:0;max-width:17em;
+}
+@media (min-width:900px){ .big-line{font-size:38px} }
+
 .h-sec{
   font-family:Archivo,sans-serif;font-weight:700;
   font-size:24px;line-height:1.2;letter-spacing:-.02em;color:var(--ink);
@@ -347,8 +428,10 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 }
 .call h2{font-family:Archivo,sans-serif;font-weight:700;font-size:25px;line-height:1.22;color:var(--paper);margin:0}
 @media (min-width:900px){ .call h2{font-size:30px} }
-.call ul{list-style:none;margin:var(--sp-5) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--sp-4)}
-.call li{display:flex;gap:var(--sp-3);align-items:flex-start;font-size:18px;line-height:1.4;color:#DCE7F0}
+.call-sub{margin:var(--sp-3) 0 0;font-size:17px;line-height:1.5;color:#A8BACC}
+.call ul{list-style:none;margin:var(--sp-6) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--sp-5)}
+.call li b{display:block;color:var(--paper);font-weight:600;margin-bottom:3px}
+.call li{display:flex;gap:var(--sp-3);align-items:flex-start;font-size:16.5px;line-height:1.45;color:#B9CADA}
 .call li::before{
   content:'';flex:0 0 auto;width:22px;height:22px;margin-top:1px;border-radius:50%;
   background:rgba(58,214,245,.16);
@@ -364,8 +447,10 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   display:flex;align-items:center;justify-content:center;overflow:hidden;
   font-family:Archivo,sans-serif;font-weight:600;font-size:22px;color:#7E9AB6;letter-spacing:.02em;
 }
-@media (min-width:900px){ .avatar{width:120px;height:120px;font-size:36px} }
+.avatar{width:88px;height:88px;font-size:28px}
+@media (min-width:900px){ .avatar{width:88px;height:88px;font-size:28px} }
 .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.who-note{margin-top:var(--sp-4);font-size:13.5px;line-height:1.45;color:#8FA3B7}
 .who .n{font-family:Archivo,sans-serif;font-weight:700;font-size:23px;letter-spacing:-.015em;color:var(--paper);line-height:1.15}
 @media (min-width:900px){ .who .n{font-size:26px} }
 .who .r{font-size:16px;line-height:1.4;color:#C3D3E1;margin-top:6px;font-weight:500}
@@ -453,7 +538,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
 <div class="wrap">
   <div class="progress-wrap">
     <div class="progress-meta">
-      <span class="progress-label">Question <b id="stepNow">1</b> of 6</span>
+      <span class="progress-label" id="progressLabel">Question <b id="stepNow">1</b> of 5</span>
       <span class="progress-pct" id="pct">17%</span>
     </div>
     <div class="progress-rail"><i class="progress-fill" id="fill"></i></div>
@@ -530,9 +615,19 @@ window.ZL_PIXEL_ID = '1091428479971058';
   </div>
 </section>
 
-<section class="screen" id="s6" data-step="6">
-  <h1 class="t-q">Last step. Where should we send them?</h1>
-  <p class="t-helper">Your numbers are ready. A licensed advisor walks you through them.</p>
+<section class="screen" id="sBuild" data-step="5">
+  <div class="loading">
+    <h2 id="loadHead">Building your report</h2>
+    <ul class="load-steps" id="loadSteps">
+      <li><span class="dot"></span><span>Adding up what you've signed for</span></li>
+      <li><span class="dot"></span><span>Checking what your current coverage would pay</span></li>
+      <li><span class="dot"></span><span>Pricing the difference at your age</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="screen" id="s6" data-step="5">
+  <h1 class="t-q">Last step. Where should we text your results?</h1>
   <form id="contact" novalidate>
     <div class="form-grid">
       <div class="field full">
@@ -552,73 +647,84 @@ window.ZL_PIXEL_ID = '1091428479971058';
         <p class="field-err" id="emailErr">Enter a valid email address, like name@company.ca</p>
       </div>
       <div class="field">
-        <label for="phone">Phone</label>
+        <label for="phone">Mobile number</label>
         <input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required>
+        <p class="field-help">We'll text your report here.</p>
         <p class="field-err" id="phoneErr">Enter a 10-digit Canadian or US number, like 416 555 0123</p>
       </div>
     </div>
-    <p class="t-legal consent">By continuing you agree to be contacted by a licensed advisor by phone, text or email. See our <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
-    <button class="btn" type="submit" id="submitBtn">See my numbers</button>
+    <p class="no-spam">No spam calls or texts. Ever.</p>
+    <button class="btn" type="submit" id="submitBtn">Text me my report</button>
   </form>
-  <p class="t-legal mt-5">Zorion Life works with licensed life insurance advisors in Ontario. Your answers are used to prepare your numbers and are never sold.</p>
-</section>
 
-<section class="screen" id="s7" data-step="6">
-  <div class="loading">
-    <h2 id="loadHead">Building your numbers</h2>
-    <ul class="load-steps" id="loadSteps">
-      <li><span class="dot"></span><span>Reading what you've signed for</span></li>
-      <li><span class="dot"></span><span>Checking what your coverage pays</span></li>
-      <li><span class="dot"></span><span>Pricing the gap for your age</span></li>
-    </ul>
+  <p class="t-legal after-btn">Alicia Samuel, a licensed Ontario advisor, will follow up by phone to walk you through it. No cost, no obligation. See our <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+
+  <div class="carriers">
+    <p class="carriers-note">Our advisors work with</p>
+    <div class="carriers-viewport"><div class="carriers-row" id="carriersRow3"></div></div>
   </div>
+  <p class="fineprint">By continuing you agree to be contacted by a licensed advisor by phone, text or email.</p>
 </section>
 
 </div><!-- /quizWrap -->
 
 <div class="wrap-wide">
-<section class="screen" id="s8" data-step="6">
+<section class="screen" id="s8" data-step="5">
 
-  <h2 class="h-sec first">What you've signed for personally</h2>
-  <ul class="chips" id="chips"></ul>
-
-  <div class="sum">
-    <p class="kicker" id="sumKicker">Where that leaves her</p>
-    <p class="fig" id="sumFig">$250,000 – $500,000</p>
-    <p class="line" id="sumLine">personally signed for. Nothing named to cover it.</p>
-    <p class="foot" id="sumFoot"></p>
+  <!-- 1 | the reveal ------------------------------------------------ -->
+  <div class="rb rb-first">
+    <h1 class="reveal-head" id="revealHead"></h1>
+    <ul class="reveal-list" id="revealList"></ul>
+    <p class="reveal-foot" id="revealFoot" hidden></p>
+    <p class="variant-note" id="variantNote" hidden></p>
   </div>
 
-  <h2 class="h-sec" id="revealHead">What your coverage actually pays her</h2>
-  <div class="reveal" id="reveal"></div>
-  <p class="variant-note" id="variantNote" hidden></p>
+  <!-- 2 | the number ------------------------------------------------ -->
+  <div class="rb">
+    <h2 class="h-sec">What's sitting on your signature</h2>
+    <p class="fig-num" id="figNum"></p>
+    <p class="fig-items" id="figItems" hidden></p>
+    <p class="fig-note" id="figNote"></p>
+  </div>
 
-  <h2 class="h-sec">Roughly what closing it costs</h2>
-  <p class="price-fig" id="priceFig">$30 – $50 a month</p>
-  <p class="payoff" id="payoff"></p>
-  <p class="assump" id="priceAssump"></p>
+  <!-- 3 | the range ------------------------------------------------- -->
+  <div class="rb">
+    <h2 class="h-sec">What it costs to close that</h2>
+    <p class="price-fig" id="priceFig"></p>
+    <p class="assump" id="priceAssump"></p>
+  </div>
 
-  <div class="call">
-    <div>
-      <h2>She goes to the carriers. You don't.</h2>
-      <ul>
-        <li>Shops your file across every carrier she's contracted with</li>
-        <li>Knows which ones price trades fairly. They don't all do</li>
-        <li>Fifteen minutes on the phone and you'll have your number</li>
-      </ul>
-    </div>
-    <div class="who">
-      <div class="avatar">AS<img src="assets/advisor.jpg" alt="" onerror="this.remove()"></div>
+  <!-- 4 | the line -------------------------------------------------- -->
+  <div class="rb rb-line">
+    <p class="big-line" id="bigLine"></p>
+  </div>
+
+  <!-- 5 | the call -------------------------------------------------- -->
+  <div class="rb">
+    <div class="call">
       <div>
-        <div class="n">Alicia Samuel</div>
-        <div class="r">Licensed life insurance advisor</div>
-        <span class="tag">Ontario</span>
+        <h2>She goes to the carriers. You don't.</h2>
+        <p class="call-sub">Fifteen minutes, and you'll have a real number instead of a range.</p>
+        <ul>
+          <li><b>One call, not a campaign.</b> She calls once. If you miss it you get a voicemail, and that's the end of it.</li>
+          <li><b>She's shopping, not selling.</b> She takes your file to the carriers she's contracted with and comes back with what they'd actually charge. If the answer is you don't need more, that's the answer.</li>
+          <li><b>Most of the call is paperwork you'd have to do anyway.</b> The questions she asks are the application. Fifteen minutes now saves the whole thing later.</li>
+        </ul>
+      </div>
+      <div class="who">
+        <div class="avatar">AS<img src="assets/advisor.jpg" alt="" onerror="this.remove()"></div>
+        <div>
+          <div class="n">Alicia Samuel</div>
+          <div class="r">Licensed life insurance advisor, Ontario</div>
+          <span class="tag">12 years &middot; FSRA licensed</span>
+          <div class="who-note">She calls from a 647 number, not a 1-800.</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="carriers">
-    <div class="carriers-viewport"><div class="carriers-row" id="carriersRow2"></div></div>
+    <div class="carriers">
+      <div class="carriers-viewport"><div class="carriers-row" id="carriersRow2"></div></div>
+    </div>
   </div>
 
 </section>
@@ -749,20 +855,27 @@ function newEventId(){
 }
 
 /* ---------------- navigation ---------------- */
+/* Five questions (0-4), then: building report, delivery, results. */
 var screens=[].slice.call(document.querySelectorAll('.screen'));
-var LOADING=6, RESULTS=7;
+var QUESTIONS_TOTAL=5;
+var BUILDING=5, CONTACT=6, RESULTS=7;
 var current=0;
-var fill=document.getElementById('fill'),pct=document.getElementById('pct'),stepNow=document.getElementById('stepNow');
+var fill=document.getElementById('fill'),pct=document.getElementById('pct'),
+    stepNow=document.getElementById('stepNow'),progressLabel=document.getElementById('progressLabel');
 
 function paint(i){
   var step=parseInt(screens[i].getAttribute('data-step'),10)||1;
-  if(!sent[step]){ sent[step]=1; track('step',{step:step}); }
-  var p=Math.round((step/6)*100);
-  if(stepNow) stepNow.textContent=step;
+  if(!sent[i]){ sent[i]=1; track('step',{step:i>=BUILDING?(i===RESULTS?'results':(i===CONTACT?'contact':'building')):step}); }
+  var p=Math.round((step/QUESTIONS_TOTAL)*100);
+  /* past the last question the bar is full and stays there */
+  if(progressLabel){
+    if(i>=BUILDING) progressLabel.textContent='Complete';
+    else if(stepNow) stepNow.textContent=step;
+  }
   if(pct) pct.textContent=p+'%';
   if(fill) fill.style.width=p+'%';
   document.body.classList.toggle('is-results', i===RESULTS);
-  document.body.classList.toggle('is-loading', i===LOADING);
+  document.body.classList.toggle('is-loading', i===BUILDING);
 }
 function go(next){
   if(next===current||next>=screens.length) return;
@@ -777,7 +890,9 @@ paint(0);
 screens.forEach(function(sc,i){
   if(sc.getAttribute('data-auto')!=='1') return;
   sc.addEventListener('change',function(e){
-    if(e.target&&e.target.type==='radio') setTimeout(function(){ go(i+1); },200);
+    if(!e.target||e.target.type!=='radio') return;
+    /* Q5 is the last question — it hands off to the building screen */
+    setTimeout(function(){ if(i+1===BUILDING) runBuilding(); else go(i+1); },200);
   });
 });
 
@@ -819,79 +934,112 @@ var RATES={
   500000:{'25-34':[22,35],'35-44':[30,50],'45-54':[70,120],'55+':[175,290]},
   750000:{'25-34':[30,48],'35-44':[42,70],'45-54':[100,170],'55+':[250,420]}
 };
-var SUBJ={
-  wife   :{them:'her',  who:'your wife',             where:'Where that leaves her',
-           payoff:"She doesn't have to sell the trucks."},
-  partner:{them:'them', who:'your business partner', where:'Where that leaves your partner',
-           payoff:"He doesn't have to buy you out with money he doesn't have."},
-  kids   :{them:'them', who:'your kids',             where:'Where that leaves your kids',
-           payoff:'They inherit what you built, not what you owe.'},
-  unsure :{them:'them', who:'your family',           where:'Where that leaves them',
-           payoff:'Nobody has to sell anything to settle it.'}
+/* Q4 decides who the page is talking about, everywhere. */
+var PERSON={
+  wife   :{who:'your wife',    obj:'her'},
+  partner:{who:'your partner', obj:'him'},
+  kids   :{who:'your kids',    obj:'them'},
+  unsure :{who:'your family',  obj:'them'}
 };
-var REVEAL={
-  mortgage:{h:'Mortgage insurance through the bank',
-            p:'Mortgage insurance from a lender is written to clear their loan. It shrinks as the mortgage does, and it pays the lender.'},
-  spouse  :{h:"Something through your wife's work",
-            p:'Group coverage through an employer ends when the job does.'},
-  personal:{h:'A personal life insurance policy',
-            p:'Worth checking what it was written for. Most were bought before the crew, the trucks and the supplier account existed.'},
-  nothing :{h:'Nothing in place',
-            p:'Nothing named. Nothing reaching them.'},
-  unsure  :{h:"Not sure what's in place",
-            p:"If you don't know what it pays, assume they don't either."}
+
+/* Block 4 — the one sentence he repeats if he closes the tab. */
+var CLOSING_LINE={
+  wife   :'She shouldn’t have to sell the trucks to settle what you signed for.',
+  partner:'He shouldn’t have to buy you out with money he doesn’t have.',
+  kids   :'They should inherit what you built, not what you owe.',
+  unsure :'Nobody should have to sell anything to settle what you signed for.'
 };
+
+/* Block 1 — one line per thing he actually ticked. */
+var REVEAL_LINE={
+  mortgage:function(p){ return '<b>Mortgage insurance</b> — pays the bank, not '+p.obj+'. Shrinks as the mortgage does.'; },
+  spouse  :function( ){ return '<b>Coverage through her work</b> — ends the day that job does.'; },
+  personal:function(p){ return '<b>Your personal policy</b> — this one does reach '+p.obj+'. Worth checking what it was written for, and when.'; },
+  nothing :function(p){ return '<b>Nothing in place</b> — nothing reaching '+p.obj+'.'; },
+  unsure  :function( ){ return '<b>Not sure</b> — which usually means nothing named. Worth confirming.'; }
+};
+
+/* Block 2 — his guarantees, short enough to sit on one line. */
+var Q1_SHORT={
+  'Equipment or business loan'   :'Equipment loan',
+  'Bank operating line'          :'Operating line',
+  'Truck or vehicle financing'   :'Truck financing',
+  'Supplier / wholesaler account':'Supplier account',
+  'Shop or yard lease'           :'Shop lease',
+  'Business credit card'         :'Business card'
+};
+
+/* At-height and heavy-equipment work is rated differently by every
+   carrier, so there is no honest range to show. */
 var GATED=['Roofing','Excavation & septic'];
 
+function money(n){ return '$'+String(n).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
 function buildResults(a){
-  var s=SUBJ[a.q4]||SUBJ.unsure;
+  var p=PERSON[a.q4]||PERSON.unsure;
   var band=BANDS[a.q2]||null;
-  var openItem=a.q3.indexOf('personal')!==-1;
+  var q3=a.q3||[];
+  var hasPersonal=q3.indexOf('personal')!==-1;
+  var hasBank=q3.indexOf('mortgage')!==-1||q3.indexOf('spouse')!==-1;
 
-  document.getElementById('chips').innerHTML =
-    a.q1.length && a.q1.indexOf('None of these')===-1
-      ? a.q1.map(function(v){return '<li>'+v+'</li>';}).join('')
-      : '<li>No personal guarantees</li>';
+  /* ---- 1 | the reveal ---- */
+  var head;
+  if(hasPersonal)   head='One of these would reach '+p.who+'. The others wouldn’t.';
+  else if(hasBank)  head='What you’ve got wasn’t built to reach '+p.who+'.';
+  else              head='There’s nothing named to reach '+p.who+'.';
+  document.getElementById('revealHead').textContent=head;
 
-  document.getElementById('sumKicker').textContent=s.where;
-  var fig=document.getElementById('sumFig'),line=document.getElementById('sumLine'),foot=document.getElementById('sumFoot');
-  if(band){
-    fig.textContent=band.label;
-    line.textContent = openItem
-      ? 'personally signed for, and one policy nobody has checked.'
-      : 'personally signed for. Nothing named to cover it.';
-  }else{
-    fig.textContent='You weren\u2019t sure';
-    line.textContent='and that\u2019s the part '+s.who+' would have to work out.';
-  }
-  foot.textContent = openItem
-    ? 'What your own policy would actually pay is the one number this page can\u2019t work out. Alicia can, in about ten minutes.'
-    : '';
-
-  document.getElementById('revealHead').textContent='What your coverage actually pays '+s.them;
   var order=['mortgage','spouse','personal','nothing','unsure'];
-  var picked=order.filter(function(k){return a.q3.indexOf(k)!==-1;});
+  var picked=order.filter(function(k){ return q3.indexOf(k)!==-1; });
   if(!picked.length) picked=['unsure'];
-  var rv=document.getElementById('reveal');
-  rv.className='reveal'+(picked.length>1?' multi':'');
-  rv.innerHTML=picked.map(function(k){
-    return '<div class="reveal-item"><h3>'+REVEAL[k].h+'</h3><p>'+REVEAL[k].p+'</p></div>';
+  document.getElementById('revealList').innerHTML=picked.map(function(k){
+    return '<li>'+REVEAL_LINE[k](p)+'</li>';
   }).join('');
 
+  /* The closing line only makes sense when he owns more than one thing
+     that was bought for some other reason. */
+  var real=picked.filter(function(k){ return k==='mortgage'||k==='spouse'||k==='personal'; });
+  var showFoot=real.length>0 && !(real.length===1 && real[0]==='personal');
+  var footEl=document.getElementById('revealFoot');
+  footEl.textContent='Every one of these was bought for a different reason than the one you need it for now.';
+  footEl.hidden=!showFoot;
+
+  /* ---- 2 | the number ---- */
+  var guarantees=(a.q1||[]).filter(function(v){ return v!=='None of these'; });
+  var figNum=document.getElementById('figNum');
+  if(band && guarantees.length){
+    figNum.innerHTML='<span class="band">'+band.label+'</span><span class="tail">personally signed for</span>';
+  }else if(guarantees.length){
+    figNum.innerHTML='<span class="band">You weren’t sure</span><span class="tail">what you’ve personally signed for adds up to</span>';
+  }else{
+    figNum.innerHTML='<span class="band">No personal guarantees</span><span class="tail">nothing of the business sits on your signature</span>';
+  }
+
+  var itemsEl=document.getElementById('figItems');
+  itemsEl.textContent=guarantees.map(function(v){ return Q1_SHORT[v]||v; }).join(' · ');
+  itemsEl.hidden=!guarantees.length;
+
+  document.getElementById('figNote').textContent = hasPersonal
+    ? 'One policy named against it. Alicia will check whether it’s enough.'
+    : 'Nothing named to cover it.';
+
+  /* ---- 3 | the range ---- */
   var gated=GATED.indexOf(a.trade)!==-1;
   var rate=(band&&a.q5&&RATES[band.price])?RATES[band.price][a.q5]:null;
-  var pf=document.getElementById('priceFig'),pa=document.getElementById('priceAssump'),po=document.getElementById('payoff');
-  po.textContent=s.payoff;
-  if(rate&&!gated){
-    pf.textContent='$'+rate[0]+' \u2013 $'+rate[1]+' a month';
-    pa.textContent='Coverage matching what you\u2019ve signed for. 20-year term, non-smoker, standard health, age '+a.q5+', Ontario. An estimate from current market rates, not a quote.';
-  }else if(gated){
-    pf.textContent='Your trade is priced separately';
-    pa.textContent='At-height and heavy-equipment work is rated differently by every carrier. Alicia gives you the real range on the call rather than a number that moves once you apply.';
+  var pf=document.getElementById('priceFig'),pa=document.getElementById('priceAssump');
+  if(gated){
+    pf.textContent='Priced on the call';
+    pa.textContent='Your trade changes how carriers price this, and they don’t all price it the same. Alicia will get you the real number.';
+  }else if(rate){
+    pf.innerHTML='Roughly <b>$'+rate[0]+' – $'+rate[1]+' a month</b> for '+money(band.price)+' of 20-year term';
+    pa.textContent='Based on your age band and standard health. Your actual number depends on the carrier and a few questions Alicia will ask.';
   }else{
     pf.textContent='Priced on the call';
-    pa.textContent='Without a total there\u2019s nothing to price against. Alicia builds the number with you.';
+    pa.textContent='Without a total there’s nothing to price against. Alicia builds the number with you.';
   }
+
+  /* ---- 4 | the line ---- */
+  document.getElementById('bigLine').textContent=CLOSING_LINE[a.q4]||CLOSING_LINE.unsure;
 }
 
 /* carrier strip: plain images, duplicated once so the mobile marquee
@@ -924,18 +1072,24 @@ function buildCarriers(el){
 }
 buildCarriers(document.getElementById('carriersRow1'));
 buildCarriers(document.getElementById('carriersRow2'));
+buildCarriers(document.getElementById('carriersRow3'));
 applyVariantNote();
 
-/* ---------------- processing, then results ---------------- */
-function runLoading(a){
-  go(LOADING);
+/* ---------------- building the report ----------------
+   Fires the moment Q5 is answered, runs a shade over two seconds, then
+   hands him to the delivery screen. The three lines are the first three
+   blocks of the report, in order — he's being told what he's about to
+   see. Long enough to feel like work happened, short enough that he
+   doesn't get a chance to close the tab. */
+var buildStarted=false;
+function runBuilding(){
+  if(buildStarted) return;
+  buildStarted=true;
+  go(BUILDING);
   var items=[].slice.call(document.querySelectorAll('#loadSteps li'));
-  var delays=[350,1200,2050];
+  var delays=[150,750,1350];
   items.forEach(function(li,i){ setTimeout(function(){ li.classList.add('is-on'); },delays[i]); });
-  setTimeout(function(){
-    try{ buildResults(a); }catch(_){}
-    go(RESULTS);
-  },2900);
+  setTimeout(function(){ go(CONTACT); },2100);
 }
 
 /* ---------------- submit ---------------- */
@@ -1020,7 +1174,7 @@ form.addEventListener('submit',function(e){
   }
 
   var btn=document.getElementById('submitBtn');
-  if(btn){ btn.disabled=true; btn.textContent='Building your numbers…'; }
+  if(btn){ btn.disabled=true; btn.textContent='Opening your report…'; }
 
   var a=answers();
   var name=nameEl.value.trim();
@@ -1055,7 +1209,10 @@ form.addEventListener('submit',function(e){
   }
 
   try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a})); }catch(_){}
-  runLoading(a);
+
+  /* report is already built — straight through, no interstitial */
+  try{ buildResults(a); }catch(_){}
+  go(RESULTS);
 });
 
 /* ---------------- /result preview ----------------
