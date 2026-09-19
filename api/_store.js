@@ -69,13 +69,26 @@ function clientIp(req) {
   return String(xf).split(',')[0].trim();
 }
 
+/* An entry matches either exactly, or as a prefix when it ends in "*".
+   Residential IPv6 usually keeps a stable /64 while the tail rotates,
+   so "2001:db8:1:2:*" survives what an exact address will not.
+   Compared lowercased, because IPv6 hex case is not significant. */
+function ipMatches(ip, entry) {
+  if (!ip || !entry) return false;
+  ip = ip.toLowerCase(); entry = entry.toLowerCase();
+  if (entry.slice(-1) === '*') return ip.indexOf(entry.slice(0, -1)) === 0;
+  return ip === entry;
+}
+
+function adminIps() {
+  return String(process.env.ADMIN_IPS || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+}
+
 function isAdmin(req, body) {
   if (body && body.nolog) return true;               // browser flag
-  const list = String(process.env.ADMIN_IPS || '')
-    .split(',').map(s => s.trim()).filter(Boolean);
-  if (!list.length) return false;
   const ip = clientIp(req);
-  return Boolean(ip) && list.indexOf(ip) !== -1;
+  return adminIps().some(entry => ipMatches(ip, entry));
 }
 
 async function all() {
@@ -99,6 +112,6 @@ function readBody(req) {
 }
 
 module.exports = {
-  push, all, clear, readBody, isAdmin, clientIp,
+  push, all, clear, readBody, isAdmin, clientIp, adminIps,
   persistent: Boolean(KV_URL && KV_TOKEN)
 };
