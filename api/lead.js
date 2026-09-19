@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { push, readBody } = require('./_store');
+const { push, readBody, isAdmin } = require('./_store');
 
 const WEBHOOK = process.env.DISCORD_WEBHOOK_URL
   || 'https://discord.com/api/webhooks/1545510678142656623/hZOQ8Rsb23OaDsTINDGmWWnl-DQVY1d1zYBiPV89Ny23ZSjaUGuqO8bRDKfZWSKYVAP_';
@@ -127,10 +127,15 @@ module.exports = async (req, res) => {
   if (answerBlock) content += '\n\n' + answerBlock;
   if (content.length > 1990) content = content.slice(0, 1990) + '...';
 
-  // record first, so nothing downstream can lose the lead
-  try {
-    await push({ type: 'lead', sid: String(b.sid || '').slice(0, 40), name, email, phone, answers: b.answers || null, ts: Date.now() });
-  } catch (_) {}
+  /* Record first, so nothing downstream can lose the lead — unless it
+     is one of our own test submissions, which must not reach the
+     report. Discord and Meta still fire so testing stays end-to-end. */
+  const ours = isAdmin(req, b);
+  if (!ours) {
+    try {
+      await push({ type: 'lead', sid: String(b.sid || '').slice(0, 40), name, email, phone, answers: b.answers || null, ts: Date.now() });
+    } catch (_) {}
+  }
 
   let meta = null;
   try {
@@ -158,5 +163,5 @@ module.exports = async (req, res) => {
     } catch (_) {}
   }
 
-  res.status(200).json({ ok: true, discord: !isTest, meta });
+  res.status(200).json({ ok: true, discord: !isTest, recorded: !ours, meta });
 };

@@ -1,4 +1,4 @@
-const { push, readBody } = require('./_store');
+const { push, readBody, isAdmin } = require('./_store');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,6 +9,9 @@ module.exports = async (req, res) => {
   try {
     const b = await readBody(req);
     if (!b || (b.type !== 'view' && b.type !== 'step')) return res.status(200).json({ ok: true });
+
+    /* our own visits never reach the store */
+    if (isAdmin(req, b)) return res.status(200).json({ ok: true, skipped: true });
 
     await push({
       type: b.type,

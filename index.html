@@ -732,6 +732,35 @@ window.ZL_PIXEL_ID = '1091428479971058';
    ============================================================= */
 var SEND_LEADS = true;
 
+/* =============================================================
+   OUR OWN VISITS
+   Open /?nolog=1 once on a device and this browser stops being
+   counted in the report, for good. /?nolog=0 undoes it.
+   Per browser and per device, so do it on each one you use.
+   The server drops these anyway when the IP is in ADMIN_IPS —
+   this is the half that survives a changing IP.
+   ============================================================= */
+var NOLOG=(function(){
+  var k='zl_nolog';
+  try{
+    var q=new URLSearchParams(location.search).get('nolog');
+    if(q==='1') localStorage.setItem(k,'1');
+    if(q==='0') localStorage.removeItem(k);
+    return localStorage.getItem(k)==='1';
+  }catch(_){ return false; }
+})();
+
+/* Say so on screen, otherwise there is no way to tell it took. */
+if(NOLOG){
+  document.addEventListener('DOMContentLoaded',function(){
+    var b=document.createElement('div');
+    b.textContent='Analytics off for this browser';
+    b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:60;background:#0E1E30;color:#8FA3B7;'
+      +'font:600 11px/1 Inter,system-ui,sans-serif;padding:8px 11px;border-radius:99px;opacity:.85';
+    document.body.appendChild(b);
+  });
+}
+
 /* ---------------- analytics ---------------- */
 var SID=(function(){
   try{ var k='zl_sid',v=sessionStorage.getItem(k);
@@ -741,6 +770,7 @@ var SID=(function(){
 })();
 var sent={};
 function track(t,d){
+  if(NOLOG) return;
   try{
     var p=JSON.stringify(Object.assign({type:t,sid:SID},d||{}));
     if(navigator.sendBeacon) navigator.sendBeacon('/api/track',new Blob([p],{type:'application/json'}));
@@ -1230,7 +1260,8 @@ form.addEventListener('submit',function(e){
           event_id:eventId,
           fbp:getCookie('_fbp'),
           fbc:getFbc(),
-          source_url:location.href
+          source_url:location.href,
+          nolog:NOLOG
         }),keepalive:true}).catch(function(){});
     }catch(_){}
   }

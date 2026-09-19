@@ -47,6 +47,37 @@ async function push(event) {
   fs.writeFileSync(FILE, JSON.stringify(list));
 }
 
+/* Wipe every stored event. Used by /api/reset. */
+async function clear() {
+  if (KV_URL && KV_TOKEN) {
+    await kv(['DEL', KEY]);
+    return;
+  }
+  try { fs.writeFileSync(FILE, '[]'); } catch (_) {}
+}
+
+/* ---- keeping our own traffic out of the numbers ----
+   Two independent guards, because either one alone leaks:
+   a home IP rotates, and a browser flag dies with site data.
+
+   ADMIN_IPS is a comma-separated list set in Vercel. Vercel puts the
+   real client IP first in x-forwarded-for; everything after it is
+   proxy hops, so only the first entry is ever trusted. */
+function clientIp(req) {
+  const xf = req.headers['x-forwarded-for'];
+  if (!xf) return '';
+  return String(xf).split(',')[0].trim();
+}
+
+function isAdmin(req, body) {
+  if (body && body.nolog) return true;               // browser flag
+  const list = String(process.env.ADMIN_IPS || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  if (!list.length) return false;
+  const ip = clientIp(req);
+  return Boolean(ip) && list.indexOf(ip) !== -1;
+}
+
 async function all() {
   if (KV_URL && KV_TOKEN) {
     const out = await kv(['LRANGE', KEY, 0, MAX - 1]);
@@ -67,4 +98,7 @@ function readBody(req) {
   });
 }
 
-module.exports = { push, all, readBody, persistent: Boolean(KV_URL && KV_TOKEN) };
+module.exports = {
+  push, all, clear, readBody, isAdmin, clientIp,
+  persistent: Boolean(KV_URL && KV_TOKEN)
+};
