@@ -118,19 +118,22 @@ module.exports = async (req, res) => {
   const email = String(b.email || '').slice(0, 160);
   const phone = String(b.phone || '').slice(0, 60);
 
-  /* A lead named exactly "test" is you. It still goes to Meta so you can
-     verify tracking, and it's still recorded, but no Discord ping. */
-  const isTest = name.trim().toLowerCase() === 'test';
+  /* A test submission is inert everywhere: no Conversions API, no
+     Discord, no row in the report. index.html suppresses the browser
+     Pixel event on the same two fields, so the browser and the server
+     always agree on what counts as a test. */
+  const isTest = name.trim().toLowerCase() === 'test'
+              || email.trim().toLowerCase() === 'test@gmail.com';
 
   let content = ['**NEW FACEBOOK LEAD**', 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
   const answerBlock = formatAnswers(b.answers);
   if (answerBlock) content += '\n\n' + answerBlock;
   if (content.length > 1990) content = content.slice(0, 1990) + '...';
 
-  /* Record first, so nothing downstream can lose the lead — unless it
-     is one of our own test submissions, which must not reach the
-     report. Discord and Meta still fire so testing stays end-to-end. */
-  const ours = isAdmin(req, b);
+  /* Record first, so nothing downstream can lose a real lead. Our own
+     traffic and test submissions are the two things that never reach
+     the report. */
+  const ours = isAdmin(req, b) || isTest;
   if (!ours) {
     try {
       await push({ type: 'lead', sid: String(b.sid || '').slice(0, 40), name, email, phone, answers: b.answers || null, ts: Date.now() });
@@ -138,7 +141,9 @@ module.exports = async (req, res) => {
   }
 
   let meta = null;
-  try {
+  if (isTest) {
+    meta = { skipped: 'test submission' };
+  } else try {
     meta = await sendToMeta({
       name, email, phone,
       eventId: b.event_id,
@@ -163,5 +168,5 @@ module.exports = async (req, res) => {
     } catch (_) {}
   }
 
-  res.status(200).json({ ok: true, discord: !isTest, recorded: !ours, meta });
+  res.status(200).json({ ok: true, test: isTest, discord: !isTest, recorded: !ours, meta });
 };

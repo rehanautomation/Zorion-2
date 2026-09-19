@@ -750,15 +750,31 @@ var NOLOG=(function(){
   }catch(_){ return false; }
 })();
 
-/* Say so on screen, otherwise there is no way to tell it took. */
-if(NOLOG){
-  document.addEventListener('DOMContentLoaded',function(){
+/* A small corner note, so there is never any doubt about whether a
+   thing took effect. */
+function showBadge(text){
+  function add(){
     var b=document.createElement('div');
-    b.textContent='Analytics off for this browser';
+    b.textContent=text;
     b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:60;background:#0E1E30;color:#8FA3B7;'
       +'font:600 11px/1 Inter,system-ui,sans-serif;padding:8px 11px;border-radius:99px;opacity:.85';
     document.body.appendChild(b);
-  });
+  }
+  if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+}
+if(NOLOG) showBadge('Analytics off for this browser');
+
+/* =============================================================
+   TEST SUBMISSIONS
+   Submit with the name "test", or the email test@gmail.com, and
+   nothing is sent anywhere: no Pixel Lead, no Conversions API, no
+   Discord, no row in the report. The funnel itself behaves exactly
+   as it does for a real visitor, so the run is still a real test.
+   api/lead.js applies the same rule to the same two fields.
+   ============================================================= */
+function IS_TEST(name,email){
+  return String(name||'').trim().toLowerCase()==='test'
+      || String(email||'').trim().toLowerCase()==='test@gmail.com';
 }
 
 /* ---------------- analytics ---------------- */
@@ -1236,15 +1252,20 @@ form.addEventListener('submit',function(e){
   var a=answers();
   var name=nameEl.value.trim();
 
+  /* A test submission is inert: no Pixel event, no Conversions API, no
+     Discord, nothing in the report. The server applies the same rule to
+     the same fields, so the two halves can never disagree. */
+  var isTest=IS_TEST(name,emailEl.value);
+
+  if(isTest) showBadge('Test submission — nothing tracked');
+
   if(SEND_LEADS){
     /* One id, used by both the browser event and the server event, so
-       Meta counts this as a single Lead instead of two.
-       A "test" lead still fires Meta — only Discord is skipped, and the
-       server decides that from the name. */
+       Meta counts this as a single Lead instead of two. */
     var eventId=newEventId();
 
     try{
-      if(window.fbq){
+      if(window.fbq && !isTest){
         fbq('track','Lead',{content_name:'Zorion quiz',content_category:a.trade||''},{eventID:eventId});
       }
     }catch(_){}
