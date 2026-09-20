@@ -28,8 +28,12 @@ module.exports = async (req, res) => {
 
   for (const e of events) {
     const sid = e.sid || 'anon-' + (e.ts || 0);
-    if (!sessions.has(sid)) sessions.set(sid, { maxStep: 0, lead: false, ts: e.ts || 0 });
+    if (!sessions.has(sid)) sessions.set(sid, { maxStep: 0, lead: false, ts: e.ts || 0, a: '', q: '' });
     const s = sessions.get(sid);
+    /* the variant arrives on the landing view and belongs to the whole
+       session from then on */
+    if (e.a && !s.a) s.a = String(e.a);
+    if (e.q && !s.q) s.q = String(e.q);
     if (e.type === 'step') s.maxStep = Math.max(s.maxStep, Number(e.step) || 0);
     if (e.type === 'lead') {
       s.lead = true;
@@ -51,9 +55,29 @@ module.exports = async (req, res) => {
     droppedHere: list.filter(s => !s.lead && s.maxStep === n).length
   }));
 
+  /* Grouped from whatever values are actually in the data, never from
+     a list in the code — add a=whatever to an ad tomorrow and it shows
+     up here on its own, with no change to this file. */
+  const byVariant = new Map();
+  for (const s of list) {
+    const key = s.a || '(none)';
+    if (!byVariant.has(key)) byVariant.set(key, { variant: key, views: 0, started: 0, leads: 0, extra: '' });
+    const v = byVariant.get(key);
+    v.views++;
+    if (s.maxStep >= 2) v.started++;
+    if (s.lead) v.leads++;
+    if (!v.extra && s.q) v.extra = s.q;
+  }
+  const variants = [...byVariant.values()]
+    .map(v => Object.assign(v, {
+      conversionRate: v.views ? Math.round((v.leads / v.views) * 1000) / 10 : 0
+    }))
+    .sort((a, b) => b.views - a.views);
+
   res.status(200).json({
     persistent,
     generatedAt: Date.now(),
+    variants,
     totals: {
       views,
       attempted,

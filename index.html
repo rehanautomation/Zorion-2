@@ -881,6 +881,41 @@ function newEventId(){
   return 'lead.'+Date.now()+'.'+Math.random().toString(36).slice(2,10);
 }
 
+/* =============================================================
+   THE CONVERSION EVENT
+   Fires once, the moment question 1 is answered — not at the
+   contact form. The browser Pixel and the server Conversions API
+   go at the same instant sharing one event_id, so Meta counts a
+   single Lead.
+
+   Because this happens before any name or email exists, the "test"
+   name cannot hold it back; /?nolog=1 is what keeps our own runs
+   out of Meta, on the browser and the server both.
+   ============================================================= */
+function fireConversion(){
+  if(NOLOG) return;
+  try{ if(sessionStorage.getItem('zl_conv')) return; }catch(_){}
+  try{ sessionStorage.setItem('zl_conv','1'); }catch(_){}
+
+  var eventId=newEventId();
+
+  try{
+    if(window.fbq) fbq('track','Lead',{content_name:'Zorion quiz'},{eventID:eventId});
+  }catch(_){}
+
+  try{
+    fetch('/api/convert',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        event_id:eventId,
+        sid:SID,
+        fbp:getCookie('_fbp'),
+        fbc:getFbc(),
+        source_url:location.href,
+        nolog:NOLOG
+      }),keepalive:true}).catch(function(){});
+  }catch(_){}
+}
+
 /* ---------------- navigation ---------------- */
 /* Five questions (0-4), then: building report, delivery, results. */
 var screens=[].slice.call(document.querySelectorAll('.screen'));
@@ -923,7 +958,7 @@ screens.forEach(function(sc,i){
   });
 });
 
-function wireMulti(wrapId,btnId,nextIndex){
+function wireMulti(wrapId,btnId,nextIndex,onAdvance){
   var wrap=document.getElementById(wrapId),btn=document.getElementById(btnId);
   if(!wrap||!btn) return;
   var boxes=[].slice.call(wrap.querySelectorAll('input[type=checkbox]'));
@@ -935,10 +970,13 @@ function wireMulti(wrapId,btnId,nextIndex){
     sync();
   });
   wrap.addEventListener('click',function(){ setTimeout(sync,0); });
-  btn.addEventListener('click',function(){ go(nextIndex); });
+  btn.addEventListener('click',function(){
+    if(onAdvance) try{ onAdvance(); }catch(_){}
+    go(nextIndex);
+  });
   sync();
 }
-wireMulti('q1opts','q1next',1);
+wireMulti('q1opts','q1next',1,fireConversion);   /* Q1 is the conversion */
 wireMulti('q3opts','q3next',3);
 
 /* ---------------- answers ---------------- */
@@ -1260,16 +1298,8 @@ form.addEventListener('submit',function(e){
   if(isTest) showBadge('Test submission — nothing tracked');
 
   if(SEND_LEADS){
-    /* One id, used by both the browser event and the server event, so
-       Meta counts this as a single Lead instead of two. */
-    var eventId=newEventId();
-
-    try{
-      if(window.fbq && !isTest){
-        fbq('track','Lead',{content_name:'Zorion quiz',content_category:a.trade||''},{eventID:eventId});
-      }
-    }catch(_){}
-
+    /* No Meta event here — the conversion already fired at question 1.
+       This call is the Discord ping and the row in the report. */
     try{
       fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -1278,10 +1308,6 @@ form.addEventListener('submit',function(e){
           phone:fmtPhone(phoneEl.value),
           answers:a,
           sid:SID,
-          event_id:eventId,
-          fbp:getCookie('_fbp'),
-          fbc:getFbc(),
-          source_url:location.href,
           nolog:NOLOG
         }),keepalive:true}).catch(function(){});
     }catch(_){}
@@ -1311,7 +1337,22 @@ if(isPreview()){
   screens[RESULTS].classList.add('is-active');
   current=RESULTS; paint(RESULTS);
 }else{
-  track('view',{ref:document.referrer||''});
+  /* Which ad brought him. `a` is grouped on in the report; the utm_*
+     values ride along for reference. fbclid and gclid are deliberately
+     left out — they are unique per click, so keeping them would make
+     every visitor their own group. */
+  track('view',{
+    ref:document.referrer||'',
+    a:(PARAMS.get('a')||'').slice(0,40),
+    q:(function(){
+      var keep=[];
+      PARAMS.forEach(function(v,k){
+        if(k==='a'||k==='fbclid'||k==='gclid'||k==='nolog') return;
+        keep.push(k+'='+v);
+      });
+      return keep.join('&').slice(0,200);
+    })()
+  });
 }
 
 })();

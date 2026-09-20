@@ -97,6 +97,32 @@ function render(d){
     html += '<p class="note">Biggest leak: <b>' + esc(worst.label) + '</b> — ' + worst.droppedHere + ' people stopped there.</p>';
   }
 
+  /* Built from whatever ?a= values turned up in the data, so a new ad
+     variant appears here by itself. */
+  var vs = d.variants || [];
+  html += '<h2>Traffic by ad variant</h2>';
+  if (!vs.length){
+    html += '<div class="panel">Nothing yet in this window.</div>';
+  } else {
+    var topViews = vs[0].views || 0;
+    html += '<table><tr><th>Variant</th><th>Views</th><th>Started</th><th>Leads</th><th>Conv.</th></tr>'
+      + vs.map(function(v){
+          var w = topViews ? (v.views / topViews) * 100 : 0;
+          var label = v.variant === '(none)'
+            ? '<span style="color:#7A8DA0">direct / no <code>?a=</code></span>'
+            : '<b>' + esc(v.variant) + '</b>';
+          return '<tr><td>' + label
+            + '<div class="bar" style="margin-top:6px"><i style="width:' + w.toFixed(1) + '%"></i></div>'
+            + (v.extra ? '<div style="color:#7A8DA0;font-size:11px;margin-top:4px">' + esc(v.extra) + '</div>' : '')
+            + '</td><td>' + v.views + '</td><td>' + v.started + '</td><td>' + v.leads
+            + '</td><td>' + v.conversionRate + '%</td></tr>';
+        }).join('')
+      + '</table>'
+      + '<p class="note">Variants are read from the data, not a fixed list — add <code>?a=anything</code> '
+      + 'to an ad and it appears here on its own. Sessions that arrive without <code>?a=</code>, including '
+      + 'returning visitors who type the URL, fall into <i>direct</i>.</p>';
+  }
+
   html += '<h2>Recent leads (' + d.leads.length + ')</h2>';
   if (!d.leads.length){
     html += '<div class="panel">No leads yet in this window.</div>';

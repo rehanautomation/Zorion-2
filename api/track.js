@@ -18,6 +18,9 @@ module.exports = async (req, res) => {
       sid: String(b.sid || '').slice(0, 40),
       step: b.type === 'step' ? Number(b.step) || 0 : undefined,
       ref: b.ref ? String(b.ref).slice(0, 200) : undefined,
+      /* the ad variant, captured on the landing view only */
+      a: b.a ? String(b.a).slice(0, 40) : undefined,
+      q: b.q ? String(b.q).slice(0, 200) : undefined,
       ts: Date.now()
     });
   } catch (_) { /* analytics must never break the page */ }
