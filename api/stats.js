@@ -34,6 +34,13 @@ module.exports = async (req, res) => {
        session from then on */
     if (e.a && !s.a) s.a = String(e.a);
     if (e.q && !s.q) s.q = String(e.q);
+    /* Keep the longest reading of each. A tab hidden and reopened sends
+       more than one session dwell; the last one is the truthful total. */
+    if (e.type === 'dwell') {
+      const ms = Number(e.ms) || 0;
+      if (e.where === 'landing') s.landingMs = Math.max(s.landingMs || 0, ms);
+      else s.sessionMs = Math.max(s.sessionMs || 0, ms);
+    }
     if (e.type === 'step') s.maxStep = Math.max(s.maxStep, Number(e.step) || 0);
     if (e.type === 'lead') {
       s.lead = true;
@@ -58,21 +65,36 @@ module.exports = async (req, res) => {
   /* Grouped from whatever values are actually in the data, never from
      a list in the code — add a=whatever to an ad tomorrow and it shows
      up here on its own, with no change to this file. */
+  const avg = arr => arr.length ? Math.round(arr.reduce((t, n) => t + n, 0) / arr.length) : 0;
+
   const byVariant = new Map();
   for (const s of list) {
     const key = s.a || '(none)';
-    if (!byVariant.has(key)) byVariant.set(key, { variant: key, views: 0, started: 0, leads: 0, extra: '' });
+    if (!byVariant.has(key)) {
+      byVariant.set(key, { variant: key, views: 0, started: 0, leads: 0, extra: '', _landing: [], _session: [] });
+    }
     const v = byVariant.get(key);
     v.views++;
     if (s.maxStep >= 2) v.started++;
     if (s.lead) v.leads++;
     if (!v.extra && s.q) v.extra = s.q;
+    if (s.landingMs) v._landing.push(s.landingMs);
+    if (s.sessionMs) v._session.push(s.sessionMs);
   }
   const variants = [...byVariant.values()]
-    .map(v => Object.assign(v, {
-      conversionRate: v.views ? Math.round((v.leads / v.views) * 1000) / 10 : 0
-    }))
+    .map(v => {
+      const out = Object.assign({}, v, {
+        conversionRate: v.views ? Math.round((v.leads / v.views) * 1000) / 10 : 0,
+        avgLandingMs: avg(v._landing),   // load until Q1 was answered
+        avgSessionMs: avg(v._session)    // total time on the page
+      });
+      delete out._landing; delete out._session;
+      return out;
+    })
     .sort((a, b) => b.views - a.views);
+
+  const allLanding = list.filter(s => s.landingMs).map(s => s.landingMs);
+  const allSession = list.filter(s => s.sessionMs).map(s => s.sessionMs);
 
   res.status(200).json({
     persistent,
@@ -83,7 +105,9 @@ module.exports = async (req, res) => {
       attempted,
       bounced,
       leads: converted,
-      conversionRate: views ? Math.round((converted / views) * 1000) / 10 : 0
+      conversionRate: views ? Math.round((converted / views) * 1000) / 10 : 0,
+      avgLandingMs: avg(allLanding),
+      avgSessionMs: avg(allSession)
     },
     steps,
     leads: leads.sort((a, b) => b.ts - a.ts).slice(0, 50)

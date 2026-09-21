@@ -47,6 +47,37 @@ tr:last-child td{border-bottom:0}
 .legend span::before{content:'';display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
 .legend .r::before{background:var(--blue)}
 .legend .d::before{background:var(--amber)}
+
+/* ---- traffic by ad variant ----
+   Cards on a phone, one table row per variant on a wide screen. The
+   same markup either way: the row items are grid cells below 700px and
+   table cells above it. */
+.vlist{display:grid;gap:10px}
+.v{
+  background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:0 10px;
+}
+.v-name{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;color:var(--navy);word-break:break-word}
+.v-name.none{font-weight:600;color:var(--slate-light)}
+.v-conv{font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:var(--blue);white-space:nowrap;text-align:right}
+.v .bar{grid-column:1/-1;margin-top:10px}
+.v-stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;margin-top:12px}
+.v-stats b{display:block;font-family:Archivo,sans-serif;font-weight:700;font-size:16px;color:var(--navy);line-height:1.1}
+.v-stats span{display:block;margin-top:3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-light)}
+
+@media (min-width:700px){
+  .vlist{display:table;width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;gap:0}
+  .v{display:table-row;border:0;border-radius:0;padding:0}
+  /* every direct child becomes a cell — including .v-stats, so its
+     display must not be re-declared below */
+  .v>*{display:table-cell;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .v:last-child>*{border-bottom:0}
+  .v-name{width:30%}
+  .v-conv{width:76px;text-align:left}
+  .v .bar{display:none}
+  .v-stats{margin-top:0;text-align:right}
+  .v-stats>div{display:inline-block;min-width:58px;margin-left:24px;text-align:right;vertical-align:top}
+}
 </style>
 </head>
 <body>
@@ -79,6 +110,8 @@ function render(d){
     + card(t.bounced, 'Left immediately')
     + card(t.leads, 'Leads submitted', true)
     + card(t.conversionRate + '%', 'Conversion rate', true)
+    + card(dur(t.avgLandingMs), 'Avg time on Q1')
+    + card(dur(t.avgSessionMs), 'Avg time on page')
     + '</div>';
 
   html += '<h2>Step breakdown</h2>'
@@ -105,22 +138,24 @@ function render(d){
     html += '<div class="panel">Nothing yet in this window.</div>';
   } else {
     var topViews = vs[0].views || 0;
-    html += '<table><tr><th>Variant</th><th>Views</th><th>Started</th><th>Leads</th><th>Conv.</th></tr>'
+    html += '<div class="vlist">'
       + vs.map(function(v){
           var w = topViews ? (v.views / topViews) * 100 : 0;
-          var label = v.variant === '(none)'
-            ? '<span style="color:#7A8DA0">direct / no <code>?a=</code></span>'
-            : '<b>' + esc(v.variant) + '</b>';
-          return '<tr><td>' + label
-            + '<div class="bar" style="margin-top:6px"><i style="width:' + w.toFixed(1) + '%"></i></div>'
-            + (v.extra ? '<div style="color:#7A8DA0;font-size:11px;margin-top:4px">' + esc(v.extra) + '</div>' : '')
-            + '</td><td>' + v.views + '</td><td>' + v.started + '</td><td>' + v.leads
-            + '</td><td>' + v.conversionRate + '%</td></tr>';
+          return '<div class="v">'
+            + '<div class="v-name' + (v.variant === '(none)' ? ' none' : '') + '">'
+              + (v.variant === '(none)' ? 'direct' : esc(v.variant)) + '</div>'
+            + '<div class="v-conv">' + v.conversionRate + '%</div>'
+            + '<div class="bar"><i style="width:' + w.toFixed(1) + '%"></i></div>'
+            + '<div class="v-stats">'
+              + stat(v.views, 'views')
+              + stat(v.started, 'started')
+              + stat(v.leads, 'leads')
+              + stat(dur(v.avgLandingMs), 'on Q1')
+              + stat(dur(v.avgSessionMs), 'total')
+            + '</div>'
+          + '</div>';
         }).join('')
-      + '</table>'
-      + '<p class="note">Variants are read from the data, not a fixed list — add <code>?a=anything</code> '
-      + 'to an ad and it appears here on its own. Sessions that arrive without <code>?a=</code>, including '
-      + 'returning visitors who type the URL, fall into <i>direct</i>.</p>';
+      + '</div>';
   }
 
   html += '<h2>Recent leads (' + d.leads.length + ')</h2>';
@@ -141,6 +176,19 @@ function render(d){
   }
 
   document.getElementById('app').innerHTML = html;
+}
+
+/* 0 reads as "no data", not "instant" — show a dash instead. */
+function dur(ms){
+  if (!ms) return '—';
+  var s = Math.round(ms / 1000);
+  if (s < 60) return s + 's';
+  var m = Math.floor(s / 60);
+  return m + 'm' + (s % 60 ? ' ' + (s % 60) + 's' : '');
+}
+
+function stat(n, l){
+  return '<div><b>' + n + '</b><span>' + l + '</span></div>';
 }
 
 function card(n, l, amber){

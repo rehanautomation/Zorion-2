@@ -785,6 +785,13 @@ var SID=(function(){
   }catch(_){return Date.now().toString(36)+Math.random().toString(36).slice(2,10);}
 })();
 var sent={};
+var T0=Date.now();
+
+/* Time is capped before it is sent. One tab left open overnight would
+   otherwise drag a variant's average into the hours. */
+var MAX_MS=30*60*1000;
+function elapsed(){ return Math.min(Date.now()-T0,MAX_MS); }
+
 function track(t,d){
   if(NOLOG) return;
   try{
@@ -893,6 +900,9 @@ function newEventId(){
    out of Meta, on the browser and the server both.
    ============================================================= */
 function fireConversion(){
+  /* How long the landing screen held him, before anything else. */
+  track('dwell',{where:'landing',ms:elapsed()});
+
   if(NOLOG) return;
   try{ if(sessionStorage.getItem('zl_conv')) return; }catch(_){}
   try{ sessionStorage.setItem('zl_conv','1'); }catch(_){}
@@ -1341,6 +1351,22 @@ if(isPreview()){
      values ride along for reference. fbclid and gclid are deliberately
      left out — they are unique per click, so keeping them would make
      every visitor their own group. */
+  /* Total time on the page, sent once as the tab goes away. sendBeacon
+     inside track() is what makes this survive an unload; a normal fetch
+     would be cancelled. Bouncers never reach the landing dwell above,
+     so this is the only number that covers them. */
+  (function(){
+    var done=false;
+    function bye(){
+      if(done) return; done=true;
+      track('dwell',{where:'session',ms:elapsed()});
+    }
+    window.addEventListener('pagehide',bye);
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='hidden') bye();
+    });
+  })();
+
   track('view',{
     ref:document.referrer||'',
     a:(PARAMS.get('a')||'').slice(0,40),
