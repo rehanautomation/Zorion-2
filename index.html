@@ -792,8 +792,13 @@ var T0=Date.now();
 var MAX_MS=30*60*1000;
 function elapsed(){ return Math.min(Date.now()-T0,MAX_MS); }
 
+/* Opened straight at /result — a preview, or a lead reloading their
+   report. Neither is a new visit, so nothing is recorded. Read once at
+   load: a live session that moves to /result on submit keeps tracking. */
+var OPENED_AT_RESULT=/(^|\/)result(\.html)?$/.test(location.pathname)||location.hash==='#result';
+
 function track(t,d){
-  if(NOLOG) return;
+  if(NOLOG||OPENED_AT_RESULT) return;
   try{
     var p=JSON.stringify(Object.assign({type:t,sid:SID},d||{}));
     if(navigator.sendBeacon) navigator.sendBeacon('/api/track',new Blob([p],{type:'application/json'}));
@@ -1328,6 +1333,12 @@ form.addEventListener('submit',function(e){
   /* report is already built — straight through, no interstitial */
   try{ buildResults(a); }catch(_){}
   go(RESULTS);
+
+  /* The report gets its own address, so a reload keeps him on it (the
+     answers are in sessionStorage). replaceState, not pushState: Back
+     should leave the funnel, not return to a form that would submit the
+     lead a second time. The query string stays for the variant note. */
+  try{ history.replaceState(null,'','/result'+location.search); }catch(_){}
 });
 
 /* ---------------- /result preview ----------------
