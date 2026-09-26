@@ -3,14 +3,15 @@ const { push, readBody, isAdmin } = require('./_store');
 const WEBHOOK = process.env.DISCORD_WEBHOOK_URL
   || 'https://discord.com/api/webhooks/1545510678142656623/hZOQ8Rsb23OaDsTINDGmWWnl-DQVY1d1zYBiPV89Ny23ZSjaUGuqO8bRDKfZWSKYVAP_';
 
+/* In the order he answers them. The keys are the form field names, which
+   kept their old numbering when the debt list was dropped. */
 const QUESTIONS = [
-  { key: 'q1', label: 'Which of these have you signed for personally?', multi: true },
-  { key: 'q2', label: 'Roughly, what do those add up to?',
+  { key: 'q2', label: 'Roughly, how much have you personally signed for?',
     options: { 'under-100':'Under $100,000','100-250':'$100,000 - $250,000','250-500':'$250,000 - $500,000','over-500':'Over $500,000','not-sure':'Not sure' } },
-  { key: 'q3', label: 'What have you got in place right now?', multi: true,
-    options: { 'mortgage':'Mortgage insurance through the bank','personal':'A personal life insurance policy','spouse':"Something through my wife's work",'nothing':'Nothing','unsure':'Not sure' } },
   { key: 'q4', label: "If something happened to you tomorrow, who'd be left holding it?",
     options: { 'wife':'My wife','partner':'My business partner','kids':'My kids','unsure':'Honestly, not sure' } },
+  { key: 'q3', label: 'What have you got in place right now?', multi: true,
+    options: { 'mortgage':'Mortgage insurance through the bank','personal':'A personal life insurance policy','spouse':"Something through my wife's work",'nothing':'Nothing','unsure':'Not sure' } },
   { key: 'q5', label: 'How old are you?',
     options: { '25-34':'25 - 34','35-44':'35 - 44','45-54':'45 - 54','55+':'55+' } }
 ];

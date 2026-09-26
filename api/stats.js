@@ -1,12 +1,12 @@
 const { all, persistent } = require('./_store');
 
 const STEP_LABELS = {
-  1: 'Q1 · Your role',
-  2: 'Q2 · What you signed',
-  3: 'Q3 · The total',
-  4: 'Q4 · Existing coverage',
-  5: 'Q5 · Who’s left',
-  6: 'Contact form'
+  1: 'Q1 · Amount signed for',
+  2: 'Q2 · Who’s left',
+  3: 'Q3 · Existing coverage',
+  4: 'Q4 · Age',
+  5: 'Contact form',
+  6: 'Lead submitted'
 };
 
 module.exports = async (req, res) => {

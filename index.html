@@ -80,6 +80,7 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   margin:var(--sp-5) 0 var(--sp-4);
 }
 .t-hero em{font-style:normal;font-weight:700;color:var(--blue)}
+.t-count{margin:calc(-1 * var(--sp-2)) 0 var(--sp-5);font-size:15px;font-weight:500;color:var(--ink-3)}
 .t-q.sub{font-size:20px;font-weight:600;color:var(--ink-2);letter-spacing:-.01em}
 @media (min-width:900px){
   .t-hero{font-size:38px;margin-top:var(--sp-6)}
@@ -274,13 +275,8 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   font-size:clamp(36px,10.5vw,76px);line-height:1;letter-spacing:-.04em;margin-top:14px;
 }
 .signed-fig .dash{color:#4F6E8C}
-.signed-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:28px}
-.signed-grid[hidden]{display:none}
-.signed-grid div{border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:14px}
-.signed-grid i{display:block;width:22px;height:4px;border-radius:2px;background:var(--blue)}
-.signed-grid span{display:block;margin-top:10px;font-size:13.5px;font-weight:600}
 .signed-note{
-  margin-top:24px;border-left:3px solid var(--gold);padding:4px 0 4px 16px;
+  margin-top:28px;border-left:3px solid var(--gold);padding:4px 0 4px 16px;
   font-family:Archivo,sans-serif;font-weight:600;
   font-size:clamp(15px,3.6vw,18px);line-height:1.4;color:#EAF1F8;
 }
@@ -328,7 +324,9 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   background-repeat:no-repeat;background-position:center;background-size:10px 8px;
 }
 .buys-grid .what{font-size:13.5px;font-weight:600;color:var(--ink)}
-.buys-grid .ok{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--ink-3)}
+/* three ticks don't split evenly into two columns: one per row on a
+   phone, three across wider up */
+@media (max-width:620px){ .buys-grid{grid-template-columns:1fr} }
 
 /* 3 — where the money lands */
 .lands{background:var(--paper);border:1px solid var(--rule);border-radius:18px;padding:clamp(18px,4vw,26px);display:flex;flex-direction:column;gap:22px}
@@ -337,6 +335,7 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .lands-tag{font-size:11.5px;font-weight:600;color:var(--ink-3)}
 .lands-tag.warn{color:#C9302C}
 .lands-tag.check{color:#8A6600}
+.lands-cap{margin:8px 0 0;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
 .lands-bar{display:flex;gap:3px;margin-top:10px;height:34px}
 .lands-bar>*{display:flex;align-items:center;font-size:12px;font-weight:600}
 .lands-bar .seg-l{border-radius:8px 3px 3px 8px;padding:0 12px}
@@ -386,10 +385,31 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
 .licensed .eyebrow-up{display:block;text-align:center;margin-bottom:var(--sp-4)}
 @media (min-width:621px){ .licensed .eyebrow-up{text-align:left} }
 
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:24px}
-.stats div{background:var(--field);border-radius:14px;padding:16px 8px;text-align:center}
-.stats b{display:block;font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(22px,6vw,30px);letter-spacing:-.03em;color:var(--blue-deep)}
-.stats span{display:block;margin-top:6px;font-size:12px;line-height:1.3;color:var(--ink-2);text-wrap:balance}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:10px;margin-top:24px}
+.stats div{background:var(--field);border-radius:14px;padding:18px 14px;text-align:center}
+.stats b{display:block;white-space:nowrap;font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(22px,3.2vw,28px);line-height:1.1;letter-spacing:-.03em;color:var(--blue-deep)}
+.stats span{display:block;margin-top:8px;font-size:13px;line-height:1.4;color:var(--ink-2);text-wrap:balance}
+/* phone: one tile per row, the big words in a fixed left column so all
+   three line up, and every row as tall as the tallest */
+@media (max-width:620px){
+  .stats{grid-template-columns:1fr}
+  .stats div{display:grid;grid-template-columns:112px 1fr;align-items:center;gap:0 14px;text-align:left;padding:16px 16px}
+  .stats b{font-size:22px}
+  .stats span{margin-top:0}
+}
+
+/* what this page can't tell you */
+.gap-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.gap-list li{position:relative;padding-left:24px;font-size:16px;line-height:1.45;color:var(--ink-2)}
+.gap-list li::before{
+  content:'';position:absolute;left:0;top:.42em;width:10px;height:10px;border-radius:50%;
+  border:2px solid var(--blue-deep);
+}
+.gap-close{
+  margin:22px 0 0;padding-top:20px;border-top:1px solid #EDF2F7;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(18px,4.4vw,21px);
+  letter-spacing:-.015em;color:var(--ink);
+}
 
 .li-link{
   margin-top:22px;display:flex;align-items:center;justify-content:center;gap:10px;
@@ -498,7 +518,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
 <div class="wrap">
   <div class="progress-wrap">
     <div class="progress-meta">
-      <span class="progress-label" id="progressLabel">Question <b id="stepNow">1</b> of 5</span>
+      <span class="progress-label" id="progressLabel">Question <b id="stepNow">1</b> of 4</span>
       <span class="progress-pct" id="pct">17%</span>
     </div>
     <div class="progress-rail"><i class="progress-fill" id="fill"></i></div>
@@ -508,20 +528,18 @@ window.ZL_PIXEL_ID = '1091428479971058';
 <main>
 <div class="wrap" id="quizWrap">
 
-<section class="screen is-active" id="s1" data-step="1">
-  <h1 class="t-hero" id="hero">In 60 seconds, find out what your family would <em>actually be left with</em>.</h1>
-  <h2 class="t-q sub">Which of these have you signed for personally?</h2>
-  <p class="t-helper">Select all that apply.</p>
-  <div class="options two" id="q1opts">
-    <label class="option"><input type="checkbox" name="q1" value="Equipment or business loan"><span class="box"></span><span>Equipment or business loan</span></label>
-    <label class="option"><input type="checkbox" name="q1" value="Bank operating line"><span class="box"></span><span>Bank operating line</span></label>
-    <label class="option"><input type="checkbox" name="q1" value="Truck or vehicle financing"><span class="box"></span><span>Truck or vehicle financing</span></label>
-    <label class="option"><input type="checkbox" name="q1" value="Supplier / wholesaler account"><span class="box"></span><span>Supplier / wholesaler account</span></label>
-    <label class="option"><input type="checkbox" name="q1" value="Shop or yard lease"><span class="box"></span><span>Shop or yard lease</span></label>
-    <label class="option"><input type="checkbox" name="q1" value="Business credit card"><span class="box"></span><span>Business credit card</span></label>
-    <label class="option full"><input type="checkbox" name="q1" value="None of these" data-clear="1"><span class="box"></span><span>None of these</span></label>
+<section class="screen is-active" id="s1" data-step="1" data-auto="1">
+  <h1 class="t-hero" id="hero">In 60 seconds, see what you've signed for, and what would <em>actually reach her</em>.</h1>
+  <p class="t-count">4 quick questions.</p>
+  <h2 class="t-q sub">Roughly, how much have you personally signed for?</h2>
+  <p class="t-helper">Loans, credit lines, leases, supplier accounts. A rough number is fine.</p>
+  <div class="options">
+    <label class="option is-radio"><input type="radio" name="q2" value="under-100"><span class="box"></span><span>Under $100,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="100-250"><span class="box"></span><span>$100,000 – $250,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="250-500"><span class="box"></span><span>$250,000 – $500,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="over-500"><span class="box"></span><span>Over $500,000</span></label>
+    <label class="option is-radio"><input type="radio" name="q2" value="not-sure"><span class="box"></span><span>Not sure</span></label>
   </div>
-  <button class="btn mt-5" id="q1next" disabled>Continue</button>
 
   <div class="carriers">
     <div class="carriers-viewport"><div class="carriers-row" id="carriersRow1"></div></div>
@@ -530,14 +548,13 @@ window.ZL_PIXEL_ID = '1091428479971058';
 </section>
 
 <section class="screen" id="s2" data-step="2" data-auto="1">
-  <h1 class="t-q">Roughly, what do those add up to?</h1>
-  <p class="t-helper">A rough number is fine.</p>
+  <h1 class="t-q">If something happened to you tomorrow, who'd be left holding it?</h1>
+  <p class="t-helper">Tap to continue.</p>
   <div class="options">
-    <label class="option is-radio"><input type="radio" name="q2" value="under-100"><span class="box"></span><span>Under $100,000</span></label>
-    <label class="option is-radio"><input type="radio" name="q2" value="100-250"><span class="box"></span><span>$100,000 – $250,000</span></label>
-    <label class="option is-radio"><input type="radio" name="q2" value="250-500"><span class="box"></span><span>$250,000 – $500,000</span></label>
-    <label class="option is-radio"><input type="radio" name="q2" value="over-500"><span class="box"></span><span>Over $500,000</span></label>
-    <label class="option is-radio"><input type="radio" name="q2" value="not-sure"><span class="box"></span><span>Not sure</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="wife"><span class="box"></span><span>My wife</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="partner"><span class="box"></span><span>My business partner</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="kids"><span class="box"></span><span>My kids</span></label>
+    <label class="option is-radio"><input type="radio" name="q4" value="unsure"><span class="box"></span><span>Honestly, not sure</span></label>
   </div>
 </section>
 
@@ -555,17 +572,6 @@ window.ZL_PIXEL_ID = '1091428479971058';
 </section>
 
 <section class="screen" id="s4" data-step="4" data-auto="1">
-  <h1 class="t-q">If something happened to you tomorrow, who'd be left holding it?</h1>
-  <p class="t-helper">Tap to continue.</p>
-  <div class="options">
-    <label class="option is-radio"><input type="radio" name="q4" value="wife"><span class="box"></span><span>My wife</span></label>
-    <label class="option is-radio"><input type="radio" name="q4" value="partner"><span class="box"></span><span>My business partner</span></label>
-    <label class="option is-radio"><input type="radio" name="q4" value="kids"><span class="box"></span><span>My kids</span></label>
-    <label class="option is-radio"><input type="radio" name="q4" value="unsure"><span class="box"></span><span>Honestly, not sure</span></label>
-  </div>
-</section>
-
-<section class="screen" id="s5" data-step="5" data-auto="1">
   <h1 class="t-q">How old are you?</h1>
   <div class="options">
     <label class="option is-radio"><input type="radio" name="q5" value="25-34"><span class="box"></span><span>25 – 34</span></label>
@@ -575,7 +581,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
   </div>
 </section>
 
-<section class="screen" id="sBuild" data-step="5">
+<section class="screen" id="sBuild" data-step="4">
   <div class="loading">
     <h2 id="loadHead">Building your report</h2>
     <ul class="load-steps" id="loadSteps">
@@ -586,7 +592,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
   </div>
 </section>
 
-<section class="screen" id="s6" data-step="5">
+<section class="screen" id="s6" data-step="4">
   <h1 class="t-q">Last step. Where should we text your results?</h1>
   <form id="contact" novalidate>
     <div class="form-grid">
@@ -629,20 +635,31 @@ window.ZL_PIXEL_ID = '1091428479971058';
 </div><!-- /quizWrap -->
 
 <div class="wrap-res">
-<section class="screen" id="s8" data-step="5">
+<section class="screen" id="s8" data-step="4">
 
   <!-- 1 | what he signed for --------------------------------------- -->
   <div class="r-sec r-first">
-    <h1 class="r-h1">Everything you've signed for &mdash; and what it takes to cover it.</h1>
+    <h1 class="r-h1" id="resHead"></h1>
     <div class="signed-card">
-      <div class="eyebrow-up">Personally signed by you</div>
+      <div class="eyebrow-up">Signed with your name on it</div>
       <div class="signed-fig" id="signedFig"></div>
-      <div class="signed-grid" id="signedGrid" hidden></div>
       <div class="signed-note" id="signedNote"></div>
     </div>
   </div>
 
-  <!-- 2 | cost to close it ----------------------------------------- -->
+  <!-- 2 | where the money lands (the pain) -------------------------- -->
+  <div class="r-sec">
+    <h2 class="r-h2 r-big" id="revealHead"></h2>
+    <div class="lands" id="lands"></div>
+    <p class="variant-note" id="variantNote" hidden></p>
+  </div>
+
+  <!-- 3 | the line -------------------------------------------------- -->
+  <div class="r-sec">
+    <p class="big-line" id="bigLine"></p>
+  </div>
+
+  <!-- 4 | cost to close it (the relief) ----------------------------- -->
   <div class="r-sec">
     <h2 class="r-h2">Cost to close it</h2>
     <div class="card">
@@ -667,19 +684,16 @@ window.ZL_PIXEL_ID = '1091428479971058';
     </div>
   </div>
 
-  <!-- 3 | where the money lands ------------------------------------ -->
+  <!-- 5 | what this page can't tell you ---------------------------- -->
   <div class="r-sec">
-    <h2 class="r-h2 r-big" id="revealHead"></h2>
-    <div class="lands" id="lands"></div>
-    <p class="variant-note" id="variantNote" hidden></p>
+    <h2 class="r-h2">What this page can't tell you</h2>
+    <div class="card">
+      <ul class="gap-list" id="gapList"></ul>
+      <p class="gap-close">That takes one short call.</p>
+    </div>
   </div>
 
-  <!-- 4 | the line -------------------------------------------------- -->
-  <div class="r-sec">
-    <p class="big-line" id="bigLine"></p>
-  </div>
-
-  <!-- 5 | the call -------------------------------------------------- -->
+  <!-- 6 | the call -------------------------------------------------- -->
   <div class="r-sec r-call">
     <h2 class="r-h2 r-big" id="callHead"></h2>
     <div class="card">
@@ -699,9 +713,9 @@ window.ZL_PIXEL_ID = '1091428479971058';
       </div>
 
       <div class="stats">
-        <div><b>15</b><span>minutes</span></div>
-        <div><b>1</b><span>clear picture</span></div>
-        <div><b>0</b><span>pressure</span></div>
+        <div><b>15</b><span>minutes. You'll know your real number by the end.</span></div>
+        <div><b>You pick</b><span>the amount. She shows you what each one costs.</span></div>
+        <div><b>Bring her</b><span>Your wife is welcome on the call.</span></div>
       </div>
 
       <a class="li-link" id="liLink" target="_blank" rel="noopener" hidden><b>in</b><span>View her LinkedIn</span></a>
@@ -843,27 +857,10 @@ selList.addEventListener('keydown',function(e){
 });
 
 
-/* ---------------- ad-variant copy ----------------
-   Default heading is already in the HTML, so the page reads
-   correctly if this never runs. */
+/* ---------------- query string ----------------
+   One heading for every ad. ?a= no longer changes anything on the
+   page; it is read only so the report can say which ad sent him. */
 var PARAMS=new URLSearchParams(location.search);
-var HEADS={
-  freeze :['In 60 seconds, find out what your family could actually get ','in the first month','.'],
-  nosale :['In 60 seconds, find out what your business would ','actually be worth to them','.'],
-  confront:['In 60 seconds, find out what your wife would ','actually be left with','.']
-};
-(function(){
-  var h=HEADS[PARAMS.get('a')];
-  if(!h) return;
-  var el=document.getElementById('hero');
-  if(!el) return;
-  el.textContent=h[0];
-  var em=document.createElement('em');
-  em.textContent=h[1];
-  el.appendChild(em);
-  el.appendChild(document.createTextNode(h[2]));
-})();
-
 var VARIANT_NOTES={
   freeze:'Accounts in one person\u2019s name can be frozen until an estate trustee is appointed, which in Ontario often takes months. A policy with a named beneficiary is paid outside that process, usually in weeks.'
 };
@@ -932,17 +929,17 @@ function fireConversion(){
 }
 
 /* ---------------- navigation ---------------- */
-/* Five questions (0-4), then: building report, delivery, results. */
+/* Four questions (0-3), then: building report, delivery, results. */
 var screens=[].slice.call(document.querySelectorAll('.screen'));
-var QUESTIONS_TOTAL=5;
-var BUILDING=5, CONTACT=6, RESULTS=7;
+var QUESTIONS_TOTAL=4;
+var BUILDING=4, CONTACT=5, RESULTS=6;
 var current=0;
 var fill=document.getElementById('fill'),pct=document.getElementById('pct'),
     stepNow=document.getElementById('stepNow'),progressLabel=document.getElementById('progressLabel');
 
 function paint(i){
   var step=parseInt(screens[i].getAttribute('data-step'),10)||1;
-  if(!sent[i]){ sent[i]=1; track('step',{step:i>=BUILDING?(i===RESULTS?'results':(i===CONTACT?'contact':'building')):step}); }
+  if(!sent[i]){ sent[i]=1; track('step',{step:i===CONTACT?5:(i>=BUILDING?(i===RESULTS?'results':'building'):step)}); }
   var p=Math.round((step/QUESTIONS_TOTAL)*100);
   /* past the last question the bar is full and stays there */
   if(progressLabel){
@@ -968,7 +965,9 @@ screens.forEach(function(sc,i){
   if(sc.getAttribute('data-auto')!=='1') return;
   sc.addEventListener('change',function(e){
     if(!e.target||e.target.type!=='radio') return;
-    /* Q5 is the last question — it hands off to the building screen */
+    /* Answering Q1 is the conversion. The last question hands off to
+       the building screen. */
+    if(i===0) fireConversion();
     setTimeout(function(){ if(i+1===BUILDING) runBuilding(); else go(i+1); },200);
   });
 });
@@ -991,14 +990,13 @@ function wireMulti(wrapId,btnId,nextIndex,onAdvance){
   });
   sync();
 }
-wireMulti('q1opts','q1next',1,fireConversion);   /* Q1 is the conversion */
 wireMulti('q3opts','q3next',3);
 
 /* ---------------- answers ---------------- */
 function multi(n){ return [].slice.call(document.querySelectorAll('input[name="'+n+'"]:checked')).map(function(i){return i.value;}); }
 function one(n){ var e=document.querySelector('input[name="'+n+'"]:checked'); return e?e.value:''; }
 function answers(){
-  return {q1:multi('q1'),q2:one('q2'),q3:multi('q3'),q4:one('q4'),q5:one('q5'),trade:tradeValue};
+  return {q2:one('q2'),q3:multi('q3'),q4:one('q4'),q5:one('q5'),trade:tradeValue};
 }
 
 /* ---------------- data ---------------- */
@@ -1014,47 +1012,46 @@ var RATES={
   500000:{'25-34':[22,35],'35-44':[30,50],'45-54':[70,120],'55+':[175,290]},
   750000:{'25-34':[30,48],'35-44':[42,70],'45-54':[100,170],'55+':[250,420]}
 };
-/* Q4 decides who the page is talking about, everywhere. */
+/* Q2 decides who the page is talking about, everywhere. A partner or a
+   "not sure" is spoken of as the family. Each form is spelled out, so
+   no sentence has to guess at a pronoun or a verb ending. */
 var PERSON={
-  wife   :{who:'your wife',    short:'Wife',    obj:'her',  owns:'owns', stands:'stands'},
-  partner:{who:'your partner', short:'Partner', obj:'him',  owns:'owns', stands:'stands'},
-  kids   :{who:'your kids',    short:'Kids',    obj:'them', owns:'own',  stands:'stand'},
-  unsure :{who:'your family',  short:'Family',  obj:'them', owns:'owns', stands:'stands'}
+  wife   :{who:'your wife',   short:'Wife',   obj:'her',         subj:'She',         poss:'her',           gets:'gets', stands:'stands'},
+  kids   :{who:'your kids',   short:'Kids',   obj:'them',        subj:'They',        poss:'their',         gets:'get',  stands:'stand'},
+  family :{who:'your family', short:'Family', obj:'your family', subj:'Your family', poss:'your family’s', gets:'gets', stands:'stands'}
 };
+function personFor(q){ return q==='wife'?PERSON.wife:(q==='kids'?PERSON.kids:PERSON.family); }
 
-/* The one sentence he repeats if he closes the tab. */
+/* The one sentence he repeats if he closes the tab. Keyed on the raw
+   answer: the partner line is about the partner, not the family. */
 var CLOSING_LINE={
   wife   :'Your wife shouldn’t have to sell the trucks to settle what you signed for.',
-  partner:'Your partner shouldn’t have to buy you out with money he doesn’t have.',
-  kids   :'Your kids should inherit what you built, not what you owe.',
-  unsure :'Nobody should have to sell anything to settle what you signed for.'
+  kids   :'Your kids should get what you built, not what you owe.',
+  partner:'Your partner shouldn’t have to buy your family out with money he doesn’t have.',
+  unsure :'Nobody should have to sell the trucks to settle what you signed for.'
 };
 
-/* Where the money lands: one row per thing he actually ticked. Each row
-   is a title on the left, the verdict on the right, and a bar showing
-   who the money reaches. */
+/* Where the money lands: one row per thing he actually ticked. A title
+   on the left, the verdict on the right, a bar showing who the money
+   reaches, and one line saying why. */
 var LANDS={
   mortgage:function(p){ return { name:'Mortgage insurance', tag:'shrinks yearly', cls:'',
     bar:'<span class="seg-l dark" style="flex:1">Bank 100%</span>'
-       +'<span class="seg-r empty" style="flex:none;width:96px">'+p.short+' 0%</span>' }; },
+       +'<span class="seg-r empty" style="flex:none;width:96px">'+p.short+' 0%</span>',
+    cap:'Pays off the bank’s loan on the house. Nothing for what you signed.' }; },
   spouse  :function( ){ return { name:'Her work coverage', tag:'ends with the job', cls:'warn',
     bar:'<span class="seg-l slate" style="flex:1.1">While employed</span>'
-       +'<span class="seg-r hatch" style="flex:1">nothing</span>' }; },
-  personal:function(p){ return { name:'Your personal policy', tag:'check amount &amp; date', cls:'check',
-    bar:'<span class="seg-full gold" style="flex:1">'+p.short+' 100%</span>' }; },
+       +'<span class="seg-r hatch" style="flex:1">nothing</span>',
+    cap:'Stops the day her job does.' }; },
+  personal:function(p){ return { name:'Your own policy', tag:'sized years ago', cls:'check',
+    bar:'<span class="seg-full gold" style="flex:1">'+p.short+' 100%</span>',
+    cap:'Bought before the trucks and the crew. It may not cover what you’ve signed today.' }; },
   nothing :function(p){ return { name:'Nothing in place', tag:'nothing named', cls:'warn',
-    bar:'<span class="seg-full hatch" style="flex:1;justify-content:center">'+p.short+' 0%</span>' }; },
-  unsure  :function( ){ return { name:'Not sure what’s in place', tag:'worth confirming', cls:'check',
-    bar:'<span class="seg-full hatch" style="flex:1;justify-content:center">unknown</span>' }; }
-};
-
-var Q1_SHORT={
-  'Equipment or business loan'   :'Equipment loan',
-  'Bank operating line'          :'Operating line',
-  'Truck or vehicle financing'   :'Truck financing',
-  'Supplier / wholesaler account':'Supplier account',
-  'Shop or yard lease'           :'Shop lease',
-  'Business credit card'         :'Business card'
+    bar:'<span class="seg-full hatch" style="flex:1;justify-content:center">'+p.short+' 0%</span>',
+    cap:'Nothing with '+p.poss+' name on it. Your creditors get paid first.' }; },
+  unsure  :function(p){ return { name:'Not sure what’s in place', tag:'nothing named', cls:'warn',
+    bar:'<span class="seg-full hatch" style="flex:1;justify-content:center">unknown</span>',
+    cap:'Nothing with '+p.poss+' name on it. Your creditors get paid first.' }; }
 };
 
 /* At-height and heavy-equipment work is rated differently by every
@@ -1077,34 +1074,40 @@ function scaleFor(high){
 }
 
 function buildResults(a){
-  var p=PERSON[a.q4]||PERSON.unsure;
+  var p=personFor(a.q4);
   var band=BANDS[a.q2]||null;
   var q3=a.q3||[];
   var hasPersonal=q3.indexOf('personal')!==-1;
-  var hasBank=q3.indexOf('mortgage')!==-1||q3.indexOf('spouse')!==-1;
-  var guarantees=(a.q1||[]).filter(function(v){ return v!=='None of these'; });
+  var hasCover=q3.some(function(k){ return k==='mortgage'||k==='spouse'||k==='personal'; });
 
   /* ---- 1 | what he signed for ---- */
+  document.getElementById('resHead').textContent='Here’s who gets paid before '+p.who+'.';
   var figEl=document.getElementById('signedFig');
-  if(!guarantees.length){
-    figEl.textContent='Nothing';
-  }else if(band){
-    figEl.innerHTML=band.short;
-  }else{
-    figEl.textContent='Not sure';
-  }
+  if(band) figEl.innerHTML=band.short; else figEl.textContent='Not sure';
+  /* Debt is settled from his estate, not from what she owns. */
+  document.getElementById('signedNote').textContent=
+    'If it’s ever you, this gets paid from your estate first. '+p.subj+' '+p.gets+' what’s left.';
 
-  var gridEl=document.getElementById('signedGrid');
-  gridEl.innerHTML=guarantees.map(function(v){
-    return '<div><i></i><span>'+(Q1_SHORT[v]||v)+'</span></div>';
+  /* ---- 2 | where the money lands ---- */
+  document.getElementById('revealHead').innerHTML = hasCover
+    ? 'What you have wasn’t built to reach <em>'+p.who+'</em>.'
+    : 'Right now, nothing is built to reach <em>'+p.who+'</em>.';
+
+  var order=['mortgage','spouse','personal','nothing','unsure'];
+  var picked=order.filter(function(k){ return q3.indexOf(k)!==-1; });
+  if(!picked.length) picked=['unsure'];
+  document.getElementById('lands').innerHTML=picked.map(function(k){
+    var r=LANDS[k](p);
+    return '<div><div class="lands-top"><span class="lands-name">'+r.name+'</span>'
+      +'<span class="lands-tag '+r.cls+'">'+r.tag+'</span></div>'
+      +'<div class="lands-bar">'+r.bar+'</div>'
+      +'<p class="lands-cap">'+r.cap+'</p></div>';
   }).join('');
-  gridEl.hidden=!guarantees.length;
 
-  document.getElementById('signedNote').textContent = guarantees.length
-    ? 'Called in, it’s settled from what '+p.who+' '+p.owns+'.'
-    : 'Nothing of the business sits on your signature.';
+  /* ---- 3 | the line ---- */
+  document.getElementById('bigLine').textContent=CLOSING_LINE[a.q4]||CLOSING_LINE.unsure;
 
-  /* ---- 2 | cost to close it ---- */
+  /* ---- 4 | cost to close it ---- */
   var gated=GATED.indexOf(a.trade)!==-1;
   var rate=(band&&a.q5&&RATES[band.price])?RATES[band.price][a.q5]:null;
   var costFig=document.getElementById('costFig'),costPer=document.getElementById('costPer'),
@@ -1124,44 +1127,31 @@ function buildResults(a){
     document.getElementById('scaleHi').textContent='$'+max;
     meter.hidden=false;
 
+    /* the coverage follows his band: "Over $500K" buys more */
     document.getElementById('buysFig').textContent=money(band.price);
-    document.getElementById('buysGrid').innerHTML=guarantees.map(function(v){
-      return '<div><span class="tick"></span><span class="what">'+(Q1_SHORT[v]||v)+'</span><span class="ok">covered</span></div>';
-    }).join('');
-    buys.hidden=!guarantees.length;
+    document.getElementById('buysGrid').innerHTML=
+      ['Straight to '+p.obj,'Creditors can’t touch it','Same price for 20 years'].map(function(t){
+        return '<div><span class="tick"></span><span class="what">'+t+'</span></div>';
+      }).join('');
+    buys.hidden=false;
 
-    assump.textContent='Based on your age band and standard health. Your actual number depends on the carrier and a few questions Alicia will ask.';
+    assump.textContent='Based on your age and standard health. Your health, your work and the insurer set the real price.';
   }else{
     costFig.textContent='Priced on the call';
     costPer.textContent='';
     meter.hidden=true;
     buys.hidden=true;
     assump.textContent = gated
-      ? 'Your trade changes how carriers price this, and they don’t all price it the same. Alicia will get you the real number.'
-      : 'Without a total there’s nothing to price against. Alicia builds the number with you.';
+      ? 'Your trade changes how insurers price this, and they don’t all price it the same. You’ll get the real number on the call.'
+      : 'Without a total there’s nothing to price against. You’ll get the real number on the call.';
   }
 
-  /* ---- 3 | where the money lands ---- */
-  var head;
-  if(hasPersonal)  head='One of these reaches <em>'+p.who+'</em>. The others don’t.';
-  else if(hasBank) head='What you have wasn’t built to reach <em>'+p.who+'</em>.';
-  else             head='Nothing you have reaches <em>'+p.who+'</em>.';
-  document.getElementById('revealHead').innerHTML=head;
+  /* ---- 5 | what this page can't tell you ---- */
+  var gaps=['Your real price, with your health.','Which insurer treats your trade fairly. They don’t all.'];
+  if(hasPersonal) gaps.push('Whether your own policy still covers what you’ve signed.');
+  document.getElementById('gapList').innerHTML=gaps.map(function(t){ return '<li>'+t+'</li>'; }).join('');
 
-  var order=['mortgage','spouse','personal','nothing','unsure'];
-  var picked=order.filter(function(k){ return q3.indexOf(k)!==-1; });
-  if(!picked.length) picked=['unsure'];
-  document.getElementById('lands').innerHTML=picked.map(function(k){
-    var r=LANDS[k](p);
-    return '<div><div class="lands-top"><span class="lands-name">'+r.name+'</span>'
-      +'<span class="lands-tag '+r.cls+'">'+r.tag+'</span></div>'
-      +'<div class="lands-bar">'+r.bar+'</div></div>';
-  }).join('');
-
-  /* ---- 4 | the line ---- */
-  document.getElementById('bigLine').textContent=CLOSING_LINE[a.q4]||CLOSING_LINE.unsure;
-
-  /* ---- 5 | the call ---- */
+  /* ---- 6 | the call ---- */
   document.getElementById('callHead').textContent=
     'Fifteen minutes with Alicia, and you’ll know where '+p.who+' actually '+p.stands+'.';
   var li=document.getElementById('liLink');
@@ -1351,8 +1341,7 @@ function isPreview(){
 if(isPreview()){
   var stored=null;
   try{ stored=JSON.parse(sessionStorage.getItem('zl_last')||'null'); }catch(_){}
-  var demo=stored||{n:'Dave',a:{q1:['Equipment or business loan','Bank operating line','Truck or vehicle financing'],
-    q2:'250-500',q3:['mortgage','spouse'],q4:'wife',q5:'35-44',trade:'HVAC'}};
+  var demo=stored||{a:{q2:'250-500',q3:['mortgage','spouse'],q4:'wife',q5:'35-44',trade:'HVAC'}};
   try{ buildResults(demo.a); }catch(_){}
   screens[0].classList.remove('is-active');
   screens[RESULTS].classList.add('is-active');
