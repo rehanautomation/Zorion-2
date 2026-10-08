@@ -15,7 +15,20 @@ const path = require('path');
 const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const KEY = 'zorion_events';
+/* Only the temporary file fallback is capped. The KV list is never
+   trimmed: old data is kept for good. */
 const MAX = 20000;
+const PAGE = 5000;
+
+/* v2 tracking keeps two small side tables next to the event list:
+   CLICKS  every fbclid hash already counted (a set), so a reload or a
+           reopened link isn't a new person
+   DWELL   one entry per session holding its latest visible time. The
+           browser reports it every 5 seconds; overwriting one entry
+           instead of appending an event keeps the list from filling
+           with heartbeats. */
+const CLICKS = 'zorion_clicks_v2';
+const DWELL = 'zorion_dwell_v2';
 
 const FILE = process.env.ZORION_DATA_FILE
   || path.join(process.env.VERCEL ? '/tmp' : process.cwd(), 'zorion-events.json');
@@ -37,7 +50,6 @@ async function push(event) {
   const row = JSON.stringify(event);
   if (KV_URL && KV_TOKEN) {
     await kv(['LPUSH', KEY, row]);
-    kv(['LTRIM', KEY, 0, MAX - 1]).catch(() => {});
     return;
   }
   let list = [];
@@ -91,12 +103,63 @@ function isAdmin(req, body) {
   return adminIps().some(entry => ipMatches(ip, entry));
 }
 
+/* Read in pages, so a long history never has to fit in one reply. */
 async function all() {
   if (KV_URL && KV_TOKEN) {
-    const out = await kv(['LRANGE', KEY, 0, MAX - 1]);
-    return (out.result || []).map(r => { try { return JSON.parse(r); } catch (_) { return null; } }).filter(Boolean);
+    const rows = [];
+    for (let start = 0; ; start += PAGE) {
+      const out = await kv(['LRANGE', KEY, start, start + PAGE - 1]);
+      const page = out.result || [];
+      for (const r of page) { try { rows.push(JSON.parse(r)); } catch (_) {} }
+      if (page.length < PAGE) break;
+    }
+    return rows;
   }
   try { return JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch (_) { return []; }
+}
+
+/* ---- file fallback for the side tables ---- */
+function sideFile(name) { return FILE.replace(/\.json$/, '') + '-' + name + '.json'; }
+function readSide(name) { try { return JSON.parse(fs.readFileSync(sideFile(name), 'utf8')); } catch (_) { return {}; } }
+function writeSide(name, obj) { try { fs.writeFileSync(sideFile(name), JSON.stringify(obj)); } catch (_) {} }
+
+/* true if the click hash is new, false if it was already counted */
+async function markClick(hash) {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['SADD', CLICKS, hash]);
+    return Number(out.result) === 1;
+  }
+  const seen = readSide('clicks');
+  if (seen[hash]) return false;
+  seen[hash] = 1; writeSide('clicks', seen);
+  return true;
+}
+
+/* one overwrite per heartbeat; values are cumulative, so the latest
+   one is the whole story */
+async function setDwell(sid, value) {
+  const row = JSON.stringify(value);
+  if (KV_URL && KV_TOKEN) {
+    await kv(['HSET', DWELL, sid, row]);
+    return;
+  }
+  const d = readSide('dwell'); d[sid] = value; writeSide('dwell', d);
+}
+
+/* { sid: {s, l, t} } */
+async function allDwell() {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['HGETALL', DWELL]);
+    const r = out.result || [];
+    const map = {};
+    if (Array.isArray(r)) {
+      for (let i = 0; i + 1 < r.length; i += 2) { try { map[r[i]] = JSON.parse(r[i + 1]); } catch (_) {} }
+    } else if (r && typeof r === 'object') {
+      for (const k of Object.keys(r)) { try { map[k] = typeof r[k] === 'string' ? JSON.parse(r[k]) : r[k]; } catch (_) {} }
+    }
+    return map;
+  }
+  return readSide('dwell');
 }
 
 function readBody(req) {
@@ -113,5 +176,6 @@ function readBody(req) {
 
 module.exports = {
   push, all, clear, readBody, isAdmin, clientIp, adminIps,
+  markClick, setDwell, allDwell,
   persistent: Boolean(KV_URL && KV_TOKEN)
 };

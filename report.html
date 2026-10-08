@@ -79,6 +79,40 @@ tr:last-child td{border-bottom:0}
   .v-stats{margin-top:0;text-align:right}
   .v-stats>div{display:inline-block;min-width:58px;margin-left:24px;text-align:right;vertical-align:top}
 }
+
+/* ---- v2: what is being counted ---- */
+.banner{
+  display:flex;align-items:flex-start;gap:10px;margin:0 0 4px;
+  background:#EAF3FB;border:1px solid #C9DDEF;border-radius:12px;padding:12px 16px;
+  font-size:14px;color:var(--navy);
+}
+.banner::before{content:'';flex:none;width:9px;height:9px;margin-top:6px;border-radius:50%;background:#1F9D63;box-shadow:0 0 0 3px rgba(31,157,99,.18)}
+.banner b{font-weight:600}
+.banner small{display:block;font-size:12px;color:var(--slate);margin-top:2px}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:99px;padding:3px;margin-top:16px}
+.seg button{border:0;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--slate);padding:7px 14px;border-radius:99px;cursor:pointer}
+.seg button.is-on{background:var(--navy);color:#fff}
+.mode-note{font-size:12.5px;color:var(--slate-light);margin:8px 0 0}
+.v-stats.six{grid-template-columns:repeat(3,1fr)}
+.reason td:last-child,.reason th:last-child{text-align:right;white-space:nowrap}
+.reason code{display:inline-block;font-size:11px;color:var(--slate-light);background:var(--sky);padding:1px 6px;border-radius:4px;margin:3px 0 0 6px}
+.tbl-scroll table.reason{min-width:0}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px}
+.tbl-scroll table{min-width:520px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+details.old{margin-top:40px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 18px}
+details.old>summary{cursor:pointer;list-style:none;padding:16px 0;font-family:Archivo,sans-serif;font-weight:700;font-size:15px;color:var(--navy)}
+details.old>summary::-webkit-details-marker{display:none}
+details.old>summary::after{content:'Show';float:right;font-family:Inter,sans-serif;font-weight:600;font-size:12px;color:var(--blue)}
+details.old[open]>summary::after{content:'Hide'}
+details.old>summary small{display:block;font-family:Inter,sans-serif;font-weight:400;font-size:12.5px;color:var(--slate-light);margin-top:2px}
+details.old .inner{padding:0 0 18px}
+details.old h2{margin-top:18px}
+.locked{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.locked button{border:1px solid var(--line);background:var(--sky);color:var(--navy);font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:99px;cursor:pointer}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.tag.ok{background:#E3F4EC;color:#16784A}
+.tag.no{background:#F2F4F7;color:var(--slate-light)}
 </style>
 </head>
 <body>
@@ -97,15 +131,169 @@ tr:last-child td{border-bottom:0}
 
 <script>
 var days = 0;
+var mode = 'verified';            // 'verified' | 'all'
+var last = null;
 
-function esc(s){ return String(s == null ? '' : s).replace(/[<>&]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }); }
+/* Lead names only come back with the admin key. It is read from
+   ?key= once, then remembered on this device only. */
+var KEY = (function(){
+  try{
+    var q = new URLSearchParams(location.search).get('key');
+    if (q) { localStorage.setItem('zl_admin_key', q); history.replaceState(null, '', location.pathname); }
+    return localStorage.getItem('zl_admin_key') || '';
+  }catch(_){ return ''; }
+})();
+
+function esc(s){ return String(s == null ? '' : s).replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
 
 function render(d){
-  var t = d.totals, views = t.views || 0;
-  var worst = d.steps.slice().sort(function(a,b){ return b.droppedHere - a.droppedHere; })[0];
-
+  last = d;
   var html = '';
+
+  /* ---- what is being counted ---- */
+  if (d.trackingSince){
+    html += '<div class="banner"><div>Counting real ad clicks since <b>' + esc(d.trackingSince.toronto) + '</b>'
+      + '<small>A visit counts when it carries a Meta click (an fbclid, or the Facebook / Instagram app), an a= ad tag, comes from Canada and isn’t a bot. Days are Toronto time.</small></div></div>';
+  } else {
+    html += '<div class="banner"><div>New tracking is live. <b>Waiting for the first visit.</b>'
+      + '<small>Only real Meta ad clicks from Canada will be counted. Everything before this is in the section at the bottom.</small></div></div>';
+  }
+
+  html += '<div class="seg" id="seg">'
+    + '<button data-mode="verified"' + (mode === 'verified' ? ' class="is-on"' : '') + '>Real ad clicks</button>'
+    + '<button data-mode="all"' + (mode === 'all' ? ' class="is-on"' : '') + '>All traffic</button>'
+    + '</div>'
+    + '<p class="mode-note">' + (mode === 'verified'
+        ? 'Each person counted once, the day they clicked. Reloads are folded into the same person.'
+        : 'Every visit since the switch, including bots, link previews, reloads and visits without an ad.') + '</p>';
+
+  var b = d[mode] || {totals:{}, steps:[], byA:[], bySrc:[], byPl:[], byDay:[]};
+  var t = b.totals, views = t.views || 0;
+
   html += '<h2>Overview</h2><div class="cards">'
+    + card(views, mode === 'verified' ? 'Real people' : 'Visits')
+    + card(t.engaged, 'Engaged')
+    + card(t.started, 'Answered Q1')
+    + card(t.leads, 'Leads', true)
+    + card(t.conversionRate + '%', 'Conversion', true)
+    + card(dur(t.visibleMedianMs), 'Median time on page')
+    + card(dur(t.visibleAvgMs), 'Average time on page')
+    + card(dur(t.firstAnswerMedianMs), 'Median time to answer Q1')
+    + '</div>'
+    + '<p class="note">Time counts only while the page is on screen. Engaged = touched, clicked, typed or scrolled.</p>';
+
+  html += steps(b.steps, views);
+  html += breakdown('By ad (a=)', b.byA, 'no a= tag');
+  html += breakdown('By platform (src=)', b.bySrc, 'not tagged');
+  html += breakdown('By placement (pl=)', b.byPl, 'not tagged');
+  html += breakdown('By day (Toronto time)', b.byDay, '—');
+
+  /* ---- what was filtered out ---- */
+  var f = d.filtered || {total:0, byReason:[]};
+  html += '<h2>Filtered out (' + (f.total || 0) + ')</h2>';
+  if (!f.byReason || !f.byReason.length){
+    html += '<div class="panel">Nothing filtered in this window.</div>';
+  } else {
+    var allViews = (d.all && d.all.totals.views) || 0;
+    html += '<div class="tbl-scroll"><table class="reason"><tr><th>Why it wasn’t counted</th><th class="num">Visits</th></tr>'
+      + f.byReason.map(function(r){
+          var pc = allViews ? Math.round(r.count / allViews * 100) : 0;
+          return '<tr><td>' + esc(r.label) + '<code>' + esc(r.reason) + '</code></td><td class="num"><b>' + r.count + '</b> · ' + pc + '%</td></tr>';
+        }).join('')
+      + '</table></div>';
+  }
+
+  /* ---- leads ---- */
+  html += leadsBlock(d.leads, d.admin, true);
+
+  if (!d.persistent){
+    html += '<div class="warn"><b>Storage is temporary.</b> Add <code>KV_REST_API_URL</code> and <code>KV_REST_API_TOKEN</code> '
+      + 'env vars (Vercel KV / Upstash free tier) to keep stats permanently. Leads still reach Discord either way.</div>';
+  }
+
+  /* ---- the old tracking, kept, collapsed ---- */
+  var L = d.legacy;
+  if (L && L.totals && L.totals.views){
+    var open = false;
+    try{ open = sessionStorage.getItem('zl_old_open') === '1'; }catch(_){}
+    html += '<details class="old" id="old"' + (open ? ' open' : '') + '><summary>Before new tracking'
+      + '<small>' + L.totals.views + ' visits' + (L.from ? ', ' + day(L.from) + ' to ' + day(L.to) : '')
+      + '. Not filtered: includes bots, previews and our own early tests.</small></summary><div class="inner">'
+      + legacy(L, d.admin)
+      + '</div></details>';
+  }
+
+  document.getElementById('app').innerHTML = html;
+}
+
+function steps(list, views){
+  list = list || [];
+  var worst = list.slice().sort(function(a,b){ return b.droppedHere - a.droppedHere; })[0];
+  var html = '<h2>Step breakdown</h2>'
+    + '<div class="legend"><span class="r">Reached this step</span><span class="d">Dropped off here</span></div>'
+    + '<div class="panel">'
+    + list.map(function(s){
+        var rp = views ? (s.reached / views) * 100 : 0;
+        var dp = views ? (s.droppedHere / views) * 100 : 0;
+        return '<div class="row"><div class="top"><b>' + esc(s.label) + '</b>'
+          + '<span>' + s.reached + ' reached · <span class="drop">' + s.droppedHere + ' left</span></span></div>'
+          + '<div class="bar"><i style="width:' + rp.toFixed(1) + '%"></i><u style="width:' + dp.toFixed(1) + '%"></u></div></div>';
+      }).join('')
+    + '</div>';
+  if (worst && worst.droppedHere > 0){
+    html += '<p class="note">Biggest leak: <b>' + esc(worst.label) + '</b> — ' + worst.droppedHere + ' people stopped there.</p>';
+  }
+  return html;
+}
+
+/* One row per value that actually turned up, so a new ad, platform or
+   placement appears here by itself. */
+function breakdown(title, rows, emptyName){
+  rows = rows || [];
+  var html = '<h2>' + title + '</h2>';
+  if (!rows.length) return html + '<div class="panel">Nothing yet in this window.</div>';
+  var top = Math.max.apply(null, rows.map(function(r){ return r.views || 0; })) || 0;
+  return html + '<div class="vlist">'
+    + rows.map(function(r){
+        var none = r.key === '(none)';
+        var w = top ? (r.views / top) * 100 : 0;
+        return '<div class="v">'
+          + '<div class="v-name' + (none ? ' none' : '') + '">' + (none ? emptyName : esc(r.key)) + '</div>'
+          + '<div class="v-conv">' + r.conversionRate + '%</div>'
+          + '<div class="bar"><i style="width:' + w.toFixed(1) + '%"></i></div>'
+          + '<div class="v-stats six">'
+            + stat(r.views, mode === 'verified' ? 'people' : 'visits')
+            + stat(r.engaged, 'engaged')
+            + stat(r.started, 'answered')
+            + stat(r.leads, 'leads')
+            + stat(dur(r.visibleMedianMs), 'median time')
+            + stat(dur(r.firstAnswerMedianMs), 'to Q1')
+          + '</div>'
+        + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+function leadsBlock(leads, admin, isV2){
+  var html = '<h2>' + (isV2 ? 'Leads' : 'Leads (old tracking)') + (admin && leads ? ' (' + leads.length + ')' : '') + '</h2>';
+  if (!admin){
+    return html + '<div class="panel locked"><span>Names, emails and phone numbers are hidden on the public report.</span>'
+      + '<button type="button" data-unlock="1">Show lead details</button></div>';
+  }
+  if (!leads || !leads.length) return html + '<div class="panel">No leads yet in this window.</div>';
+  return html + '<div class="tbl-scroll"><table><tr><th>When (Toronto)</th>' + (isV2 ? '<th>Counted</th><th>Ad</th>' : '')
+    + '<th>Name</th><th>Email</th><th>Phone</th></tr>'
+    + leads.map(function(l){
+        return '<tr><td>' + esc(when(l.ts)) + '</td>'
+          + (isV2 ? '<td><span class="tag ' + (l.verified ? 'ok">real click' : 'no">not verified') + '</span></td><td>' + esc(l.a || '—') + '</td>' : '')
+          + '<td>' + esc(l.name) + '</td><td>' + esc(l.email) + '</td><td>' + esc(l.phone) + '</td></tr>';
+      }).join('')
+    + '</table></div>';
+}
+
+function legacy(L, admin){
+  var t = L.totals, views = t.views || 0;
+  var html = '<div class="cards">'
     + card(views, 'Total views')
     + card(t.attempted, 'Attempted &amp; left')
     + card(t.bounced, 'Left immediately')
@@ -114,69 +302,24 @@ function render(d){
     + card(dur(t.avgLandingMs), 'Avg time on Q1')
     + card(dur(t.avgSessionMs), 'Avg time on page')
     + '</div>';
-
-  html += '<h2>Step breakdown</h2>'
-    + '<div class="legend"><span class="r">Reached this step</span><span class="d">Dropped off here</span></div>'
-    + '<div class="panel">'
-    + d.steps.map(function(s){
-        var rp = views ? (s.reached / views) * 100 : 0;
-        var dp = views ? (s.droppedHere / views) * 100 : 0;
-        return '<div class="row"><div class="top"><b>' + esc(s.label) + '</b>'
-          + '<span>' + s.reached + ' reached · <span class="drop">' + s.droppedHere + ' left</span></span></div>'
-          + '<div class="bar"><i style="width:' + rp.toFixed(1) + '%"></i><u style="width:' + dp.toFixed(1) + '%"></u></div></div>';
-      }).join('')
-    + '</div>';
-
-  if (worst && worst.droppedHere > 0){
-    html += '<p class="note">Biggest leak: <b>' + esc(worst.label) + '</b> — ' + worst.droppedHere + ' people stopped there.</p>';
-  }
-
-  /* Built from whatever ?a= values turned up in the data, so a new ad
-     variant appears here by itself. */
-  var vs = d.variants || [];
+  html += steps(L.steps, views);
+  var vs = L.variants || [];
   html += '<h2>Traffic by ad variant</h2>';
-  if (!vs.length){
-    html += '<div class="panel">Nothing yet in this window.</div>';
-  } else {
-    var topViews = vs[0].views || 0;
-    html += '<div class="vlist">'
-      + vs.map(function(v){
-          var w = topViews ? (v.views / topViews) * 100 : 0;
-          return '<div class="v">'
-            + '<div class="v-name' + (v.variant === '(none)' ? ' none' : '') + '">'
-              + (v.variant === '(none)' ? 'direct' : esc(v.variant)) + '</div>'
-            + '<div class="v-conv">' + v.conversionRate + '%</div>'
-            + '<div class="bar"><i style="width:' + w.toFixed(1) + '%"></i></div>'
-            + '<div class="v-stats">'
-              + stat(v.views, 'views')
-              + stat(v.started, 'started')
-              + stat(v.leads, 'leads')
-              + stat(dur(v.avgLandingMs), 'on Q1')
-              + stat(dur(v.avgSessionMs), 'total')
-            + '</div>'
-          + '</div>';
-        }).join('')
-      + '</div>';
+  if (!vs.length) html += '<div class="panel">Nothing in this window.</div>';
+  else {
+    var top = vs[0].views || 0;
+    html += '<div class="vlist">' + vs.map(function(v){
+      var w = top ? (v.views / top) * 100 : 0;
+      return '<div class="v"><div class="v-name' + (v.variant === '(none)' ? ' none' : '') + '">'
+        + (v.variant === '(none)' ? 'direct' : esc(v.variant)) + '</div>'
+        + '<div class="v-conv">' + v.conversionRate + '%</div>'
+        + '<div class="bar"><i style="width:' + w.toFixed(1) + '%"></i></div>'
+        + '<div class="v-stats">' + stat(v.views, 'views') + stat(v.started, 'started') + stat(v.leads, 'leads')
+        + stat(dur(v.avgLandingMs), 'on Q1') + stat(dur(v.avgSessionMs), 'total') + '</div></div>';
+    }).join('') + '</div>';
   }
-
-  html += '<h2>Recent leads (' + d.leads.length + ')</h2>';
-  if (!d.leads.length){
-    html += '<div class="panel">No leads yet in this window.</div>';
-  } else {
-    html += '<table><tr><th>When</th><th>Name</th><th>Email</th><th>Phone</th></tr>'
-      + d.leads.map(function(l){
-          return '<tr><td>' + new Date(l.ts).toLocaleString() + '</td><td>' + esc(l.name)
-            + '</td><td>' + esc(l.email) + '</td><td>' + esc(l.phone) + '</td></tr>';
-        }).join('')
-      + '</table>';
-  }
-
-  if (!d.persistent){
-    html += '<div class="warn"><b>Storage is temporary.</b> Add <code>KV_REST_API_URL</code> and <code>KV_REST_API_TOKEN</code> '
-      + 'env vars (Vercel KV / Upstash free tier) to keep stats permanently. Leads still reach Discord either way.</div>';
-  }
-
-  document.getElementById('app').innerHTML = html;
+  if (admin) html += leadsBlock(L.leads, true, false);
+  return html;
 }
 
 /* 0 reads as "no data", not "instant" — show a dash instead. */
@@ -187,21 +330,43 @@ function dur(ms){
   var m = Math.floor(s / 60);
   return m + 'm' + (s % 60 ? ' ' + (s % 60) + 's' : '');
 }
+var TZ = {timeZone:'America/Toronto'};
+function when(ts){ try{ return new Date(ts).toLocaleString('en-CA', Object.assign({dateStyle:'medium', timeStyle:'short'}, TZ)); }catch(_){ return new Date(ts).toLocaleString(); } }
+function day(ts){ try{ return new Date(ts).toLocaleDateString('en-CA', Object.assign({month:'short', day:'numeric'}, TZ)); }catch(_){ return ''; } }
 
 function stat(n, l){
-  return '<div><b>' + n + '</b><span>' + l + '</span></div>';
+  return '<div><b>' + (n == null ? 0 : n) + '</b><span>' + l + '</span></div>';
 }
 
 function card(n, l, amber){
-  return '<div class="card"><span class="n' + (amber ? ' amber' : '') + '">' + n + '</span><span class="l">' + l + '</span></div>';
+  return '<div class="card"><span class="n' + (amber ? ' amber' : '') + '">' + (n == null ? 0 : n) + '</span><span class="l">' + l + '</span></div>';
 }
 
 function load(){
-  fetch('/api/stats?days=' + days, {cache:'no-store'})
+  var url = '/api/stats?days=' + days + (KEY ? '&key=' + encodeURIComponent(KEY) : '');
+  fetch(url, {cache:'no-store'})
     .then(function(r){ return r.json(); })
-    .then(render)
+    .then(function(d){
+      /* a key that no longer works is forgotten, not retried forever */
+      if (KEY && !d.admin){ KEY = ''; try{ localStorage.removeItem('zl_admin_key'); }catch(_){} }
+      render(d);
+    })
     .catch(function(){ document.getElementById('app').innerHTML = '<div class="panel">Could not load stats. Is /api/stats deployed?</div>'; });
 }
+
+document.getElementById('app').addEventListener('click', function(e){
+  var seg = e.target.closest('#seg button');
+  if (seg){ mode = seg.getAttribute('data-mode'); if (last) render(last); return; }
+  if (e.target.closest('[data-unlock]')){
+    var k = prompt('Admin key (ADMIN_KEY in Vercel):');
+    if (!k) return;
+    KEY = k; try{ localStorage.setItem('zl_admin_key', k); }catch(_){}
+    load();
+  }
+});
+document.getElementById('app').addEventListener('toggle', function(e){
+  if (e.target.id === 'old') try{ sessionStorage.setItem('zl_old_open', e.target.open ? '1' : '0'); }catch(_){}
+}, true);
 
 /* Deletes everything, so it asks twice: once for the key, once to be
    sure. There is no undo. */
