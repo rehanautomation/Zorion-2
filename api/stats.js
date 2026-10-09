@@ -299,6 +299,45 @@ function buildV1(events, admin) {
   return out;
 }
 
+/* ---------- ?raw=v1: one row per old session ----------
+   Public, so it carries nothing personal: no names, emails, phones,
+   IPs, session ids or full URLs. The referrer is cut down to its
+   domain. Lead events only count towards the furthest step. */
+function refDomain(ref) {
+  if (!ref) return '';
+  try { return new URL(String(ref)).hostname.toLowerCase(); } catch (_) { return ''; }
+}
+
+function rawV1(events) {
+  const sessions = new Map();
+  for (const e of events) {
+    const sid = e.sid || 'anon-' + (e.ts || 0);
+    if (!sessions.has(sid)) sessions.set(sid, { ts: 0, a: '', ref: '', totalMs: 0, landingMs: 0, step: 0 });
+    const s = sessions.get(sid);
+    if (e.ts && (!s.ts || e.ts < s.ts)) s.ts = e.ts;
+    if (e.a && !s.a) s.a = String(e.a);
+    if (e.type === 'view' && e.ref && !s.ref) s.ref = refDomain(e.ref);
+    if (e.type === 'dwell') {
+      const ms = Math.min(Number(e.ms) || 0, MAX_MS);
+      if (e.where === 'landing') s.landingMs = Math.max(s.landingMs, ms);
+      else s.totalMs = Math.max(s.totalMs, ms);
+    }
+    if (e.type === 'step') s.step = Math.max(s.step, Number(e.step) || 0);
+    if (e.type === 'lead') s.step = Math.max(s.step, 6);
+  }
+  return [...sessions.values()]
+    .sort((x, y) => x.ts - y.ts)
+    .map(s => ({
+      time: s.ts ? { iso: new Date(s.ts).toISOString(), toronto: torontoTime(s.ts) } : null,
+      a: s.a,
+      referrer: s.ref,
+      totalMs: s.totalMs,
+      landingMs: s.landingMs,
+      step: s.step,
+      stepLabel: STEP_LABELS[s.step] || ''
+    }));
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store');
@@ -324,6 +363,19 @@ module.exports = async (req, res) => {
   const v1Events = events.filter(e =>
     e.v !== 2 && !v2.v2Leads.has(e) && (!cutoff || (e.ts || 0) >= cutoff));
 
+  if (params.get('raw') === 'v1') {
+    const sessions = rawV1(v1Events);
+    return res.status(200).json({
+      raw: 'v1',
+      timeZone: TZ,
+      generatedAt: Date.now(),
+      days,
+      note: 'v1 timings ran from page load until the tab was hidden; they were not limited to visible time.',
+      count: sessions.length,
+      sessions
+    });
+  }
+
   const body = {
     trackingVersion: TRACKING_VERSION,
     trackingSince: since ? { ts: since, iso: new Date(since).toISOString(), toronto: torontoTime(since) } : null,
@@ -343,4 +395,4 @@ module.exports = async (req, res) => {
 };
 
 /* exposed for the tests */
-module.exports._build = { buildV2, buildV1, torontoDay, torontoTime, median };
+module.exports._build = { buildV2, buildV1, rawV1, refDomain, torontoDay, torontoTime, median };
