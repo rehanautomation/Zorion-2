@@ -53,6 +53,7 @@ h2{font-size:15px;font-weight:600;margin:0 0 10px}
 .strip b{display:block;font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .strip span{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
 .since{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.since + .since{margin-top:2px;padding-top:0;border-top:0}
 
 /* ---- 2. funnel ---- */
 .funnel{border-top:1px solid var(--line)}
@@ -155,11 +156,65 @@ var TABS = [
   {key:'byDay', label:'By day',       none:'—'}
 ];
 
+/* ---------------------------------------------------------------
+   BASELINE: real ad visitors from before the new tracker went live.
+   Classified by hand and matched to Meta's landing page views, so
+   it is fixed, not computed. All of them stopped at Q1: nobody
+   answered, no leads.
+
+   Added to the "Real ad clicks" view only, and only to People, the
+   Q1 step of the funnel and the By ad table. Never to Engaged or the
+   time numbers: the old timer wasn't reliable. It counts in a date
+   window only when that window reaches back to `until`.
+   --------------------------------------------------------------- */
+var BASELINE = {
+  until: Date.parse('2026-10-08T23:06:00Z'),   // Oct 8, 2026, 7:06 PM Toronto
+  label: 'Oct 8, 7:06 PM',
+  byA: { widow: 14, locked: 1, debt: 0, competitor: 0 }
+};
+
+function baselineTotal(){
+  return Object.keys(BASELINE.byA).reduce(function(t, k){ return t + BASELINE.byA[k]; }, 0);
+}
+function baselineApplies(){
+  return mode === 'verified' && baselineTotal() > 0
+    && (!days || Date.now() - days * 86400000 <= BASELINE.until);
+}
+/* A copy of the verified block with the baseline added. Everyone in
+   it reached Q1 and stopped there, so it lands on step 1 only. */
+function withBaseline(b){
+  var n = baselineTotal();
+  var out = JSON.parse(JSON.stringify(b));
+  var rate = function(l, v){ return v ? Math.round((l / v) * 1000) / 10 : 0; };
+  out.totals.views = (out.totals.views || 0) + n;
+  out.totals.conversionRate = rate(out.totals.leads || 0, out.totals.views);
+  (out.steps || []).forEach(function(s){
+    if (s.step === 1){ s.reached += n; s.droppedHere += n; }
+  });
+  out.byA = out.byA || [];
+  Object.keys(BASELINE.byA).forEach(function(k){
+    var add = BASELINE.byA[k];
+    if (!add) return;
+    var row = out.byA.filter(function(r){ return r.key === k; })[0];
+    if (!row){
+      row = {key:k, views:0, engaged:0, started:0, leads:0, conversionRate:0,
+             visibleMedianMs:0, visibleAvgMs:0, landingMedianMs:0, firstAnswerMedianMs:0};
+      out.byA.push(row);
+    }
+    row.views += add;
+    row.conversionRate = rate(row.leads, row.views);
+  });
+  out.byA.sort(function(x, y){ return y.views - x.views; });
+  return out;
+}
+
 function esc(s){ return String(s == null ? '' : s).replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
 
 function render(d){
   last = d;
   var b = d[mode] || {totals:{}, steps:[], byA:[], bySrc:[], byPl:[], byDay:[]};
+  var base = baselineApplies();
+  if (base) b = withBaseline(b);
   var t = b.totals || {};
   var who = mode === 'verified' ? 'People' : 'Visits';
   var html = '';
@@ -177,6 +232,10 @@ function render(d){
   html += '<p class="since">' + (d.trackingSince
     ? 'Counting real ad clicks since ' + esc(stamp(d.trackingSince.ts)) + ' (Toronto)'
     : 'Waiting for the first visit.') + '</p>';
+  if (base){
+    html += '<p class="since">Includes ' + baselineTotal() + ' real visitors from before '
+      + esc(BASELINE.label) + ', matched to Meta.</p>';
+  }
 
   /* ---- 2. funnel ---- */
   html += '<section><h2>Funnel</h2>' + funnel(b.steps, t.views) + '</section>';
