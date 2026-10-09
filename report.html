@@ -6,133 +6,137 @@
 <title>Zorion Life — Funnel report</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
 :root{
-  --navy:#10243A; --slate:#52657A; --slate-light:#8698A9;
-  --sky:#F4F8FB; --white:#fff; --line:#D6E3EE; --blue:#1D6FB8; --amber:#D9822B;
+  --text:#111827;
+  --muted:#6B7280;
+  --line:#E5E7EB;
+  --soft:#F3F4F6;
+  --accent:#2563EB;     /* bars and the active tab, nothing else */
 }
 *,*::before,*::after{box-sizing:border-box}
-body{margin:0;background:var(--sky);color:var(--slate);font-family:Inter,sans-serif;font-size:15px;line-height:1.5}
-header{background:var(--navy);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-header .brand{font-family:Archivo,sans-serif;font-weight:700;letter-spacing:.08em;font-size:15px}
-.filters{display:flex;gap:8px}
-.filters button{
-  border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;
-  font:inherit;font-size:13px;padding:6px 12px;border-radius:99px;cursor:pointer;
+html,body{overflow-x:hidden}
+body{
+  margin:0;background:#fff;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
 }
-.filters button.is-on{background:#fff;color:var(--navy);border-color:#fff;font-weight:600}
-.wrap{max-width:960px;margin:0 auto;padding:24px 20px 64px}
-h2{font-family:Archivo,sans-serif;font-size:15px;color:var(--navy);margin:32px 0 12px;letter-spacing:.02em}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
-.card .n{display:block;font-family:Archivo,sans-serif;font-weight:700;font-size:34px;line-height:1;color:var(--navy)}
-.card .n.amber{color:var(--amber)}
-.card .l{display:block;margin-top:6px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-light)}
-.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
-.row{margin-bottom:14px}
-.row:last-child{margin-bottom:0}
-.row .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
-.row .top b{color:var(--navy);font-weight:600}
-.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;position:relative}
-.bar i{display:block;height:100%;background:var(--blue);border-radius:99px}
-.bar u{position:absolute;top:0;left:0;height:100%;background:var(--amber);opacity:.9;border-radius:99px}
-.drop{font-size:12px;color:var(--amber);font-weight:600}
-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
-th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
-th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--slate-light);background:var(--sky)}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+button{font:inherit;color:inherit}
+
+/* ---- header ---- */
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.brand{font-weight:600}
+.head-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.wipe{border:0;background:none;padding:6px 0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-size:14px}
+
+/* ---- tabs: every switch on the page looks the same ---- */
+.tabs{display:flex;gap:2px;flex-wrap:wrap}
+.tabs button{
+  border:0;border-bottom:2px solid transparent;background:none;cursor:pointer;
+  padding:6px 10px;color:var(--muted);
+}
+.tabs button:hover{color:var(--text)}
+.tabs button.is-on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tabs.under{border-bottom:1px solid var(--line)}
+.tabs.under button{margin-bottom:-1px}
+
+main{padding:24px 0 64px}
+section{margin-top:36px}
+h2{font-size:15px;font-weight:600;margin:0 0 10px}
+.muted{color:var(--muted)}
+
+/* ---- 1. summary strip ---- */
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:20px}
+.strip.wide{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.strip b{display:block;font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.strip span{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
+.since{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+
+/* ---- 2. funnel ---- */
+.funnel{border-top:1px solid var(--line)}
+.step{
+  display:grid;grid-template-columns:minmax(0,13rem) 1fr 3.5rem;align-items:center;gap:14px;
+  padding:9px 8px;border-bottom:1px solid var(--line);
+}
+.step .name{min-width:0}
+.step .name small{display:block;font-size:12.5px;font-weight:400;color:var(--muted)}
+.step .count{text-align:right;font-variant-numeric:tabular-nums}
+.step.worst{background:var(--soft)}
+.step.worst .name{font-weight:600}
+.bar{height:6px;border-radius:3px;background:var(--soft)}
+.step.worst .bar{background:#fff}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+
+/* ---- 3. tables ---- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;max-width:100%}
+table{width:100%;border-collapse:collapse}
+.scroll table{min-width:640px}
+.scroll table.narrow{min-width:0}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:13px;font-weight:500;color:var(--muted);background:#fff}
+td{font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:0}
-.note{font-size:12px;color:var(--slate-light);margin-top:10px}
-.warn{background:#FDF4EA;border:1px solid #F0D9BE;color:#8A5A1E;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:14px}
-.legend{display:flex;gap:16px;font-size:12px;color:var(--slate-light);margin-bottom:14px}
-.legend span::before{content:'';display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
-.legend .r::before{background:var(--blue)}
-.legend .d::before{background:var(--amber)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff}
+td:first-child{max-width:16rem;overflow:hidden;text-overflow:ellipsis}
+td.none{color:var(--muted)}
+td.wrap-text{white-space:normal}
+code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);margin-left:6px}
+.empty{margin:0;padding:12px 0;color:var(--muted)}
+#tabs{margin-bottom:12px}
 
-/* ---- traffic by ad variant ----
-   Cards on a phone, one table row per variant on a wide screen. The
-   same markup either way: the row items are grid cells below 700px and
-   table cells above it. */
-.vlist{display:grid;gap:10px}
-.v{
-  background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;
-  display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:0 10px;
-}
-.v-name{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;color:var(--navy);word-break:break-word}
-.v-name.none{font-weight:600;color:var(--slate-light)}
-.v-conv{font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:var(--blue);white-space:nowrap;text-align:right}
-.v .bar{grid-column:1/-1;margin-top:10px}
-.v-stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;margin-top:12px}
-.v-stats b{display:block;font-family:Archivo,sans-serif;font-weight:700;font-size:16px;color:var(--navy);line-height:1.1}
-.v-stats span{display:block;margin-top:3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--slate-light)}
+/* ---- 4. collapsed sections ---- */
+details{border-top:1px solid var(--line)}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;padding:14px 0;font-weight:600;display:flex;align-items:baseline;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'\25B8';color:var(--muted);font-size:12px;width:12px;flex:none}
+details[open]>summary::before{content:'\25BE'}
+summary .muted{font-weight:400;font-size:13px}
+details .inner{padding:0 0 20px}
+details .inner>section:first-of-type{margin-top:28px}
+.locked{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;color:var(--text)}
+.btn:hover{background:var(--soft)}
 
-@media (min-width:700px){
-  .vlist{display:table;width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;gap:0}
-  .v{display:table-row;border:0;border-radius:0;padding:0}
-  /* every direct child becomes a cell — including .v-stats, so its
-     display must not be re-declared below */
-  .v>*{display:table-cell;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
-  .v:last-child>*{border-bottom:0}
-  .v-name{width:30%}
-  .v-conv{width:76px;text-align:left}
-  .v .bar{display:none}
-  .v-stats{margin-top:0;text-align:right}
-  .v-stats>div{display:inline-block;min-width:58px;margin-left:24px;text-align:right;vertical-align:top}
+@media (max-width:600px){
+  .strip{grid-template-columns:repeat(3,1fr);gap:16px 12px}
+  .strip b{font-size:24px}
+  .step{grid-template-columns:minmax(0,11rem) 1fr 2.75rem;gap:10px;padding:9px 6px}
+  td:first-child{max-width:10rem}
 }
-
-/* ---- v2: what is being counted ---- */
-.banner{
-  display:flex;align-items:flex-start;gap:10px;margin:0 0 4px;
-  background:#EAF3FB;border:1px solid #C9DDEF;border-radius:12px;padding:12px 16px;
-  font-size:14px;color:var(--navy);
+@media (max-width:400px){
+  .tabs button{padding:6px 8px;font-size:14px}
 }
-.banner::before{content:'';flex:none;width:9px;height:9px;margin-top:6px;border-radius:50%;background:#1F9D63;box-shadow:0 0 0 3px rgba(31,157,99,.18)}
-.banner b{font-weight:600}
-.banner small{display:block;font-size:12px;color:var(--slate);margin-top:2px}
-.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:99px;padding:3px;margin-top:16px}
-.seg button{border:0;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--slate);padding:7px 14px;border-radius:99px;cursor:pointer}
-.seg button.is-on{background:var(--navy);color:#fff}
-.mode-note{font-size:12.5px;color:var(--slate-light);margin:8px 0 0}
-.v-stats.six{grid-template-columns:repeat(3,1fr)}
-.reason td:last-child,.reason th:last-child{text-align:right;white-space:nowrap}
-.reason code{display:inline-block;font-size:11px;color:var(--slate-light);background:var(--sky);padding:1px 6px;border-radius:4px;margin:3px 0 0 6px}
-.tbl-scroll table.reason{min-width:0}
-.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px}
-.tbl-scroll table{min-width:520px}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-details.old{margin-top:40px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 18px}
-details.old>summary{cursor:pointer;list-style:none;padding:16px 0;font-family:Archivo,sans-serif;font-weight:700;font-size:15px;color:var(--navy)}
-details.old>summary::-webkit-details-marker{display:none}
-details.old>summary::after{content:'Show';float:right;font-family:Inter,sans-serif;font-weight:600;font-size:12px;color:var(--blue)}
-details.old[open]>summary::after{content:'Hide'}
-details.old>summary small{display:block;font-family:Inter,sans-serif;font-weight:400;font-size:12.5px;color:var(--slate-light);margin-top:2px}
-details.old .inner{padding:0 0 18px}
-details.old h2{margin-top:18px}
-.locked{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.locked button{border:1px solid var(--line);background:var(--sky);color:var(--navy);font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:99px;cursor:pointer}
-.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
-.tag.ok{background:#E3F4EC;color:#16784A}
-.tag.no{background:#F2F4F7;color:var(--slate-light)}
 </style>
 </head>
 <body>
 <header>
-  <span class="brand">ZORION LIFE · FUNNEL REPORT</span>
-  <div class="filters" id="filters">
-    <button data-days="1">24h</button>
-    <button data-days="7">7d</button>
-    <button data-days="30">30d</button>
-    <button data-days="0" class="is-on">All</button>
-    <button id="wipe" title="Delete every stored event" style="margin-left:14px;border-color:#5A2A2A;color:#D98A8A">Wipe data</button>
+  <div class="wrap">
+    <span class="brand">Zorion Life · Funnel report</span>
+    <div class="head-right">
+      <div class="tabs" id="filters">
+        <button data-days="1">24h</button>
+        <button data-days="7">7d</button>
+        <button data-days="30">30d</button>
+        <button data-days="0" class="is-on">All</button>
+      </div>
+      <button class="wipe" id="wipe" title="Delete every stored event">Wipe data</button>
+    </div>
   </div>
 </header>
 
-<div class="wrap" id="app">Loading…</div>
+<main class="wrap" id="app">Loading…</main>
 
 <script>
 var days = 0;
 var mode = 'verified';            // 'verified' | 'all'
+var tab = 'byA';                  // which breakdown is showing
 var last = null;
+
+/* which collapsed sections are open survives the 30-second refresh */
+var OPEN = (function(){ try{ return JSON.parse(sessionStorage.getItem('zl_open') || '{}'); }catch(_){ return {}; } })();
 
 /* Lead names only come back with the admin key. It is read from
    ?key= once, then remembered on this device only. */
@@ -144,148 +148,132 @@ var KEY = (function(){
   }catch(_){ return ''; }
 })();
 
+var TABS = [
+  {key:'byA',   label:'By ad',        none:'not tagged'},
+  {key:'bySrc', label:'By platform',  none:'not tagged'},
+  {key:'byPl',  label:'By placement', none:'not tagged'},
+  {key:'byDay', label:'By day',       none:'—'}
+];
+
 function esc(s){ return String(s == null ? '' : s).replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
 
 function render(d){
   last = d;
+  var b = d[mode] || {totals:{}, steps:[], byA:[], bySrc:[], byPl:[], byDay:[]};
+  var t = b.totals || {};
+  var who = mode === 'verified' ? 'People' : 'Visits';
   var html = '';
 
-  /* ---- what is being counted ---- */
-  if (d.trackingSince){
-    html += '<div class="banner"><div>Counting real ad clicks since <b>' + esc(d.trackingSince.toronto) + '</b>'
-      + '<small>A visit counts when it carries a Meta click (an fbclid, or the Facebook / Instagram app), an a= ad tag, comes from Canada and isn’t a bot. Days are Toronto time.</small></div></div>';
-  } else {
-    html += '<div class="banner"><div>New tracking is live. <b>Waiting for the first visit.</b>'
-      + '<small>Only real Meta ad clicks from Canada will be counted. Everything before this is in the section at the bottom.</small></div></div>';
-  }
-
-  html += '<div class="seg" id="seg">'
+  html += '<div class="tabs under" id="seg">'
     + '<button data-mode="verified"' + (mode === 'verified' ? ' class="is-on"' : '') + '>Real ad clicks</button>'
     + '<button data-mode="all"' + (mode === 'all' ? ' class="is-on"' : '') + '>All traffic</button>'
-    + '</div>'
-    + '<p class="mode-note">' + (mode === 'verified'
-        ? 'Each person counted once, the day they clicked. Reloads are folded into the same person.'
-        : 'Every visit since the switch, including bots, link previews, reloads and visits without an ad.') + '</p>';
+    + '</div>';
 
-  var b = d[mode] || {totals:{}, steps:[], byA:[], bySrc:[], byPl:[], byDay:[]};
-  var t = b.totals, views = t.views || 0;
+  /* ---- 1. summary ---- */
+  html += '<div class="strip">'
+    + num(t.views, who) + num(t.engaged, 'Engaged') + num(t.started, 'Answered Q1')
+    + num(t.leads, 'Leads') + num(dur(t.visibleMedianMs), 'Median time')
+    + '</div>';
+  html += '<p class="since">' + (d.trackingSince
+    ? 'Counting real ad clicks since ' + esc(stamp(d.trackingSince.ts)) + ' (Toronto)'
+    : 'Waiting for the first visit.') + '</p>';
 
-  html += '<h2>Overview</h2><div class="cards">'
-    + card(views, mode === 'verified' ? 'Real people' : 'Visits')
-    + card(t.engaged, 'Engaged')
-    + card(t.started, 'Answered Q1')
-    + card(t.leads, 'Leads', true)
-    + card(t.conversionRate + '%', 'Conversion', true)
-    + card(dur(t.visibleMedianMs), 'Median time on page')
-    + card(dur(t.visibleAvgMs), 'Average time on page')
-    + card(dur(t.firstAnswerMedianMs), 'Median time to answer Q1')
-    + '</div>'
-    + '<p class="note">Time counts only while the page is on screen. Engaged = touched, clicked, typed or scrolled.</p>';
+  /* ---- 2. funnel ---- */
+  html += '<section><h2>Funnel</h2>' + funnel(b.steps, t.views) + '</section>';
 
-  html += steps(b.steps, views);
-  html += breakdown('By ad (a=)', b.byA, 'no a= tag');
-  html += breakdown('By platform (src=)', b.bySrc, 'not tagged');
-  html += breakdown('By placement (pl=)', b.byPl, 'not tagged');
-  html += breakdown('By day (Toronto time)', b.byDay, '—');
+  /* ---- 3. breakdowns ---- */
+  var cfg = TABS.filter(function(x){ return x.key === tab; })[0];
+  html += '<section><div class="tabs under" id="tabs">'
+    + TABS.map(function(x){ return '<button data-tab="' + x.key + '"' + (x.key === tab ? ' class="is-on"' : '') + '>' + x.label + '</button>'; }).join('')
+    + '</div>' + breakdown(b[tab], cfg, who) + '</section>';
 
-  /* ---- what was filtered out ---- */
+  /* ---- 4. collapsed ---- */
+  html += '<section>';
+
   var f = d.filtered || {total:0, byReason:[]};
-  html += '<h2>Filtered out (' + (f.total || 0) + ')</h2>';
-  if (!f.byReason || !f.byReason.length){
-    html += '<div class="panel">Nothing filtered in this window.</div>';
-  } else {
-    var allViews = (d.all && d.all.totals.views) || 0;
-    html += '<div class="tbl-scroll"><table class="reason"><tr><th>Why it wasn’t counted</th><th class="num">Visits</th></tr>'
-      + f.byReason.map(function(r){
-          var pc = allViews ? Math.round(r.count / allViews * 100) : 0;
-          return '<tr><td>' + esc(r.label) + '<code>' + esc(r.reason) + '</code></td><td class="num"><b>' + r.count + '</b> · ' + pc + '%</td></tr>';
-        }).join('')
-      + '</table></div>';
-  }
+  var allViews = (d.all && d.all.totals && d.all.totals.views) || 0;
+  html += fold('filtered', 'Filtered out', '(' + (f.total || 0) + ')',
+    (f.byReason && f.byReason.length)
+      ? '<div class="scroll"><table class="narrow"><tr><th>Why it wasn’t counted</th><th>Visits</th></tr>'
+        + f.byReason.map(function(r){
+            var pc = allViews ? Math.round(r.count / allViews * 100) : 0;
+            return '<tr><td class="wrap-text">' + esc(r.label) + '<code>' + esc(r.reason) + '</code></td><td>' + r.count + ' · ' + pc + '%</td></tr>';
+          }).join('')
+        + '</table></div>'
+      : '<p class="empty">Nothing filtered in this window.</p>');
 
-  /* ---- leads ---- */
-  html += leadsBlock(d.leads, d.admin, true);
+  html += fold('leads', 'Leads', d.admin && d.leads ? '(' + d.leads.length + ')' : '', leadsTable(d.leads, d.admin, true));
 
-  if (!d.persistent){
-    html += '<div class="warn"><b>Storage is temporary.</b> Add <code>KV_REST_API_URL</code> and <code>KV_REST_API_TOKEN</code> '
-      + 'env vars (Vercel KV / Upstash free tier) to keep stats permanently. Leads still reach Discord either way.</div>';
-  }
-
-  /* ---- the old tracking, kept, collapsed ---- */
   var L = d.legacy;
   if (L && L.totals && L.totals.views){
-    var open = false;
-    try{ open = sessionStorage.getItem('zl_old_open') === '1'; }catch(_){}
-    html += '<details class="old" id="old"' + (open ? ' open' : '') + '><summary>Before new tracking'
-      + '<small>' + L.totals.views + ' visits' + (L.from ? ', ' + day(L.from) + ' to ' + day(L.to) : '')
-      + '. Not filtered: includes bots, previews and our own early tests.</small></summary><div class="inner">'
-      + legacy(L, d.admin)
-      + '</div></details>';
+    html += fold('old', 'Before new tracking',
+      L.totals.views + ' visits' + (L.from ? ', ' + day(L.from) + ' to ' + day(L.to) : ''),
+      legacy(L, d.admin));
+  }
+  html += '</section>';
+
+  if (!d.persistent){
+    html += '<p class="since">Storage is temporary. Add <code>KV_REST_API_URL</code> and <code>KV_REST_API_TOKEN</code> '
+      + 'env vars (Vercel KV / Upstash free tier) to keep stats permanently. Leads still reach Discord either way.</p>';
   }
 
   document.getElementById('app').innerHTML = html;
 }
 
-function steps(list, views){
-  list = list || [];
-  var worst = list.slice().sort(function(a,b){ return b.droppedHere - a.droppedHere; })[0];
-  var html = '<h2>Step breakdown</h2>'
-    + '<div class="legend"><span class="r">Reached this step</span><span class="d">Dropped off here</span></div>'
-    + '<div class="panel">'
-    + list.map(function(s){
-        var rp = views ? (s.reached / views) * 100 : 0;
-        var dp = views ? (s.droppedHere / views) * 100 : 0;
-        return '<div class="row"><div class="top"><b>' + esc(s.label) + '</b>'
-          + '<span>' + s.reached + ' reached · <span class="drop">' + s.droppedHere + ' left</span></span></div>'
-          + '<div class="bar"><i style="width:' + rp.toFixed(1) + '%"></i><u style="width:' + dp.toFixed(1) + '%"></u></div></div>';
-      }).join('')
-    + '</div>';
-  if (worst && worst.droppedHere > 0){
-    html += '<p class="note">Biggest leak: <b>' + esc(worst.label) + '</b> — ' + worst.droppedHere + ' people stopped there.</p>';
-  }
-  return html;
+function num(n, label){
+  return '<div><b>' + (n == null ? 0 : n) + '</b><span>' + label + '</span></div>';
 }
 
-/* One row per value that actually turned up, so a new ad, platform or
-   placement appears here by itself. */
-function breakdown(title, rows, emptyName){
+/* One row per step. The bar is the share of everyone who got this far;
+   the step the most people stopped at is shaded. */
+function funnel(steps, views){
+  steps = steps || [];
+  var worst = null;
+  steps.forEach(function(s){ if (s.droppedHere > 0 && (!worst || s.droppedHere > worst.droppedHere)) worst = s; });
+  return '<div class="funnel">' + steps.map(function(s){
+    var pc = views ? Math.min(100, (s.reached / views) * 100) : 0;
+    var isWorst = s === worst;
+    return '<div class="step' + (isWorst ? ' worst' : '') + '">'
+      + '<div class="name">' + esc(s.label) + (isWorst ? '<small>biggest drop</small>' : '') + '</div>'
+      + '<div class="bar"><i style="width:' + pc.toFixed(1) + '%"></i></div>'
+      + '<div class="count">' + s.reached + '</div>'
+      + '</div>';
+  }).join('') + '</div>';
+}
+
+function breakdown(rows, cfg, who){
   rows = rows || [];
-  var html = '<h2>' + title + '</h2>';
-  if (!rows.length) return html + '<div class="panel">Nothing yet in this window.</div>';
-  var top = Math.max.apply(null, rows.map(function(r){ return r.views || 0; })) || 0;
-  return html + '<div class="vlist">'
+  if (!rows.length) return '<p class="empty">Nothing yet in this window.</p>';
+  if (rows.every(function(r){ return r.key === '(none)'; })) return '<p class="empty">Not tagged yet</p>';
+  return '<div class="scroll"><table>'
+    + '<tr><th>Name</th><th>' + who + '</th><th>Engaged</th><th>Answered</th><th>Leads</th><th>Conv %</th><th>Median time</th><th>To Q1</th></tr>'
     + rows.map(function(r){
         var none = r.key === '(none)';
-        var w = top ? (r.views / top) * 100 : 0;
-        return '<div class="v">'
-          + '<div class="v-name' + (none ? ' none' : '') + '">' + (none ? emptyName : esc(r.key)) + '</div>'
-          + '<div class="v-conv">' + r.conversionRate + '%</div>'
-          + '<div class="bar"><i style="width:' + w.toFixed(1) + '%"></i></div>'
-          + '<div class="v-stats six">'
-            + stat(r.views, mode === 'verified' ? 'people' : 'visits')
-            + stat(r.engaged, 'engaged')
-            + stat(r.started, 'answered')
-            + stat(r.leads, 'leads')
-            + stat(dur(r.visibleMedianMs), 'median time')
-            + stat(dur(r.firstAnswerMedianMs), 'to Q1')
-          + '</div>'
-        + '</div>';
+        var name = none ? cfg.none : r.key;
+        return '<tr><td' + (none ? ' class="none"' : '') + ' title="' + esc(name) + '">' + esc(name) + '</td>'
+          + '<td>' + r.views + '</td><td>' + r.engaged + '</td><td>' + r.started + '</td><td>' + r.leads + '</td>'
+          + '<td>' + r.conversionRate + '%</td><td>' + dur(r.visibleMedianMs) + '</td><td>' + dur(r.firstAnswerMedianMs) + '</td></tr>';
       }).join('')
-    + '</div>';
+    + '</table></div>';
 }
 
-function leadsBlock(leads, admin, isV2){
-  var html = '<h2>' + (isV2 ? 'Leads' : 'Leads (old tracking)') + (admin && leads ? ' (' + leads.length + ')' : '') + '</h2>';
+function fold(id, title, note, body){
+  return '<details id="fold-' + id + '"' + (OPEN[id] ? ' open' : '') + '><summary>' + title
+    + (note ? ' <span class="muted">' + esc(note) + '</span>' : '') + '</summary>'
+    + '<div class="inner">' + body + '</div></details>';
+}
+
+function leadsTable(leads, admin, isV2){
   if (!admin){
-    return html + '<div class="panel locked"><span>Names, emails and phone numbers are hidden on the public report.</span>'
-      + '<button type="button" data-unlock="1">Show lead details</button></div>';
+    return '<div class="locked"><span>Names, emails and phone numbers are hidden on the public report.</span>'
+      + '<button type="button" class="btn" data-unlock="1">Show lead details</button></div>';
   }
-  if (!leads || !leads.length) return html + '<div class="panel">No leads yet in this window.</div>';
-  return html + '<div class="tbl-scroll"><table><tr><th>When (Toronto)</th>' + (isV2 ? '<th>Counted</th><th>Ad</th>' : '')
+  if (!leads || !leads.length) return '<p class="empty">No leads yet in this window.</p>';
+  return '<div class="scroll"><table><tr><th>When (Toronto)</th>' + (isV2 ? '<th>Counted</th><th>Ad</th>' : '')
     + '<th>Name</th><th>Email</th><th>Phone</th></tr>'
     + leads.map(function(l){
         return '<tr><td>' + esc(when(l.ts)) + '</td>'
-          + (isV2 ? '<td><span class="tag ' + (l.verified ? 'ok">real click' : 'no">not verified') + '</span></td><td>' + esc(l.a || '—') + '</td>' : '')
+          + (isV2 ? '<td' + (l.verified ? '' : ' class="none"') + '>' + (l.verified ? 'real click' : 'not verified') + '</td><td>' + esc(l.a || '—') + '</td>' : '')
           + '<td>' + esc(l.name) + '</td><td>' + esc(l.email) + '</td><td>' + esc(l.phone) + '</td></tr>';
       }).join('')
     + '</table></div>';
@@ -293,32 +281,25 @@ function leadsBlock(leads, admin, isV2){
 
 function legacy(L, admin){
   var t = L.totals, views = t.views || 0;
-  var html = '<div class="cards">'
-    + card(views, 'Total views')
-    + card(t.attempted, 'Attempted &amp; left')
-    + card(t.bounced, 'Left immediately')
-    + card(t.leads, 'Leads submitted', true)
-    + card(t.conversionRate + '%', 'Conversion rate', true)
-    + card(dur(t.avgLandingMs), 'Avg time on Q1')
-    + card(dur(t.avgSessionMs), 'Avg time on page')
+  var html = '<div class="strip wide">'
+    + num(views, 'Total views') + num(t.attempted, 'Attempted &amp; left') + num(t.bounced, 'Left immediately')
+    + num(t.leads, 'Leads submitted') + num(t.conversionRate + '%', 'Conversion rate')
+    + num(dur(t.avgLandingMs), 'Avg time on Q1') + num(dur(t.avgSessionMs), 'Avg time on page')
     + '</div>';
-  html += steps(L.steps, views);
+  html += '<section><h2>Funnel</h2>' + funnel(L.steps, views) + '</section>';
   var vs = L.variants || [];
-  html += '<h2>Traffic by ad variant</h2>';
-  if (!vs.length) html += '<div class="panel">Nothing in this window.</div>';
-  else {
-    var top = vs[0].views || 0;
-    html += '<div class="vlist">' + vs.map(function(v){
-      var w = top ? (v.views / top) * 100 : 0;
-      return '<div class="v"><div class="v-name' + (v.variant === '(none)' ? ' none' : '') + '">'
-        + (v.variant === '(none)' ? 'direct' : esc(v.variant)) + '</div>'
-        + '<div class="v-conv">' + v.conversionRate + '%</div>'
-        + '<div class="bar"><i style="width:' + w.toFixed(1) + '%"></i></div>'
-        + '<div class="v-stats">' + stat(v.views, 'views') + stat(v.started, 'started') + stat(v.leads, 'leads')
-        + stat(dur(v.avgLandingMs), 'on Q1') + stat(dur(v.avgSessionMs), 'total') + '</div></div>';
-    }).join('') + '</div>';
-  }
-  if (admin) html += leadsBlock(L.leads, true, false);
+  html += '<section><h2>Traffic by ad variant</h2>';
+  html += !vs.length ? '<p class="empty">Nothing in this window.</p>'
+    : '<div class="scroll"><table><tr><th>Name</th><th>Views</th><th>Started</th><th>Leads</th><th>Conv %</th><th>On Q1</th><th>Total</th></tr>'
+      + vs.map(function(v){
+          var none = v.variant === '(none)';
+          return '<tr><td' + (none ? ' class="none"' : '') + '>' + (none ? 'direct' : esc(v.variant)) + '</td>'
+            + '<td>' + v.views + '</td><td>' + v.started + '</td><td>' + v.leads + '</td><td>' + v.conversionRate + '%</td>'
+            + '<td>' + dur(v.avgLandingMs) + '</td><td>' + dur(v.avgSessionMs) + '</td></tr>';
+        }).join('')
+      + '</table></div>';
+  html += '</section>';
+  if (admin) html += '<section><h2>Leads</h2>' + leadsTable(L.leads, true, false) + '</section>';
   return html;
 }
 
@@ -331,16 +312,9 @@ function dur(ms){
   return m + 'm' + (s % 60 ? ' ' + (s % 60) + 's' : '');
 }
 var TZ = {timeZone:'America/Toronto'};
+function stamp(ts){ try{ return new Date(ts).toLocaleString('en-US', Object.assign({month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'}, TZ)); }catch(_){ return new Date(ts).toLocaleString(); } }
 function when(ts){ try{ return new Date(ts).toLocaleString('en-CA', Object.assign({dateStyle:'medium', timeStyle:'short'}, TZ)); }catch(_){ return new Date(ts).toLocaleString(); } }
 function day(ts){ try{ return new Date(ts).toLocaleDateString('en-CA', Object.assign({month:'short', day:'numeric'}, TZ)); }catch(_){ return ''; } }
-
-function stat(n, l){
-  return '<div><b>' + (n == null ? 0 : n) + '</b><span>' + l + '</span></div>';
-}
-
-function card(n, l, amber){
-  return '<div class="card"><span class="n' + (amber ? ' amber' : '') + '">' + (n == null ? 0 : n) + '</span><span class="l">' + l + '</span></div>';
-}
 
 function load(){
   var url = '/api/stats?days=' + days + (KEY ? '&key=' + encodeURIComponent(KEY) : '');
@@ -351,12 +325,14 @@ function load(){
       if (KEY && !d.admin){ KEY = ''; try{ localStorage.removeItem('zl_admin_key'); }catch(_){} }
       render(d);
     })
-    .catch(function(){ document.getElementById('app').innerHTML = '<div class="panel">Could not load stats. Is /api/stats deployed?</div>'; });
+    .catch(function(){ document.getElementById('app').innerHTML = '<p class="empty">Could not load stats. Is /api/stats deployed?</p>'; });
 }
 
 document.getElementById('app').addEventListener('click', function(e){
   var seg = e.target.closest('#seg button');
   if (seg){ mode = seg.getAttribute('data-mode'); if (last) render(last); return; }
+  var tb = e.target.closest('#tabs button');
+  if (tb){ tab = tb.getAttribute('data-tab'); if (last) render(last); return; }
   if (e.target.closest('[data-unlock]')){
     var k = prompt('Admin key (ADMIN_KEY in Vercel):');
     if (!k) return;
@@ -365,7 +341,10 @@ document.getElementById('app').addEventListener('click', function(e){
   }
 });
 document.getElementById('app').addEventListener('toggle', function(e){
-  if (e.target.id === 'old') try{ sessionStorage.setItem('zl_old_open', e.target.open ? '1' : '0'); }catch(_){}
+  var id = (e.target.id || '').replace(/^fold-/, '');
+  if (!id) return;
+  OPEN[id] = e.target.open;
+  try{ sessionStorage.setItem('zl_open', JSON.stringify(OPEN)); }catch(_){}
 }, true);
 
 /* Deletes everything, so it asks twice: once for the key, once to be
@@ -389,7 +368,7 @@ document.getElementById('wipe').addEventListener('click', function(){
 
 document.getElementById('filters').addEventListener('click', function(e){
   var b = e.target.closest('button');
-  if (!b || b.id === 'wipe') return;
+  if (!b) return;
   days = Number(b.getAttribute('data-days'));
   [].forEach.call(this.querySelectorAll('button'), function(x){ x.classList.toggle('is-on', x === b); });
   load();
