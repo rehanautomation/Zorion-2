@@ -314,28 +314,6 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   border-left:4px solid var(--gold);padding-left:clamp(16px,4vw,28px);
 }
 
-/* 5 — the call */
-.advisor{display:flex;align-items:center;gap:clamp(16px,4vw,26px);flex-wrap:wrap}
-.adv-photo{
-  position:relative;flex:none;overflow:hidden;
-  width:clamp(120px,32vw,152px);height:clamp(120px,32vw,152px);border-radius:50%;
-  background:repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,#E4EBF3 6px,#E4EBF3 12px);
-  display:flex;align-items:center;justify-content:center;
-  font:500 9px/1.3 ui-monospace,Menlo,monospace;color:var(--ink-3);text-align:center;
-}
-.adv-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.adv-meta{flex:1 1 200px;min-width:0}
-.adv-name{font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(26px,7vw,34px);line-height:1.05;letter-spacing:-.03em;color:var(--ink)}
-.adv-role{font-family:Archivo,sans-serif;font-weight:600;font-size:clamp(15px,3.8vw,17px);color:var(--ink-2);margin-top:8px;line-height:1.35}
-.adv-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.adv-chips span{font-size:12.5px;font-weight:600;color:var(--blue-deep);background:var(--blue-wash);border-radius:999px;padding:7px 12px}
-/* mobile: the whole introduction stacks and centres */
-@media (max-width:620px){
-  .advisor{flex-direction:column;text-align:center;gap:var(--sp-5)}
-  .adv-meta{flex:1 1 auto;width:100%}
-  .adv-chips{justify-content:center}
-  .adv-name{font-size:30px}
-}
 
 .licensed{margin-top:26px;padding-top:22px;border-top:1px solid #EDF2F7}
 .licensed .eyebrow-up{display:block;text-align:center;margin-bottom:var(--sp-4)}
@@ -367,15 +345,107 @@ body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
   letter-spacing:-.015em;color:var(--ink);
 }
 
-.li-link{
-  margin-top:22px;display:flex;align-items:center;justify-content:center;gap:10px;
-  border:1px solid var(--rule);border-radius:14px;padding:16px;text-decoration:none;background:var(--paper);
-  transition:background .18s,border-color .18s;
+
+/* ---------- 6 — the call: pick a time ---------- */
+.call-sub{margin:-10px 0 16px;font-size:17px;line-height:1.5;color:var(--ink-2);text-wrap:pretty}
+.call-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px}
+.call-chips span{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+  font-size:12px;font-weight:600;color:var(--blue-deep);background:var(--blue-wash);
+  border-radius:999px;padding:6px 11px 6px 8px;
 }
-.li-link:hover{background:var(--blue-wash);border-color:#A9C7F5}
-.li-link[hidden]{display:none}
-.li-link b{font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:var(--blue-deep);letter-spacing:-.02em}
-.li-link span{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--ink)}
+.call-chips span::before{
+  content:'';flex:none;width:13px;height:13px;border-radius:50%;background:var(--blue-deep) no-repeat center/8px 6px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1 4.6l3.2 3L11 1' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* the calendar sits on the blue wash; every control on it is a white pill */
+.cal{background:var(--blue-wash);border-radius:22px;padding:clamp(16px,4.6vw,28px)}
+.cal-nav{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:10px}
+.cal-arrow{
+  width:46px;height:46px;border:0;border-radius:50%;background:var(--paper);color:var(--blue-deep);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:transform .14s cubic-bezier(.32,.72,0,1),opacity .2s ease;-webkit-tap-highlight-color:transparent;
+}
+.cal-arrow svg{width:18px;height:18px}
+.cal-arrow:disabled{opacity:.35;cursor:default}
+.cal-day{
+  height:54px;border-radius:999px;background:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:19px;letter-spacing:-.015em;color:var(--ink);
+}
+.cal-tz{margin:16px 0;text-align:center;font-size:13.5px;color:var(--ink-2)}
+.cal-slots{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:621px){ .cal-slots{grid-template-columns:1fr 1fr} }
+.slot{
+  height:58px;border-radius:999px;border:1.5px solid transparent;background:var(--paper);cursor:pointer;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:18.5px;letter-spacing:-.01em;color:var(--blue-deep);
+  transition:transform .14s cubic-bezier(.32,.72,0,1),background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+@media (hover:hover){ .slot:hover{border-color:#B9D3FB} }
+.slot.is-on{background:var(--blue);border-color:var(--blue);color:var(--paper);box-shadow:0 8px 20px rgba(58,134,255,.32)}
+.slot:focus-visible,.cal-arrow:focus-visible,.cal-more:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.cal-more{
+  display:block;width:100%;height:54px;margin-top:10px;border-radius:999px;cursor:pointer;
+  border:1.5px solid #B9D3FB;background:transparent;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:16.5px;color:var(--blue-deep);
+  transition:transform .14s cubic-bezier(.32,.72,0,1),background .2s ease;-webkit-tap-highlight-color:transparent;
+}
+.cal-more[hidden],.cal-cta[hidden],.cal-who[hidden]{display:none}
+@media (hover:hover){ .cal-more:hover{background:rgba(255,255,255,.55)} }
+/* tap feedback: everything you can press gives a little */
+.slot:active,.cal-more:active,.cal-arrow:active:not(:disabled),.cal-cta .btn:active:not(:disabled){transform:scale(.97)}
+
+/* only when we don't already know who to call */
+.cal-who{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.cal-who input{
+  width:100%;min-width:0;height:50px;padding:0 14px;border:1.5px solid transparent;border-radius:12px;
+  background:var(--paper);font:inherit;font-size:16px;color:var(--ink);
+}
+.cal-who input:focus{outline:0;border-color:var(--blue)}
+.cal-who input.is-bad{border-color:#D9534F;background:#FFF7F6}
+
+/* the button rides along the bottom of the screen while the times scroll */
+.cal-cta{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom));z-index:5;margin-top:16px}
+.cal-cta .btn{display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 26px rgba(14,30,48,.2);transition:background 130ms ease,transform .14s cubic-bezier(.32,.72,0,1)}
+.cal-cta .btn:disabled{background:var(--blue);color:var(--paper);cursor:progress;opacity:.92}
+.cal-cta .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:vspin .7s linear infinite}
+.cal-err{margin:10px 0 0;text-align:center;font-size:14px;font-weight:500;color:#C9302C}
+.cal-err:empty{display:none}
+
+/* booked */
+.booked{
+  background:var(--paper);border:1px solid var(--rule);border-radius:22px;text-align:center;
+  padding:clamp(30px,8vw,46px) clamp(20px,5vw,36px);
+}
+.booked-check{display:block;width:68px;height:68px;margin:0 auto 20px}
+.booked-check circle{fill:var(--blue);transform-origin:50% 50%}
+.booked-check path{fill:none;stroke:#fff;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:28;stroke-dashoffset:0}
+.booked h3{margin:0;font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(30px,8vw,40px);line-height:1.05;letter-spacing:-.03em;color:var(--ink)}
+.booked .b-when{margin:14px auto 0;max-width:30ch;font-family:Archivo,sans-serif;font-weight:600;font-size:clamp(17px,4.6vw,20px);line-height:1.4;letter-spacing:-.01em;color:var(--ink);text-wrap:balance}
+.booked .b-then b{font-weight:600;color:var(--ink);white-space:nowrap}
+.booked .b-then{margin:12px auto 0;max-width:34ch;font-size:16px;line-height:1.5;color:var(--ink-2);text-wrap:balance}
+
+/* tiles and carriers under the calendar */
+.call-more{margin-top:16px}
+.call-more .stats{margin-top:0}
+
+/* ---- build-in: blurred, a little low and clear, easing up sharp ----
+   Staggered 60ms down the list. `backwards` so that once it has played
+   the element is back to its own styles, and :active can still press it. */
+.bi{animation:bi .4s cubic-bezier(.32,.72,0,1) backwards;animation-delay:calc(var(--i,0) * 60ms)}
+@keyframes bi{from{opacity:0;filter:blur(8px);transform:translateY(12px)}}
+.anim .booked-check circle{animation:bpop .5s cubic-bezier(.32,.72,0,1) backwards .05s}
+.anim .booked-check path{stroke-dashoffset:28;animation:bdraw .45s .32s cubic-bezier(.65,0,.35,1) forwards}
+@keyframes bpop{from{transform:scale(.4);opacity:0}}
+@keyframes bdraw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){
+  .bi,.anim .booked-check circle{animation:none}
+  .anim .booked-check path{animation:none;stroke-dashoffset:0}
+  .slot,.cal-more,.cal-arrow,.cal-cta .btn{transition:none}
+  .slot:active,.cal-more:active,.cal-arrow:active:not(:disabled),.cal-cta .btn:active:not(:disabled){transform:none}
+}
 
 .assump{font-size:11.5px;line-height:1.5;color:var(--ink-3);opacity:.85;text-align:center;margin:var(--sp-5) 0 0}
 .variant-note{
@@ -525,14 +595,10 @@ main{min-height:calc(100vh - var(--header-h));min-height:calc(100svh - var(--hea
 .fx .gap-close{opacity:0;transition:opacity .6s .75s ease}
 .fx .is-in .gap-close{opacity:1}
 
-/* the call: Alicia, her credentials, then the three tiles */
-.fx .adv-photo{transform:scale(.88);opacity:0;transition:transform .7s .15s cubic-bezier(.3,1.3,.5,1),opacity .5s .15s ease}
-.fx .is-in .adv-photo{transform:none;opacity:1}
-.fx .adv-chips span{opacity:0;transform:scale(.85);transition:opacity .4s ease,transform .4s cubic-bezier(.3,1.6,.5,1);transition-delay:calc(450ms + var(--i) * 100ms)}
-.fx .is-in .adv-chips span{opacity:1;transform:none}
+/* the call: the three tiles, then the carrier strip */
 .fx .licensed{opacity:0;transition:opacity .7s .6s ease}
 .fx .is-in .licensed{opacity:1}
-.fx .stats>div{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(750ms + var(--i) * 120ms)}
+.fx .stats>div{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(150ms + var(--i) * 120ms)}
 .fx .is-in .stats>div{opacity:1;transform:none}
 </style>
 <script>
@@ -729,32 +795,25 @@ window.ZL_PIXEL_ID = '1091428479971058';
     </div>
   </div>
 
-  <!-- 6 | the call -------------------------------------------------- -->
+  <!-- 6 | the call: pick a time --------------------------------------- -->
   <div class="r-sec r-call">
     <h2 class="r-h2 r-big rv" id="callHead"></h2>
-    <div class="card rv">
+    <p class="call-sub rv">Pick a time. A licensed Ontario advisor calls you. We already have your number, so it’s one tap.</p>
+    <div class="call-chips rv"><span>FSRA licensed</span><span>10+ yrs avg experience</span><span>Free call</span></div>
 
-      <div class="advisor">
-        <div class="adv-photo">advisor<br>photo<img src="assets/advisor.jpg" alt="" onerror="this.remove()"></div>
-        <div class="adv-meta">
-          <div class="adv-name">Alicia Samuel</div>
-          <div class="adv-role">Licensed life advisor, Ontario</div>
-          <div class="adv-chips"><span>12 years</span><span>FSRA licensed</span></div>
-        </div>
+    <div class="rv" id="callBox"></div>
+
+    <div class="card call-more rv">
+      <div class="stats">
+        <div><b>15</b><span>minutes. You'll know your real number by the end.</span></div>
+        <div><b>You pick</b><span>the amount. We show you what each one costs.</span></div>
+        <div><b>Bring her</b><span>Your wife is welcome on the call.</span></div>
       </div>
 
       <div class="licensed">
         <div class="eyebrow-up">Licensed with</div>
         <div class="carriers-viewport"><div class="carriers-row carriers-sm" id="carriersRow2"></div></div>
       </div>
-
-      <div class="stats">
-        <div><b>15</b><span>minutes. You'll know your real number by the end.</span></div>
-        <div><b>You pick</b><span>the amount. She shows you what each one costs.</span></div>
-        <div><b>Bring her</b><span>Your wife is welcome on the call.</span></div>
-      </div>
-
-      <a class="li-link" id="liLink" target="_blank" rel="noopener" hidden><b>in</b><span>View her LinkedIn</span></a>
     </div>
   </div>
 
@@ -775,6 +834,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
   <button type="button" id="navBack">&lsaquo;&nbsp; Back</button><i></i><button type="button" id="navNext">Next &nbsp;&rsaquo;</button>
 </nav>
 
+<script src="assets/schedule.js"></script>
 <script>
 (function(){
 "use strict";
@@ -1147,9 +1207,6 @@ var LANDS={
     cap:'Nothing with '+p.poss+' name on it. Your creditors get paid first.' }; }
 };
 
-/* Set this to her profile URL and the link appears on the card. */
-var LINKEDIN_URL='';
-
 function money(n){ return '$'+String(n).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
 
 /* The scale the monthly cost is plotted against. It has to be a round
@@ -1248,9 +1305,8 @@ function buildResults(a){
 
   /* ---- 6 | the call ---- */
   document.getElementById('callHead').textContent=
-    'Fifteen minutes with Alicia, and you’ll know where '+p.who+' actually '+p.stands+'.';
-  var li=document.getElementById('liLink');
-  if(LINKEDIN_URL){ li.href=LINKEDIN_URL; li.hidden=false; } else { li.hidden=true; }
+    'Fifteen minutes, and you’ll know where '+p.who+' actually '+p.stands+'.';
+  calStart();
 }
 
 /* carrier strip: plain images, duplicated once so the mobile marquee
@@ -1321,7 +1377,7 @@ function countUpCost(){
 }
 if(FX){
   document.documentElement.classList.add('fx');
-  [].forEach.call(document.querySelectorAll('.adv-chips span,.stats>div'),function(el){
+  [].forEach.call(document.querySelectorAll('.stats>div'),function(el){
     el.style.setProperty('--i',[].indexOf.call(el.parentNode.children,el));
   });
   var io=new IntersectionObserver(function(entries){
@@ -1330,10 +1386,245 @@ if(FX){
       io.unobserve(e.target);
       e.target.classList.add('is-in');
       if(e.target.id==='costCard') countUpCost();
+      if(e.target.id==='callBox') calRender(true);
     });
   },{threshold:.2,rootMargin:'0px 0px -6% 0px'});
   [].forEach.call(document.querySelectorAll('.rv'),function(el){ io.observe(el); });
 }
+
+/* ---------------- book a call ----------------
+   The calendar draws from assets/schedule.js (window.ZSchedule), the
+   same file api/book.js checks every booking against. Ontario time
+   throughout. Times already booked by anyone come from GET /api/book
+   and are hidden; the day's fixed busy pattern is hidden too.
+
+   States: calendar → time picked (the Book button slides up) →
+   booking → booked. The booking lives in sessionStorage, so a reload
+   shows the confirmation, not the calendar. */
+var Z=window.ZSchedule||null;
+var BOOKING_KEY='zl_booking';
+var CAL={ymd:'',more:false,pick:null,taken:{},sending:false,built:false};
+var CHEVRON={
+  l:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  r:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5L13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+
+function esc(v){ return String(v==null?'':v).replace(/[<>&"]/g,function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
+function readBooking(){ try{ return JSON.parse(sessionStorage.getItem(BOOKING_KEY)||'null'); }catch(_){ return null; } }
+function readContact(){
+  try{ var s=JSON.parse(sessionStorage.getItem('zl_last')||'null'); return (s&&s.c)||{}; }catch(_){ return {}; }
+}
+function knowWho(){ var c=readContact(); return !!(c.name && validPhone(c.phone)); }
+
+/* restart the build-in on an element that is already on the page */
+function buildIn(el,i){
+  if(!el) return;
+  el.classList.remove('bi'); void el.offsetWidth;
+  el.style.setProperty('--i',i||0);
+  el.classList.add('bi');
+}
+
+/* days in the next two weeks that still have an open time */
+function calDays(){
+  var now=Date.now();
+  return Z.days(now).filter(function(d){ return Z.slots(d,now,CAL.taken).length>0; });
+}
+
+function calStart(){
+  var box=document.getElementById('callBox');
+  if(!box||!Z) return;
+  calRender(false);
+  /* who else has booked: their times disappear for everyone */
+  fetch('/api/book',{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    var map={};
+    (d&&d.taken||[]).forEach(function(k){ map[k]=true; });
+    CAL.taken=map;
+    if(CAL.built && !readBooking()) calShowDay(false);
+  }).catch(function(){});
+}
+
+function calRender(anim){
+  var box=document.getElementById('callBox');
+  if(!box||!Z) return;
+  var b=readBooking();
+  if(b){ renderBooked(b,anim); return; }
+
+  box.innerHTML=
+    '<div class="cal" id="cal">'
+    + '<div class="cal-nav">'
+      + '<button type="button" class="cal-arrow" data-go="-1" aria-label="Earlier day">'+CHEVRON.l+'</button>'
+      + '<div class="cal-day" id="calDay" aria-live="polite"></div>'
+      + '<button type="button" class="cal-arrow" data-go="1" aria-label="Later day">'+CHEVRON.r+'</button>'
+    + '</div>'
+    + '<p class="cal-tz">Times shown in Ontario time (ET)</p>'
+    + '<div class="cal-slots" id="calSlots" role="group" aria-label="Open times"></div>'
+    + '<button type="button" class="cal-more" id="calMore" hidden>View more times</button>'
+    + '<div class="cal-who" id="calWho"'+(knowWho()?' hidden':'')+'>'
+      + '<input id="whoName" type="text" autocomplete="name" placeholder="Your name" aria-label="Your name">'
+      + '<input id="whoPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile number" aria-label="Mobile number">'
+    + '</div>'
+    + '<div class="cal-cta" id="calCta" hidden><button type="button" class="btn" id="calBook"></button><p class="cal-err" id="calErr" role="alert"></p></div>'
+    + '</div>';
+  CAL.built=true;
+  CAL.pick=null;
+  calShowDay(anim);
+}
+
+function calShowDay(anim){
+  var days=calDays(), slotsEl=document.getElementById('calSlots');
+  if(!slotsEl) return;
+  if(!days.length){
+    document.getElementById('calDay').textContent='No open times';
+    slotsEl.innerHTML=''; document.getElementById('calMore').hidden=true;
+    return;
+  }
+  if(days.indexOf(CAL.ymd)===-1){ CAL.ymd=days[0]; CAL.more=false; }
+  var i=days.indexOf(CAL.ymd);
+  var arrows=document.querySelectorAll('#cal .cal-arrow');
+  arrows[0].disabled=i<=0;
+  arrows[1].disabled=i>=days.length-1;
+
+  var dayEl=document.getElementById('calDay');
+  dayEl.textContent=Z.dayShort(CAL.ymd);
+  if(anim) buildIn(dayEl,0);
+
+  var list=Z.slots(CAL.ymd,Date.now(),CAL.taken);
+  if(CAL.pick && !list.some(function(x){ return x.key===CAL.pick.key; })) calUnpick();
+  /* a picked time further down keeps the full list open */
+  if(CAL.pick && list.slice(0,4).every(function(x){ return x.key!==CAL.pick.key; })) CAL.more=true;
+  var shown=CAL.more?list:list.slice(0,4);
+  slotsEl.innerHTML=shown.map(function(x,n){ return slotHtml(x,anim?n+1:-1); }).join('');
+  document.getElementById('calMore').hidden=CAL.more||list.length<=4;
+  if(anim && !document.getElementById('calMore').hidden) buildIn(document.getElementById('calMore'),shown.length+1);
+}
+
+function slotHtml(x,i){
+  var on=CAL.pick&&CAL.pick.key===x.key;
+  return '<button type="button" class="slot'+(on?' is-on':'')+(i>=0?' bi':'')+'"'
+    +(i>=0?' style="--i:'+i+'"':'')+' data-key="'+x.key+'" data-iso="'+x.iso+'" aria-pressed="'+(on?'true':'false')+'">'
+    +Z.time12(x.hm)+'</button>';
+}
+
+function calMore(){
+  var list=Z.slots(CAL.ymd,Date.now(),CAL.taken), slotsEl=document.getElementById('calSlots');
+  CAL.more=true;
+  slotsEl.insertAdjacentHTML('beforeend',list.slice(4).map(function(x,n){ return slotHtml(x,n); }).join(''));
+  document.getElementById('calMore').hidden=true;
+}
+
+function calPick(btn){
+  var key=btn.getAttribute('data-key');
+  CAL.pick={key:key,iso:btn.getAttribute('data-iso'),ymd:key.slice(0,10),hm:key.slice(11)};
+  [].forEach.call(document.querySelectorAll('#calSlots .slot'),function(b){
+    var on=b===btn; b.classList.toggle('is-on',on); b.setAttribute('aria-pressed',on?'true':'false');
+  });
+  var cta=document.getElementById('calCta'), book=document.getElementById('calBook');
+  book.textContent='Book '+Z.dayShort(CAL.pick.ymd)+' · '+Z.time12(CAL.pick.hm);
+  document.getElementById('calErr').textContent='';
+  if(cta.hidden){ cta.hidden=false; buildIn(cta,0); }
+}
+function calUnpick(){
+  CAL.pick=null;
+  var cta=document.getElementById('calCta');
+  if(cta) cta.hidden=true;
+}
+
+function calGo(step){
+  var days=calDays(), i=days.indexOf(CAL.ymd)+step;
+  if(i<0||i>=days.length) return;
+  CAL.ymd=days[i]; CAL.more=false; calUnpick();
+  calShowDay(true);
+}
+
+function calBook(){
+  if(CAL.sending||!CAL.pick) return;
+  var c=readContact(), err=document.getElementById('calErr');
+  if(!knowWho()){
+    var n=document.getElementById('whoName'), ph=document.getElementById('whoPhone'), bad=false;
+    n.classList.toggle('is-bad',!n.value.trim()); bad=!n.value.trim();
+    ph.classList.toggle('is-bad',!validPhone(ph.value)); bad=bad||!validPhone(ph.value);
+    if(bad){ err.textContent='Add your name and mobile number so we can call you.'; return; }
+    c={name:n.value.trim(),email:c.email||'',phone:fmtPhone(ph.value)};
+  }
+  var pick=CAL.pick, btn=document.getElementById('calBook'), label=btn.textContent;
+  var eventId='schedule.'+Date.now()+'.'+Math.random().toString(36).slice(2,10);
+  CAL.sending=true;
+  err.textContent='';
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin" aria-hidden="true"></span>Booking…';
+
+  var t0=Date.now();
+  var req=fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name:c.name, email:c.email||'', phone:c.phone, slot:pick.iso,
+      sid:SID, nolog:NOLOG, event_id:eventId,
+      fbp:getCookie('_fbp'), fbc:getFbc(), source_url:location.href
+    })})
+    .then(function(r){ return r.json().then(function(d){ return {status:r.status,d:d}; }); });
+
+  req.then(function(res){
+    /* a short, honest beat of "booking" even on a fast connection */
+    setTimeout(function(){
+      CAL.sending=false;
+      if(res.d&&res.d.ok){
+        if(!res.d.test && !NOLOG){
+          try{ if(window.fbq) fbq('track','Schedule',{content_name:'Zorion call'},{eventID:eventId}); }catch(_){}
+        }
+        var booking={key:pick.key,ymd:pick.ymd,hm:pick.hm,iso:pick.iso,phone:c.phone,ts:Date.now()};
+        try{ sessionStorage.setItem(BOOKING_KEY,JSON.stringify(booking)); }catch(_){}
+        try{
+          var last=JSON.parse(sessionStorage.getItem('zl_last')||'{}');
+          last.c=c; sessionStorage.setItem('zl_last',JSON.stringify(last));
+        }catch(_){}
+        renderBooked(booking,true);
+        return;
+      }
+      btn.disabled=false; btn.textContent=label;
+      if(res.status===409){
+        CAL.taken[pick.key]=true;
+        calUnpick(); calShowDay(true);
+        document.getElementById('calCta').hidden=false;
+        document.getElementById('calBook').textContent='Pick another time';
+        document.getElementById('calBook').disabled=true;
+        document.getElementById('calErr').textContent='That time was just taken. Pick another one.';
+      }else{
+        err.textContent='Couldn’t book that. Try again.';
+      }
+    },Math.max(0,900-(Date.now()-t0)));
+  }).catch(function(){
+    CAL.sending=false; btn.disabled=false; btn.textContent=label;
+    err.textContent='Couldn’t book that. Try again.';
+  });
+}
+
+function renderBooked(b,anim){
+  var box=document.getElementById('callBox');
+  if(!box||!Z) return;
+  CAL.built=false;
+  /* class (plus the staggered build-in when animating) for each line */
+  var n=0;
+  function cls(c){ return anim ? ' class="'+c+' bi" style="--i:'+(n++)+'"' : ' class="'+c+'"'; }
+  box.innerHTML='<div class="booked'+(anim?' anim':'')+'" role="status">'
+    + '<svg'+cls('booked-check')+' viewBox="0 0 68 68" aria-hidden="true"><circle cx="34" cy="34" r="34"/><path d="M22 35.5l8 7.5 16-17"/></svg>'
+    + '<h3'+cls('b-head')+'>You’re booked.</h3>'
+    + '<p'+cls('b-when')+'>'+Z.dayLong(b.ymd)+' at '+Z.time12(b.hm)+', Ontario time.</p>'
+    + '<p'+cls('b-then')+'>We’ll call you at <b>'+esc(fmtPhone(b.phone)||b.phone)+'</b>. Bring your wife if you can.</p>'
+    + '</div>';
+}
+
+/* one listener for the whole calendar */
+document.addEventListener('click',function(e){
+  var box=document.getElementById('callBox');
+  if(!box||!box.contains(e.target)) return;
+  var t;
+  if((t=e.target.closest('.slot'))) return calPick(t);
+  if((t=e.target.closest('.cal-arrow'))) return calGo(Number(t.getAttribute('data-go')));
+  if(e.target.closest('#calMore')) return calMore();
+  if(e.target.closest('#calBook')) return calBook();
+});
+document.addEventListener('input',function(e){
+  if(e.target&&(e.target.id==='whoName'||e.target.id==='whoPhone')) e.target.classList.remove('is-bad');
+});
 
 /* ---------------- building the report ----------------
    Fires the moment Q5 is answered, runs a shade over two seconds, then
@@ -1498,7 +1789,9 @@ form.addEventListener('submit',function(e){
     }catch(_){}
   }
 
-  try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a})); }catch(_){}
+  /* The answers and who he is. A booking after a reload still knows who
+     to call. */
+  try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a,c:{name:name,email:emailEl.value.trim(),phone:fmtPhone(phoneEl.value)}})); }catch(_){}
 
   /* report is already built — straight through, no interstitial */
   try{ buildResults(a); }catch(_){}

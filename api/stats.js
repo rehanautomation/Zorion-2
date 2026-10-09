@@ -1,5 +1,6 @@
 const crypto = require('crypto');
-const { all, allDwell, persistent } = require('./_store');
+const { all, allDwell, allBookings, persistent } = require('./_store');
+const SCHED = require('../assets/schedule.js');
 
 /* ------------------------------------------------------------------
    The report's data. Public: no names, emails or phone numbers unless
@@ -390,6 +391,23 @@ module.exports = async (req, res) => {
     legacy: buildV1(v1Events, admin)
   };
   if (admin) body.leads = v2.out.leads;
+
+  /* Calls booked through the results page. The count is public; who
+     booked is only shown with the key. Windowed by when it was booked. */
+  let booked = [];
+  try { booked = await allBookings(); } catch (_) {}
+  booked = booked.filter(b => !cutoff || (b.ts || 0) >= cutoff);
+  body.bookings = { count: booked.length };
+  if (admin) {
+    body.bookings.list = booked
+      .map(b => ({
+        name: b.name, phone: b.phone, email: b.email,
+        slot: b.slot,
+        slotLabel: b.ymd && b.hm ? SCHED.dayShort(b.ymd) + ' · ' + SCHED.time12(b.hm) + ' ET' : b.slot,
+        bookedAt: b.ts
+      }))
+      .sort((x, y) => (y.bookedAt || 0) - (x.bookedAt || 0));
+  }
 
   res.status(200).json(body);
 };

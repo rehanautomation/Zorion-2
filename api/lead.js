@@ -83,3 +83,7 @@ module.exports = async (req, res) => {
 
   res.status(200).json({ ok: true, test: isTest, discord: !isTest, recorded: !ours });
 };
+
+/* api/book.js posts call bookings to the same channel unless
+   BOOKING_WEBHOOK_URL is set. */
+module.exports.WEBHOOK = WEBHOOK;

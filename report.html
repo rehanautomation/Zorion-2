@@ -48,7 +48,7 @@ h2{font-size:15px;font-weight:600;margin:0 0 10px}
 .muted{color:var(--muted)}
 
 /* ---- 1. summary strip ---- */
-.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:20px}
+.strip{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:20px}
 .strip.wide{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
 .strip b{display:block;font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .strip span{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
@@ -228,6 +228,7 @@ function render(d){
   html += '<div class="strip">'
     + num(t.views, who) + num(t.engaged, 'Engaged') + num(t.started, 'Answered Q1')
     + num(t.leads, 'Leads') + num(dur(t.visibleMedianMs), 'Median time')
+    + num((d.bookings && d.bookings.count) || 0, 'Calls booked')
     + '</div>';
   html += '<p class="since">' + (d.trackingSince
     ? 'Counting real ad clicks since ' + esc(stamp(d.trackingSince.ts)) + ' (Toronto)'
@@ -262,6 +263,9 @@ function render(d){
       : '<p class="empty">Nothing filtered in this window.</p>');
 
   html += fold('leads', 'Leads', d.admin && d.leads ? '(' + d.leads.length + ')' : '', leadsTable(d.leads, d.admin, true));
+
+  var bk = d.bookings || {count:0};
+  html += fold('calls', 'Calls booked', '(' + (bk.count || 0) + ')', callsTable(bk.list, d.admin));
 
   var L = d.legacy;
   if (L && L.totals && L.totals.views){
@@ -334,6 +338,19 @@ function leadsTable(leads, admin, isV2){
         return '<tr><td>' + esc(when(l.ts)) + '</td>'
           + (isV2 ? '<td' + (l.verified ? '' : ' class="none"') + '>' + (l.verified ? 'real click' : 'not verified') + '</td><td>' + esc(l.a || '—') + '</td>' : '')
           + '<td>' + esc(l.name) + '</td><td>' + esc(l.email) + '</td><td>' + esc(l.phone) + '</td></tr>';
+      }).join('')
+    + '</table></div>';
+}
+
+function callsTable(list, admin){
+  if (!admin){
+    return '<div class="locked"><span>Names, emails and phone numbers are hidden on the public report.</span>'
+      + '<button type="button" class="btn" data-unlock="1">Show lead details</button></div>';
+  }
+  if (!list || !list.length) return '<p class="empty">No calls booked yet in this window.</p>';
+  return '<div class="scroll"><table><tr><th>Name</th><th>Call (Toronto)</th><th>Booked at (Toronto)</th><th>Phone</th></tr>'
+    + list.map(function(b){
+        return '<tr><td>' + esc(b.name) + '</td><td>' + esc(b.slotLabel) + '</td><td>' + esc(when(b.bookedAt)) + '</td><td>' + esc(b.phone) + '</td></tr>';
       }).join('')
     + '</table></div>';
 }

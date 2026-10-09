@@ -29,6 +29,9 @@ const PAGE = 5000;
            with heartbeats. */
 const CLICKS = 'zorion_clicks_v2';
 const DWELL = 'zorion_dwell_v2';
+/* Booked calls: one entry per slot ('2026-10-09T14:30', Toronto time).
+   Written with HSETNX, so two people can never hold the same slot. */
+const BOOKINGS = 'zorion_bookings_v1';
 
 const FILE = process.env.ZORION_DATA_FILE
   || path.join(process.env.VERCEL ? '/tmp' : process.cwd(), 'zorion-events.json');
@@ -146,6 +149,37 @@ async function setDwell(sid, value) {
   const d = readSide('dwell'); d[sid] = value; writeSide('dwell', d);
 }
 
+/* true if the slot was free and is now held by this booking, false if
+   someone already has it */
+async function reserveSlot(slotKey, booking) {
+  const row = JSON.stringify(booking);
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['HSETNX', BOOKINGS, slotKey, row]);
+    return Number(out.result) === 1;
+  }
+  const b = readSide('bookings');
+  if (b[slotKey]) return false;
+  b[slotKey] = booking; writeSide('bookings', b);
+  return true;
+}
+
+/* every booking, oldest slot first */
+async function allBookings() {
+  let map = {};
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['HGETALL', BOOKINGS]);
+    const r = out.result || [];
+    if (Array.isArray(r)) {
+      for (let i = 0; i + 1 < r.length; i += 2) { try { map[r[i]] = JSON.parse(r[i + 1]); } catch (_) {} }
+    } else if (r && typeof r === 'object') {
+      for (const k of Object.keys(r)) { try { map[k] = typeof r[k] === 'string' ? JSON.parse(r[k]) : r[k]; } catch (_) {} }
+    }
+  } else {
+    map = readSide('bookings');
+  }
+  return Object.keys(map).sort().map(k => Object.assign({ slot: k }, map[k]));
+}
+
 /* { sid: {s, l, t} } */
 async function allDwell() {
   if (KV_URL && KV_TOKEN) {
@@ -176,6 +210,6 @@ function readBody(req) {
 
 module.exports = {
   push, all, clear, readBody, isAdmin, clientIp, adminIps,
-  markClick, setDwell, allDwell,
+  markClick, setDwell, allDwell, reserveSlot, allBookings,
   persistent: Boolean(KV_URL && KV_TOKEN)
 };
