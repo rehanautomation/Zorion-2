@@ -600,7 +600,7 @@ main{min-height:calc(100vh - var(--header-h));min-height:calc(100svh - var(--hea
 .fx .is-in .licensed{opacity:1}
 .fx .stats>div{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(150ms + var(--i) * 120ms)}
 .fx .is-in .stats>div{opacity:1;transform:none}
-.ready-pill{display:inline-flex;align-items:center;gap:8px;margin:0 0 var(--sp-3);padding:6px 14px 6px 8px;border-radius:999px;background:#DCFCE7;border:1px solid #86EFAC;color:#166534;font-family:Inter,system-ui,sans-serif;font-size:15px;font-weight:600;line-height:1.2}
+.ready-pill{display:inline-flex;align-items:center;gap:8px;margin:var(--sp-4) 0 var(--sp-3);padding:6px 14px 6px 8px;border-radius:999px;background:#DCFCE7;border:1px solid #86EFAC;color:#166534;font-family:Inter,system-ui,sans-serif;font-size:15px;font-weight:600;line-height:1.2}
 .ready-pill svg{flex:none}
 </style>
 <script>
@@ -676,17 +676,16 @@ window.ZL_PIXEL_ID = '1091428479971058';
   </div>
 </section>
 
-<section class="screen" id="s3" data-step="3">
+<section class="screen" id="s3" data-step="3" data-auto="1">
   <h1 class="t-q">What have you got in place right now?</h1>
-  <p class="t-helper">Select all that apply.</p>
+  <p class="t-helper">Pick the main one.</p>
   <div class="options" id="q3opts">
-    <label class="option"><input type="checkbox" name="q3" value="mortgage"><span class="box"></span><span>Mortgage insurance through the bank</span></label>
-    <label class="option"><input type="checkbox" name="q3" value="personal"><span class="box"></span><span>A personal life insurance policy</span></label>
-    <label class="option"><input type="checkbox" name="q3" value="spouse"><span class="box"></span><span>Something through my wife's work</span></label>
-    <label class="option"><input type="checkbox" name="q3" value="nothing" data-clear="1"><span class="box"></span><span>Nothing</span></label>
-    <label class="option"><input type="checkbox" name="q3" value="unsure" data-clear="1"><span class="box"></span><span>Not sure</span></label>
+    <label class="option is-radio"><input type="radio" name="q3" value="mortgage"><span class="box"></span><span>Mortgage insurance through the bank</span></label>
+    <label class="option is-radio"><input type="radio" name="q3" value="personal"><span class="box"></span><span>A personal life insurance policy</span></label>
+    <label class="option is-radio"><input type="radio" name="q3" value="spouse"><span class="box"></span><span>Something through my wife's work</span></label>
+    <label class="option is-radio"><input type="radio" name="q3" value="nothing"><span class="box"></span><span>Nothing</span></label>
+    <label class="option is-radio"><input type="radio" name="q3" value="unsure"><span class="box"></span><span>Not sure</span></label>
   </div>
-  <button class="btn mt-5" id="q3next" disabled>Continue</button>
 </section>
 
 <section class="screen" id="s4" data-step="4" data-auto="1">
@@ -1095,7 +1094,6 @@ function wireMulti(wrapId,btnId,nextIndex,onAdvance){
   btn.addEventListener('click',advance);
   sync();
 }
-wireMulti('q3opts','q3next',3);
 
 /* ---------------- our own runs: back / next + swipe ----------------
    Only on a browser that has opened /?nolog=1. A visitor from an ad
