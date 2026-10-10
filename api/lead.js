@@ -3,6 +3,11 @@ const { push, readBody, isAdmin } = require('./_store');
 const WEBHOOK = process.env.DISCORD_WEBHOOK_URL
   || 'https://discord.com/api/webhooks/1545510678142656623/hZOQ8Rsb23OaDsTINDGmWWnl-DQVY1d1zYBiPV89Ny23ZSjaUGuqO8bRDKfZWSKYVAP_';
 
+/* Alicia's Discord user ID. Every lead ping @mentions her, so it
+   reaches her phone even when she has muted the channel. */
+const ALICIA_ID = '1547709023212544013';
+const MENTION = '<@' + ALICIA_ID + '>';
+
 /* In the order he answers them. The keys are the form field names, which
    kept their old numbering when the debt list was dropped. */
 const QUESTIONS = [
@@ -56,7 +61,7 @@ module.exports = async (req, res) => {
   const isTest = name.trim().toLowerCase() === 'test'
               || email.trim().toLowerCase() === 'test@gmail.com';
 
-  let content = ['**NEW FACEBOOK LEAD**', 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
+  let content = [MENTION + ' **NEW FACEBOOK LEAD**', 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
   const answerBlock = formatAnswers(b.answers);
   if (answerBlock) content += '\n\n' + answerBlock;
   if (content.length > 1990) content = content.slice(0, 1990) + '...';
@@ -76,7 +81,7 @@ module.exports = async (req, res) => {
       await fetch(WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content, allowed_mentions: { parse: [] } })
+        body: JSON.stringify({ content: content, allowed_mentions: { parse: [], users: [ALICIA_ID] } })
       });
     } catch (_) {}
   }
@@ -87,3 +92,4 @@ module.exports = async (req, res) => {
 /* api/book.js posts call bookings to the same channel unless
    BOOKING_WEBHOOK_URL is set. */
 module.exports.WEBHOOK = WEBHOOK;
+module.exports.ALICIA_ID = ALICIA_ID;

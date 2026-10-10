@@ -21,6 +21,7 @@ const { readBody, isAdmin, reserveSlot, allBookings } = require('./_store');
 const { sendEvent } = require('./_meta');
 
 const WEBHOOK = process.env.BOOKING_WEBHOOK_URL || require('./lead').WEBHOOK;
+const ALICIA_ID = require('./lead').ALICIA_ID;
 
 const COLOR = 0x22C55E;   // bright green: it should catch the eye in the channel
 
@@ -46,8 +47,8 @@ function whenLabel(ymd, hm) { return S.dayShort(ymd) + ' · ' + S.time12(hm) + '
 function discordMessage(b, opts) {
   const test = opts && opts.test;
   return {
-    content: '@here 📅 **CALL BOOKED**',
-    allowed_mentions: { parse: ['everyone'] },     // lets @here ping
+    content: '@here <@' + ALICIA_ID + '> 📅 **CALL BOOKED**',
+    allowed_mentions: { parse: ['everyone'], users: [ALICIA_ID] },  // @here + Alicia
     embeds: [{
       title: '📅 Call booked' + (test ? ' · TEST' : ''),
       description: '**' + md(b.name) + '** booked a call',
