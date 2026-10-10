@@ -1,10 +1,10 @@
 /* ------------------------------------------------------------------
    Meta Conversions API.
 
-   Shared so the conversion event has exactly one implementation. The
-   Lead now fires at question 1, where we have no contact details yet —
-   only the click identifiers — so every personal field here is
-   optional and simply omitted when absent.
+   One implementation for every event: QuizStart (question 1, no
+   contact details yet, only the click identifiers), Lead (contact form
+   submitted, with hashed name, email and phone) and Schedule (call
+   booked). Every personal field is optional and omitted when absent.
 
    Set these in Vercel → Settings → Environment Variables. With the ID
    or token missing the call is skipped silently and the page is

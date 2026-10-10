@@ -1,4 +1,5 @@
 const { push, readBody, isAdmin } = require('./_store');
+const { sendEvent } = require('./_meta');
 
 const WEBHOOK = process.env.DISCORD_WEBHOOK_URL
   || 'https://discord.com/api/webhooks/1545510678142656623/hZOQ8Rsb23OaDsTINDGmWWnl-DQVY1d1zYBiPV89Ny23ZSjaUGuqO8bRDKfZWSKYVAP_';
@@ -54,10 +55,8 @@ module.exports = async (req, res) => {
   const email = String(b.email || '').slice(0, 160);
   const phone = String(b.phone || '').slice(0, 60);
 
-  /* A test submission gets no Discord ping and no row in the report.
-     It cannot suppress the conversion event, which fired back at
-     question 1, long before these fields existed — /?nolog=1 is what
-     keeps our own runs out of Meta. */
+  /* A test submission gets no Discord ping, no row in the report and
+     no Meta Lead. /?nolog=1 keeps our own browsers out of Meta too. */
   const isTest = name.trim().toLowerCase() === 'test'
               || email.trim().toLowerCase() === 'test@gmail.com';
 
@@ -86,7 +85,28 @@ module.exports = async (req, res) => {
     } catch (_) {}
   }
 
-  res.status(200).json({ ok: true, test: isTest, discord: !isTest, recorded: !ours });
+  /* The server half of the Meta Lead, the conversion. After the
+     Discord ping, so Alicia hears first. Same event_id as the browser
+     Pixel Lead, so Meta counts one. Never for our own
+     traffic, a test submission, or a repeat submit from the same tab
+     (the browser sends meta:false then). */
+  let meta = null;
+  if (!ours && b.meta !== false && b.event_id) {
+    try {
+      meta = await sendEvent({
+        eventName: 'Lead',
+        name, email, phone,
+        eventId: String(b.event_id).slice(0, 80),
+        fbp: b.fbp, fbc: b.fbc,
+        sourceUrl: b.source_url,
+        sid: b.sid,
+        trade: '',
+        req
+      });
+    } catch (err) { meta = { error: String(err && err.message) }; }
+  }
+
+  res.status(200).json({ ok: true, test: isTest, discord: !isTest, recorded: !ours, meta: meta ? true : false });
 };
 
 /* api/book.js posts call bookings to the same channel unless

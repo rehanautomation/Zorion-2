@@ -1,8 +1,10 @@
 /* ------------------------------------------------------------------
-   The conversion event, fired the moment question 1 is answered.
+   QuizStart: a custom event, fired the moment question 1 is answered.
+   Not the conversion. The Lead fires only when the contact form is
+   submitted (api/lead.js).
 
-   The browser fires the Pixel Lead at the same instant with the same
-   event_id, so Meta counts one Lead, not two.
+   The browser fires the Pixel QuizStart at the same instant with the
+   same event_id, so Meta counts it once, not twice.
 
    No contact details exist yet — matching rests on fbc (from the ad
    click), fbp, IP and user agent. Our own traffic is excluded the same
@@ -28,7 +30,7 @@ module.exports = async (req, res) => {
   let meta = null;
   try {
     meta = await sendEvent({
-      eventName: 'Lead',
+      eventName: 'QuizStart',
       eventId: b.event_id,
       fbp: b.fbp,
       fbc: b.fbc,

@@ -976,15 +976,14 @@ function newEventId(){
 }
 
 /* =============================================================
-   THE CONVERSION EVENT
-   Fires once, the moment question 1 is answered — not at the
-   contact form. The browser Pixel and the server Conversions API
-   go at the same instant sharing one event_id, so Meta counts a
-   single Lead.
+   QUIZ START (custom event, not a Lead)
+   Fires once, the moment question 1 is answered. Meta sees it as
+   "QuizStart" so Ads Manager can still show how many started, but it
+   is NOT the conversion: the Lead fires only when the contact form is
+   submitted (see the submit handler below). Pixel and Conversions API
+   share one event_id, so Meta counts it once.
 
-   Because this happens before any name or email exists, the "test"
-   name cannot hold it back; /?nolog=1 is what keeps our own runs
-   out of Meta, on the browser and the server both.
+   /?nolog=1 keeps our own runs out of Meta, browser and server both.
    ============================================================= */
 function fireConversion(){
   if(NOLOG) return;
@@ -994,7 +993,7 @@ function fireConversion(){
   var eventId=newEventId();
 
   try{
-    if(window.fbq) fbq('track','Lead',{content_name:'Zorion quiz'},{eventID:eventId});
+    if(window.fbq) fbq('trackCustom','QuizStart',{content_name:'Zorion quiz'},{eventID:eventId});
   }catch(_){}
 
   try{
@@ -1774,8 +1773,20 @@ form.addEventListener('submit',function(e){
   if(isTest) showBadge('Test submission — nothing tracked');
 
   if(SEND_LEADS){
-    /* No Meta event here — the conversion already fired at question 1.
-       This call is the Discord ping and the row in the report. */
+    /* THE CONVERSION: a real lead, contact details submitted. The
+       browser Pixel Lead and the server Conversions API Lead (sent by
+       /api/lead, with hashed name, email and phone for better matching)
+       share one event_id, so Meta counts one Lead. Test submissions and
+       our own browsers (/?nolog=1) send nothing to Meta. Once per tab. */
+    var leadEventId=newEventId();
+    var sendMeta=!isTest && !NOLOG;
+    try{ if(sessionStorage.getItem('zl_lead')) sendMeta=false; }catch(_){}
+    if(sendMeta){
+      try{ sessionStorage.setItem('zl_lead','1'); }catch(_){}
+      try{ if(window.fbq) fbq('track','Lead',{content_name:'Zorion quiz'},{eventID:leadEventId}); }catch(_){}
+    }
+    /* The Discord ping, the row in the report, and the server half of
+       the Lead. */
     try{
       fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -1784,7 +1795,12 @@ form.addEventListener('submit',function(e){
           phone:fmtPhone(phoneEl.value),
           answers:a,
           sid:SID,
-          nolog:NOLOG
+          nolog:NOLOG,
+          meta:sendMeta,
+          event_id:leadEventId,
+          fbp:getCookie('_fbp'),
+          fbc:getFbc(),
+          source_url:location.href
         }),keepalive:true}).catch(function(){});
     }catch(_){}
   }
