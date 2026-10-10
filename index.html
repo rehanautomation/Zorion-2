@@ -600,6 +600,8 @@ main{min-height:calc(100vh - var(--header-h));min-height:calc(100svh - var(--hea
 .fx .is-in .licensed{opacity:1}
 .fx .stats>div{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(150ms + var(--i) * 120ms)}
 .fx .is-in .stats>div{opacity:1;transform:none}
+.ready-pill{display:inline-flex;align-items:center;gap:8px;margin:0 0 var(--sp-3);padding:6px 14px 6px 8px;border-radius:999px;background:#DCFCE7;border:1px solid #86EFAC;color:#166534;font-family:Inter,system-ui,sans-serif;font-size:15px;font-weight:600;line-height:1.2}
+.ready-pill svg{flex:none}
 </style>
 <script>
 /* ===============================================================
@@ -709,7 +711,8 @@ window.ZL_PIXEL_ID = '1091428479971058';
 </section>
 
 <section class="screen" id="s6" data-step="4">
-  <h1 class="t-q">Last step. Where should we text your results?</h1>
+  <p class="ready-pill"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16A34A"/><path d="M4.5 8.3l2.3 2.3 4.7-4.9" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>Your report is ready</p>
+  <h1 class="t-q">Where should we text it?</h1>
   <form id="contact" novalidate>
     <div class="form-grid">
       <div class="field full">
