@@ -66,8 +66,16 @@ async function run(name, input, expect) {
   assert.strictEqual(botFirst.reason, 'bot_ua');
   assert.strictEqual(seen.has(sha('y')), false, 'a bot must not record the click hash');
 
-  /* no ad tag, and every bot name on the list */
-  assert.strictEqual(classify(visit(UA.facebookApp, 'CA', 'fbclid=z')).reason, 'no_ad_tag');
+  /* no ad tag: the plain link at the end of the story. A real click,
+     counted, and flagged as a story click */
+  const story = classify(visit(UA.facebookApp, 'CA', 'fbclid=z'));
+  assert.strictEqual(story.verified, true, 'story-link click should count');
+  assert.strictEqual(story.story, true, 'story-link click should be flagged');
+  assert.strictEqual(classify(visit(UA.facebookApp, 'CA', 'a=widow&fbclid=z2')).story, false);
+  assert.strictEqual(classify(visit(UA.iphoneSafari, 'CA', '')).reason, 'no_click_id', 'no Meta click is still filtered');
+  assert.strictEqual(classify(visit(UA.facebookApp, 'US', 'fbclid=z3')).reason, 'outside_canada');
+
+  /* every bot name on the list */
   for (const b of ['Facebot', 'meta-externalagent/1.1', 'meta-externalfetcher/1.1', 'Mozilla/5.0 HeadlessChrome/126.0',
                    'Googlebot/2.1', 'AhrefsCrawler', 'some-spider', 'curl/8.4.0', 'python-requests/2.31', 'Wget/1.21']) {
     assert.strictEqual(classify(visit(b, 'CA', 'a=widow&fbclid=q')).reason, 'bot_ua', b + ' should be a bot');

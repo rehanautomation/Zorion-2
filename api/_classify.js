@@ -5,17 +5,22 @@
    arguments, so the same input always gives the same answer and it
    can be tested with plain node (api/_classify.test.js).
 
-   VERIFIED needs all four:
+   VERIFIED needs all three:
      1. a Meta click   — an fbclid on the URL, or the Facebook /
                          Instagram in-app browser
-     2. an ad tag      — a= on the URL (every ad carries one)
-     3. Canada         — Vercel's geo header says CA
-     4. not a bot      — user agent isn't a crawler or a script
+     2. Canada         — Vercel's geo header says CA
+     3. not a bot      — user agent isn't a crawler or a script
    and the click must not have been counted already (a reload, or the
    same link reopened, is the same person, not a new one).
 
+   The a= ad tag says WHERE the click came from, not whether it is
+   real. With a= it came from the ad's image, headline or button.
+   Without it, it came from the plain zorionlife.com link at the end of
+   the story in the ad text: story = true. Those people read the post
+   to the bottom, so they are counted, in their own bucket.
+
    Otherwise UNVERIFIED with the first reason that applies, in this
-   order: bot_ua, no_click_id, no_ad_tag, outside_canada, duplicate.
+   order: bot_ua, no_click_id, outside_canada, duplicate.
    ------------------------------------------------------------------ */
 
 /* Meta's own fetchers (ad review, link previews, the crawler that
@@ -27,7 +32,7 @@ const IN_APP_RE = /FBAN|FBAV|FB_IAB|Instagram/;
 
 const HASH_RE = /^[0-9a-f]{64}$/;
 
-const REASONS = ['bot_ua', 'no_click_id', 'no_ad_tag', 'outside_canada', 'duplicate'];
+const REASONS = ['bot_ua', 'no_click_id', 'outside_canada', 'duplicate'];
 
 function isBot(ua) { return BOT_RE.test(String(ua || '')); }
 function isInApp(ua) { return IN_APP_RE.test(String(ua || '')); }
@@ -47,7 +52,7 @@ function cleanHash(h) {
  *   hasFbclid  the browser saw an fbclid on the URL
  *   fbclidHash SHA-256 hex of that fbclid (the raw value is never sent)
  *   seen       true when this fbclid hash was already counted
- * @returns {{verified:boolean, reason:string|null, bot:boolean,
+ * @returns {{verified:boolean, reason:string|null, story:boolean, bot:boolean,
  *            inApp:boolean, clickId:boolean, country:string, region:string}}
  */
 function classify(v) {
@@ -65,11 +70,10 @@ function classify(v) {
   let reason = null;
   if (bot) reason = 'bot_ua';
   else if (!clickId && !inApp) reason = 'no_click_id';
-  else if (!a) reason = 'no_ad_tag';
   else if (country !== 'CA') reason = 'outside_canada';
   else if (hash && v.seen) reason = 'duplicate';
 
-  return { verified: reason === null, reason, bot, inApp, clickId, country, region };
+  return { verified: reason === null, reason, story: !a, bot, inApp, clickId, country, region };
 }
 
 /* The duplicate check needs to know whether a click hash was counted

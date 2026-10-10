@@ -149,6 +149,10 @@ var KEY = (function(){
   }catch(_){ return ''; }
 })();
 
+/* a= values that need a plain name. 'story' = the link at the end of
+   the story in the ad text: they read the post to the bottom. */
+var AD_LABELS = { story: 'Read the story (link in post)' };
+
 var TABS = [
   {key:'byA',   label:'By ad',        none:'not tagged'},
   {key:'bySrc', label:'By platform',  none:'not tagged'},
@@ -312,7 +316,7 @@ function breakdown(rows, cfg, who){
     + '<tr><th>Name</th><th>' + who + '</th><th>Engaged</th><th>Answered</th><th>Leads</th><th>Conv %</th><th>Median time</th><th>To Q1</th></tr>'
     + rows.map(function(r){
         var none = r.key === '(none)';
-        var name = none ? cfg.none : r.key;
+        var name = none ? cfg.none : (cfg.key === 'byA' && AD_LABELS[r.key]) || r.key;
         return '<tr><td' + (none ? ' class="none"' : '') + ' title="' + esc(name) + '">' + esc(name) + '</td>'
           + '<td>' + r.views + '</td><td>' + r.engaged + '</td><td>' + r.started + '</td><td>' + r.leads + '</td>'
           + '<td>' + r.conversionRate + '%</td><td>' + dur(r.visibleMedianMs) + '</td><td>' + dur(r.firstAnswerMedianMs) + '</td></tr>';
@@ -336,7 +340,7 @@ function leadsTable(leads, admin, isV2){
     + '<th>Name</th><th>Email</th><th>Phone</th></tr>'
     + leads.map(function(l){
         return '<tr><td>' + esc(when(l.ts)) + '</td>'
-          + (isV2 ? '<td' + (l.verified ? '' : ' class="none"') + '>' + (l.verified ? 'real click' : 'not verified') + '</td><td>' + esc(l.a || '—') + '</td>' : '')
+          + (isV2 ? '<td' + (l.verified ? '' : ' class="none"') + '>' + (l.verified ? 'real click' : 'not verified') + '</td><td>' + esc(AD_LABELS[l.a] || l.a || '—') + '</td>' : '')
           + '<td>' + esc(l.name) + '</td><td>' + esc(l.email) + '</td><td>' + esc(l.phone) + '</td></tr>';
       }).join('')
     + '</table></div>';

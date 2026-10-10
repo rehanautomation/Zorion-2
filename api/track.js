@@ -78,6 +78,7 @@ module.exports = async (req, res) => {
         fb: c.clickId || undefined,
         ok: c.verified,
         why: c.reason || undefined,
+        story: (c.verified && c.story) || undefined,   // came through the link at the end of the story
         app: c.inApp || undefined,
         cc: c.country || undefined,
         rg: c.region || undefined,

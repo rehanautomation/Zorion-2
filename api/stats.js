@@ -30,7 +30,7 @@ const STEP_LABELS = {
 const REASON_LABELS = {
   bot_ua: 'Bot, crawler or link preview',
   no_click_id: 'No Meta click: no fbclid and not the Facebook / Instagram app',
-  no_ad_tag: 'No a= ad tag on the link',
+  no_ad_tag: 'No a= ad tag, outside Canada (old rule)',
   outside_canada: 'Outside Canada',
   duplicate: 'Same click again (reload or reopened link)',
   no_view: 'Page view never arrived'
@@ -120,6 +120,16 @@ function block(units) {
   };
 }
 
+/* A click from the plain link at the end of the story in the ad text
+   carries no a= tag. Since Oct 10 the tracker counts those (ok + story).
+   Before that they were stored as why:'no_ad_tag', so the same rule is
+   applied to those rows here: a Meta click from Canada, not a bot (the
+   bot and no-click checks ran first, so 'no_ad_tag' already means both
+   passed). Their own row in the By ad table: 'story'. */
+const OLD_STORY = v => v.why === 'no_ad_tag' && v.cc === 'CA';
+const isOk = v => Boolean(v.ok) || OLD_STORY(v);
+const isStory = v => Boolean(v.story) || OLD_STORY(v);
+
 /* Sessions are built from every v2 event, not just the window, and a
    session belongs to the day it landed. So a lead submitted today by
    someone who arrived yesterday counts on yesterday's row, the way
@@ -159,7 +169,7 @@ function buildV2(events, dwell, cutoff, admin) {
   const visits = [];
   for (const s of sess.values()) {
     s.views.sort((a, b) => a.ts - b.ts);
-    const ok = s.views.find(v => v.ok);
+    const ok = s.views.find(isOk);
     const first = s.views[0];
     const view = ok || first || null;
     const d = dwell[s.sid] || {};
@@ -168,7 +178,8 @@ function buildV2(events, dwell, cutoff, admin) {
       cls: ok ? 'verified' : (first ? (first.why || 'no_click_id') : 'no_view'),
       ch: view && view.ch,
       ts: view ? view.ts : s.firstTs,
-      a: view && view.a, src: view && view.src, pl: view && view.pl,
+      a: view && (view.a || (isStory(view) ? 'story' : undefined)),
+      src: view && view.src, pl: view && view.pl,
       maxStep: Math.max(s.maxStep, view ? 1 : 0, s.lead ? 6 : 0),
       engaged: s.engaged,
       lead: s.lead,
