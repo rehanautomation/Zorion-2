@@ -634,6 +634,8 @@ body.is-contact .lay-toggle:not([hidden]){display:block}
 #s6.lay-b .field-help{margin-top:5px;font-size:12.5px}
 #s6.lay-b .btn{margin-top:var(--sp-4);min-height:54px}
 #s6.lay-b .no-spam{order:3;margin:10px 0 0;font-size:14px;font-weight:600;color:var(--ink-2)}
+#s6.lay-c .ready-list li{font-size:16.5px;margin-bottom:9px}
+#s6.lay-c .ready-list li svg{top:3px}
 </style>
 <script>
 /* ===============================================================
@@ -764,7 +766,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
           <button type="button" class="verify" id="verifyBtn" disabled>Validate</button>
         </div>
         <p class="field-help">We'll text your breakdown here.</p>
-        <p class="field-err" id="phoneErr">Enter a 10-digit Canadian or US number, like 416 555 0123</p>
+        <p class="field-err" id="phoneErr">Enter a valid Canadian number.</p>
       </div>
     </div>
     <p class="no-spam">No spam calls or texts. Ever.</p>
@@ -1236,9 +1238,19 @@ function personFor(q){ return q==='wife'?PERSON.wife:(q==='kids'?PERSON.kids:PER
    holds, written to his own answers. Only our own browsers (?nolog)
    can switch to it for now; visitors get layout A. ---- */
 var READY_CHECK='<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#22A35A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var LAYOUT='A';
 function readyLines(a){
   var p=personFor(a.q4), q3=(a.q3&&a.q3[0])||'';
   var them=p===PERSON.wife?'her':'them';
+  if(LAYOUT==='C') return [
+    '<b>Who gets paid before '+p.who+'.</b>',
+    {
+      mortgage:'<b>Who mortgage insurance really pays.</b>',
+      spouse  :'<b>When her work coverage stops.</b>',
+      personal:'<b>If your old policy still holds up.</b>'
+    }[q3] || '<b>What actually reaches '+them+'.</b>',
+    '<b>What it costs to fix.</b> Most guess high.'
+  ];
   var cover={
     mortgage:'<b>Who your mortgage insurance really pays,</b> and what it leaves '+them+'.',
     spouse  :'<b>What your wife’s work coverage would pay,</b> and the day it stops.',
@@ -1256,16 +1268,18 @@ function fillReady(a){
 }
 function setLayout(l){
   var sc=document.getElementById('s6'), t=document.getElementById('layToggle');
-  if(sc) sc.classList.toggle('lay-b', l==='B');
+  LAYOUT=l;
+  if(sc){ sc.classList.toggle('lay-b', l!=='A'); sc.classList.toggle('lay-c', l==='C'); }
   if(t) t.textContent='Layout '+l;
+  try{ fillReady(answers()); }catch(_){}
 }
 (function(){
   if(typeof NOLOG==='undefined'||!NOLOG) return;
   var t=document.getElementById('layToggle'); if(!t) return;
-  var l='A'; try{ l=localStorage.getItem('zl_layout')==='B'?'B':'A'; }catch(_){}
+  var l='A'; try{ l=localStorage.getItem('zl_layout')||'A'; if(!/^[ABC]$/.test(l)) l='A'; }catch(_){}
   document.body.appendChild(t); t.hidden=false; setLayout(l);
   t.addEventListener('click',function(){
-    l=l==='A'?'B':'A'; setLayout(l);
+    l={A:'B',B:'C',C:'A'}[l]; setLayout(l);
     try{ localStorage.setItem('zl_layout',l); }catch(_){}
   });
 })();
