@@ -60,12 +60,10 @@ main{background:inherit}
 .logo b{font-weight:500;opacity:.55}
 
 .progress-wrap{margin-top:var(--sp-5)}
-body.is-results .progress-wrap,body.is-loading .progress-wrap{display:none}
+body.is-results .progress-wrap,body.is-loading .progress-wrap,body.is-contact .progress-wrap{display:none}
 .progress-meta{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--sp-2)}
 .progress-label{font-size:14px;font-weight:500;color:var(--ink-3)}
 .progress-label b{color:var(--ink-2);font-weight:600}
-.progress-label.is-ready{display:inline-flex;align-items:center;gap:6px;color:#15803D;font-weight:600}
-.progress-label.is-ready svg{flex:none}
 .progress-pct{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;color:var(--blue);font-variant-numeric:tabular-nums}
 .progress-rail{height:6px;border-radius:99px;background:var(--rule);overflow:hidden}
 .progress-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);transition:width 420ms cubic-bezier(.22,.61,.36,1)}
@@ -602,6 +600,23 @@ main{min-height:calc(100vh - var(--header-h));min-height:calc(100svh - var(--hea
 .fx .is-in .licensed{opacity:1}
 .fx .stats>div{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(150ms + var(--i) * 120ms)}
 .fx .is-in .stats>div{opacity:1;transform:none}
+/* ---------- contact screen: breakdown ready ---------- */
+#s6{position:relative;padding-top:var(--sp-6)}
+.ready-top{text-align:center;margin-bottom:var(--sp-5)}
+.ready-pill{display:inline-block;margin:0 0 var(--sp-4);padding:8px 16px;border-radius:999px;
+  background:#E7F5EC;color:#1B7A3E;font-family:Archivo,sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:.06em;text-transform:uppercase;line-height:1.2}
+.ready-q{text-align:center}
+.ready-list{display:none;list-style:none;margin:var(--sp-2) auto var(--sp-6);padding:0;max-width:420px;text-align:left}
+.ready-list li{position:relative;padding-left:32px;margin:0 0 var(--sp-4);font-size:17px;line-height:1.45;color:var(--ink-2)}
+.ready-list li:last-child{margin-bottom:0}
+.ready-list li b{color:var(--ink);font-weight:700}
+.ready-list li svg{position:absolute;left:0;top:3px}
+#s6.lay-b .ready-list{display:block}
+#s6.lay-b .ready-q{font-size:21px}
+.lay-toggle{position:absolute;top:8px;right:0;z-index:2;border:1px solid var(--rule);background:transparent;
+  color:var(--ink-3);font:600 11px/1 Inter,system-ui,sans-serif;padding:6px 9px;border-radius:99px;cursor:pointer;opacity:.7}
+.lay-toggle[hidden]{display:none}
 </style>
 <script>
 /* ===============================================================
@@ -667,7 +682,6 @@ window.ZL_PIXEL_ID = '1091428479971058';
 
 <section class="screen" id="s2" data-step="2" data-auto="1">
   <h1 class="t-q">If something happened to you tomorrow, who'd be left holding it?</h1>
-  <p class="t-helper">Tap to continue.</p>
   <div class="options">
     <label class="option is-radio"><input type="radio" name="q4" value="wife"><span class="box"></span><span>My wife</span></label>
     <label class="option is-radio"><input type="radio" name="q4" value="partner"><span class="box"></span><span>My business partner</span></label>
@@ -678,7 +692,6 @@ window.ZL_PIXEL_ID = '1091428479971058';
 
 <section class="screen" id="s3" data-step="3" data-auto="1">
   <h1 class="t-q">What have you got in place right now?</h1>
-  <p class="t-helper">Pick the main one.</p>
   <div class="options" id="q3opts">
     <label class="option is-radio"><input type="radio" name="q3" value="mortgage"><span class="box"></span><span>Mortgage insurance through the bank</span></label>
     <label class="option is-radio"><input type="radio" name="q3" value="personal"><span class="box"></span><span>A personal life insurance policy</span></label>
@@ -700,7 +713,7 @@ window.ZL_PIXEL_ID = '1091428479971058';
 
 <section class="screen" id="sBuild" data-step="4">
   <div class="loading">
-    <h2 id="loadHead">Building your report</h2>
+    <h2 id="loadHead">Building your breakdown</h2>
     <ul class="load-steps" id="loadSteps">
       <li><span class="dot"></span><span>Adding up what you've signed for</span></li>
       <li><span class="dot"></span><span>Checking what your current coverage would pay</span></li>
@@ -710,7 +723,12 @@ window.ZL_PIXEL_ID = '1091428479971058';
 </section>
 
 <section class="screen" id="s6" data-step="4">
-  <h1 class="t-q">Where should we text your report?</h1>
+  <button type="button" class="lay-toggle" id="layToggle" hidden>Layout A</button>
+  <div class="ready-top">
+    <p class="ready-pill">Your breakdown is ready</p>
+    <ul class="ready-list" id="readyList"></ul>
+    <h1 class="t-q ready-q">Where should we text your breakdown?</h1>
+  </div>
   <form id="contact" novalidate>
     <div class="form-grid">
       <div class="field full">
@@ -728,12 +746,12 @@ window.ZL_PIXEL_ID = '1091428479971058';
           <input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required>
           <button type="button" class="verify" id="verifyBtn" disabled>Validate</button>
         </div>
-        <p class="field-help">We'll text your report here.</p>
+        <p class="field-help">We'll text your breakdown here.</p>
         <p class="field-err" id="phoneErr">Enter a 10-digit Canadian or US number, like 416 555 0123</p>
       </div>
     </div>
     <p class="no-spam">No spam calls or texts. Ever.</p>
-    <button class="btn" type="submit" id="submitBtn">Text me my report</button>
+    <button class="btn" type="submit" id="submitBtn">Text me my breakdown</button>
   </form>
 
   <div class="carriers">
@@ -1027,22 +1045,21 @@ var current=0;
 var fill=document.getElementById('fill'),pct=document.getElementById('pct'),
     stepNow=document.getElementById('stepNow'),progressLabel=document.getElementById('progressLabel');
 
-var READY_TICK='<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#16A34A"/><path d="M4.5 8.3l2.3 2.3 4.7-4.9" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function paint(i){
   var step=parseInt(screens[i].getAttribute('data-step'),10)||1;
   if(!sent[i]){ sent[i]=1; track('step',{step:i===CONTACT?5:(i>=BUILDING?(i===RESULTS?'results':'building'):step)}); }
   var p=Math.round((step/QUESTIONS_TOTAL)*100);
   /* past the last question the bar is full and stays there */
   if(progressLabel){
-    progressLabel.classList.toggle('is-ready', i===CONTACT);
-    if(i===CONTACT) progressLabel.innerHTML=READY_TICK+'Report ready';
-    else if(i>=BUILDING) progressLabel.textContent='Complete';
+    if(i>=BUILDING) progressLabel.textContent='Complete';
     else if(stepNow) stepNow.textContent=step;
   }
   if(pct) pct.textContent=p+'%';
   if(fill) fill.style.width=p+'%';
   document.body.classList.toggle('is-results', i===RESULTS);
   document.body.classList.toggle('is-loading', i===BUILDING);
+  document.body.classList.toggle('is-contact', i===CONTACT);
+  if(i===CONTACT) try{ fillReady(answers()); }catch(_){}
 }
 /* dir: 'r' or 'l' slides the next screen in from that side (swipes and
    the back / next buttons); anything else is the usual soft fade. */
@@ -1197,6 +1214,43 @@ var PERSON={
   family :{who:'your family', short:'Family', obj:'your family', subj:'Your family', poss:'your family’s', gets:'gets', stands:'stands'}
 };
 function personFor(q){ return q==='wife'?PERSON.wife:(q==='kids'?PERSON.kids:PERSON.family); }
+
+/* ---- contact screen, layout B: three lines on what the breakdown
+   holds, written to his own answers. Only our own browsers (?nolog)
+   can switch to it for now; visitors get layout A. ---- */
+var READY_CHECK='<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#22A35A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function readyLines(a){
+  var p=personFor(a.q4), q3=(a.q3&&a.q3[0])||'';
+  var cover={
+    mortgage:'<b>Who your mortgage insurance really pays,</b> and what it leaves '+p.obj+'.',
+    spouse  :'<b>What your wife’s work coverage would pay,</b> and the day it stops.',
+    personal:'<b>Whether your own policy still covers</b> everything you’ve signed since you bought it.'
+  }[q3] || '<b>What would actually reach '+p.who+',</b> and what wouldn’t.';
+  return [
+    '<b>Who gets paid before '+p.who+',</b> and what’s left for '+p.obj+'.',
+    cover,
+    '<b>What it costs to fix at your age.</b> Most people guess way too high.'
+  ];
+}
+function fillReady(a){
+  var ul=document.getElementById('readyList'); if(!ul) return;
+  ul.innerHTML=readyLines(a).map(function(t){ return '<li>'+READY_CHECK+t+'</li>'; }).join('');
+}
+function setLayout(l){
+  var sc=document.getElementById('s6'), t=document.getElementById('layToggle');
+  if(sc) sc.classList.toggle('lay-b', l==='B');
+  if(t) t.textContent='Layout '+l;
+}
+(function(){
+  if(typeof NOLOG==='undefined'||!NOLOG) return;
+  var t=document.getElementById('layToggle'); if(!t) return;
+  var l='A'; try{ l=localStorage.getItem('zl_layout')==='B'?'B':'A'; }catch(_){}
+  t.hidden=false; setLayout(l);
+  t.addEventListener('click',function(){
+    l=l==='A'?'B':'A'; setLayout(l);
+    try{ localStorage.setItem('zl_layout',l); }catch(_){}
+  });
+})();
 
 /* The one sentence he repeats if he closes the tab. Keyed on the raw
    answer: the partner line is about the partner, not the family. */
@@ -1784,7 +1838,7 @@ form.addEventListener('submit',function(e){
   }
 
   var btn=document.getElementById('submitBtn');
-  if(btn){ btn.disabled=true; btn.textContent='Opening your report…'; }
+  if(btn){ btn.disabled=true; btn.textContent='Opening your breakdown…'; }
 
   var a=answers();
   var name=nameEl.value.trim();
