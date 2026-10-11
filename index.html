@@ -1116,20 +1116,33 @@ function answered(i){
   if(i===3) return !!one('q5');
   return false;
 }
-function canBack(){ return (current>=1&&current<=3)||current===CONTACT; }
-function canNext(){ return current<=3&&answered(current); }
+/* Developer control: on our own runs the buttons move freely, answered
+   or not. Next on the contact screen opens the results without
+   submitting anything; blanks get the sample answers. */
+function canBack(){ return (current>=1&&current<=3)||current===CONTACT||current===RESULTS; }
+function canNext(){ return current<=3||current===CONTACT; }
+function previewResults(){
+  var a=answers();
+  if(!a.q2) a.q2='250-500';
+  if(!a.q3.length) a.q3=['mortgage'];
+  if(!a.q4) a.q4='wife';
+  if(!a.q5) a.q5='35-44';
+  try{ buildResults(a); }catch(_){}
+  go(RESULTS,NEXT_DIR);
+}
 function navGo(forward){
   if(forward){
     if(!canNext()) return;
-    if(current===3) runBuilding(); else go(current+1,NEXT_DIR);
+    if(current===CONTACT) previewResults();
+    else if(current===3) runBuilding(); else go(current+1,NEXT_DIR);
   }else{
     if(!canBack()) return;
-    go(current===CONTACT?3:current-1,BACK_DIR);
+    go(current===RESULTS?CONTACT:(current===CONTACT?3:current-1),BACK_DIR);
   }
 }
 function syncNav(){
   if(!NOLOG||!navEl) return;
-  navEl.hidden=!(current<=3||current===CONTACT);
+  navEl.hidden=!(current<=3||current===CONTACT||current===RESULTS);
   navBack.disabled=!canBack();
   navNext.disabled=!canNext();
 }
