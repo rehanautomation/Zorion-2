@@ -649,6 +649,11 @@ body.is-contact .lay-toggle:not([hidden]){display:block}
 #s6.lay-c .ready-top{margin-bottom:var(--sp-1)}
 #s6.lay-c .field-help{display:none}
 #s6.lay-c .btn{margin-top:var(--sp-4)}
+/* test mode: one tap hides every test control so the page looks like a visitor's */
+.dev-clean{position:fixed;left:10px;bottom:44px;z-index:42;border:1px solid var(--rule);background:var(--paper);
+  color:var(--ink-3);font:600 11px/1 Inter,system-ui,sans-serif;padding:6px 9px;border-radius:99px;cursor:pointer;opacity:.85}
+body.is-clean .qnav,body.is-clean .lay-toggle,body.is-clean .dev-badge{display:none !important}
+body.is-clean .dev-clean{left:auto;right:6px;top:6px;bottom:auto;width:14px;height:14px;padding:0;font-size:0;opacity:.18;background:#8FA3B7;border:0}
 </style>
 <script>
 /* ===============================================================
@@ -928,7 +933,7 @@ var NOLOG=(function(){
 function showBadge(text){
   function add(){
     var b=document.createElement('div');
-    b.textContent=text;
+    b.textContent=text; b.className='dev-badge';
     b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:30;background:#0E1E30;color:#8FA3B7;'
       +'font:600 11px/1 Inter,system-ui,sans-serif;padding:8px 11px;border-radius:99px;opacity:.85';
     document.body.appendChild(b);
@@ -936,6 +941,20 @@ function showBadge(text){
   if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
 }
 if(NOLOG) showBadge('Analytics off for this browser');
+/* Clean view: hides the test buttons and badges; a faint dot top-right
+   brings them back. Remembered for this tab. */
+if(NOLOG){ (function(){
+  function add(){
+    var b=document.createElement('button'); b.type='button'; b.className='dev-clean';
+    b.textContent='Clean view'; b.setAttribute('aria-label','Toggle clean view');
+    function set(on){ document.body.classList.toggle('is-clean',on); try{ sessionStorage.setItem('zl_clean',on?'1':''); }catch(_){} }
+    var on=false; try{ on=sessionStorage.getItem('zl_clean')==='1'; }catch(_){}
+    set(on);
+    b.addEventListener('click',function(){ set(!document.body.classList.contains('is-clean')); });
+    document.body.appendChild(b);
+  }
+  if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+})(); }
 
 /* =============================================================
    TEST SUBMISSIONS
