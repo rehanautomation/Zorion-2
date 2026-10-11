@@ -1306,9 +1306,10 @@ function setLayout(l){
   try{ fillReady(answers()); }catch(_){}
 }
 (function(){
-  if(typeof NOLOG==='undefined'||!NOLOG) return;
-  var t=document.getElementById('layToggle'); if(!t) return;
-  var l='A'; try{ l=localStorage.getItem('zl_layout')||'A'; if(!/^[ABC]$/.test(l)) l='A'; }catch(_){}
+  /* Visitors get layout C (live since Oct 11). */
+  if(typeof NOLOG==='undefined'||!NOLOG){ setLayout('C'); return; }
+  var t=document.getElementById('layToggle'); if(!t){ setLayout('C'); return; }
+  var l='C'; try{ l=localStorage.getItem('zl_layout')||'C'; if(!/^[ABC]$/.test(l)) l='C'; }catch(_){}
   document.body.appendChild(t); t.hidden=false; setLayout(l);
   t.addEventListener('click',function(){
     l={A:'B',B:'C',C:'A'}[l]; setLayout(l);
