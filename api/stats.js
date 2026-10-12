@@ -104,15 +104,29 @@ function groupBy(units, keyFn, sortByKey) {
     : rows.sort((a, b) => b.views - a.views);
 }
 
+function stepsOf(units) {
+  return [1, 2, 3, 4, 5, 6].map(n => ({
+    step: n,
+    label: STEP_LABELS[n],
+    reached: units.filter(u => u.maxStep >= n).length,
+    droppedHere: units.filter(u => !u.lead && u.maxStep === n).length
+  }));
+}
+
 function block(units) {
+  /* the same funnel for each ad on its own, so the report can show one */
+  const byAd = new Map();
+  for (const u of units) {
+    const k = u.a || '(none)';
+    if (!byAd.has(k)) byAd.set(k, []);
+    byAd.get(k).push(u);
+  }
+  const stepsByA = {};
+  for (const [k, list] of byAd) stepsByA[k] = stepsOf(list);
   return {
     totals: summarise(units),
-    steps: [1, 2, 3, 4, 5, 6].map(n => ({
-      step: n,
-      label: STEP_LABELS[n],
-      reached: units.filter(u => u.maxStep >= n).length,
-      droppedHere: units.filter(u => !u.lead && u.maxStep === n).length
-    })),
+    steps: stepsOf(units),
+    stepsByA,
     byA: groupBy(units, u => u.a),
     bySrc: groupBy(units, u => u.src),
     byPl: groupBy(units, u => u.pl),

@@ -58,12 +58,22 @@ h2{font-size:15px;font-weight:600;margin:0 0 10px}
 /* ---- 2. funnel ---- */
 .funnel{border-top:1px solid var(--line)}
 .step{
-  display:grid;grid-template-columns:minmax(0,13rem) 1fr 3.5rem;align-items:center;gap:14px;
+  display:grid;grid-template-columns:minmax(0,13rem) 1fr 3.5rem 4.5rem;align-items:center;gap:14px;
   padding:9px 8px;border-bottom:1px solid var(--line);
 }
 .step .name{min-width:0}
 .step .name small{display:block;font-size:12.5px;font-weight:400;color:var(--muted)}
 .step .count{text-align:right;font-variant-numeric:tabular-nums}
+.step .left{text-align:right;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.funnel-head{display:grid;grid-template-columns:minmax(0,13rem) 1fr 3.5rem 4.5rem;gap:14px;padding:0 8px 6px;font-size:12px;color:var(--muted)}
+.funnel-head span:nth-child(3),.funnel-head span:nth-child(4){text-align:right}
+.adpick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;font-size:14px}
+.adpick b{font-weight:600}
+.adpick button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:3px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
+tr.pick{cursor:pointer}
+tr.pick:hover td{background:var(--soft)}
+tr.pick.is-sel td{background:#EEF4FF;font-weight:600}
+@media (max-width:620px){ .step,.funnel-head{grid-template-columns:minmax(0,9rem) 1fr 2.6rem 3.6rem;gap:8px} }
 .step.worst{background:var(--soft)}
 .step.worst .name{font-weight:600}
 .bar{height:6px;border-radius:3px;background:var(--soft)}
@@ -134,6 +144,7 @@ details .inner>section:first-of-type{margin-top:28px}
 var days = 0;
 var mode = 'verified';            // 'verified' | 'all'
 var tab = 'byA';                  // which breakdown is showing
+var adSel = '';                   // an a= key: the funnel shows that ad only
 var last = null;
 
 /* which collapsed sections are open survives the 30-second refresh */
@@ -195,6 +206,12 @@ function withBaseline(b){
   (out.steps || []).forEach(function(s){
     if (s.step === 1){ s.reached += n; s.droppedHere += n; }
   });
+  out.stepsByA = out.stepsByA || {};
+  Object.keys(BASELINE.byA).forEach(function(k){
+    var add = BASELINE.byA[k]; if (!add) return;
+    if (!out.stepsByA[k]) out.stepsByA[k] = (out.steps || []).map(function(s){ return {step:s.step, label:s.label, reached:0, droppedHere:0}; });
+    out.stepsByA[k].forEach(function(s){ if (s.step === 1){ s.reached += add; s.droppedHere += add; } });
+  });
   out.byA = out.byA || [];
   Object.keys(BASELINE.byA).forEach(function(k){
     var add = BASELINE.byA[k];
@@ -243,7 +260,16 @@ function render(d){
   }
 
   /* ---- 2. funnel ---- */
-  html += '<section><h2>Funnel</h2>' + funnel(b.steps, t.views) + '</section>';
+  var fSteps = b.steps, fViews = t.views, pick = '';
+  if (adSel && b.stepsByA && b.stepsByA[adSel]){
+    fSteps = b.stepsByA[adSel];
+    fViews = (fSteps[0] && fSteps[0].reached) || 0;
+    pick = '<div class="adpick">Showing <b>' + esc(AD_LABELS[adSel] || (adSel === '(none)' ? 'not tagged' : adSel)) + '</b> only'
+      + '<button type="button" data-allads>Show all ads</button></div>';
+  } else if (adSel) { adSel = ''; }
+  html += '<section><h2>Funnel</h2>' + pick
+    + '<div class="funnel-head"><span>Step</span><span></span><span>Got here</span><span>Left here</span></div>'
+    + funnel(fSteps, fViews) + '</section>';
 
   /* ---- 3. breakdowns ---- */
   var cfg = TABS.filter(function(x){ return x.key === tab; })[0];
@@ -304,6 +330,7 @@ function funnel(steps, views){
       + '<div class="name">' + esc(s.label) + (isWorst ? '<small>biggest drop</small>' : '') + '</div>'
       + '<div class="bar"><i style="width:' + pc.toFixed(1) + '%"></i></div>'
       + '<div class="count">' + s.reached + '</div>'
+      + '<div class="left">' + (s.step === 6 ? '' : (s.droppedHere || 0)) + '</div>'
       + '</div>';
   }).join('') + '</div>';
 }
@@ -317,7 +344,8 @@ function breakdown(rows, cfg, who){
     + rows.map(function(r){
         var none = r.key === '(none)';
         var name = none ? cfg.none : (cfg.key === 'byA' && AD_LABELS[r.key]) || r.key;
-        return '<tr><td' + (none ? ' class="none"' : '') + ' title="' + esc(name) + '">' + esc(name) + '</td>'
+        var isAd = cfg.key === 'byA';
+        return '<tr' + (isAd ? ' class="pick' + (r.key === adSel ? ' is-sel' : '') + '" data-ad="' + esc(r.key) + '" title="Show this ad in the funnel"' : '') + '><td' + (none ? ' class="none"' : '') + (isAd ? '' : ' title="' + esc(name) + '"') + '>' + esc(name) + '</td>'
           + '<td>' + r.views + '</td><td>' + r.engaged + '</td><td>' + r.started + '</td><td>' + r.leads + '</td>'
           + '<td>' + r.conversionRate + '%</td><td>' + dur(r.visibleMedianMs) + '</td><td>' + dur(r.firstAnswerMedianMs) + '</td></tr>';
       }).join('')
@@ -411,6 +439,9 @@ function load(){
 document.getElementById('app').addEventListener('click', function(e){
   var seg = e.target.closest('#seg button');
   if (seg){ mode = seg.getAttribute('data-mode'); if (last) render(last); return; }
+  var row = e.target.closest('tr[data-ad]');
+  if (row){ var k = row.getAttribute('data-ad'); adSel = adSel === k ? '' : k; if (last) render(last); window.scrollTo({top:0, behavior:'smooth'}); return; }
+  if (e.target.closest('[data-allads]')){ adSel = ''; if (last) render(last); return; }
   var tb = e.target.closest('#tabs button');
   if (tb){ tab = tb.getAttribute('data-tab'); if (last) render(last); return; }
   if (e.target.closest('[data-unlock]')){
