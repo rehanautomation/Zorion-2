@@ -4,13 +4,12 @@
    GET  /api/board                 -> { ok, v: { slot: version } }
    GET  /api/board?slot=w3-deck    -> the image itself (cached for good;
                                       the page adds &v=version to the URL)
-   POST /api/board  { key, slot, img }   img = data:image/jpeg;base64,...
-        Saving needs ADMIN_KEY (the same key as the report).
+   POST /api/board  { slot, img }   img = data:image/jpeg;base64,...
+        No password: anyone with the link can save.
 
    Images live in the same Upstash Redis as the report, in two hashes
    of their own. Nothing here touches the tracking data.
    ------------------------------------------------------------------ */
-const crypto = require('crypto');
 const { readBody } = require('./_store');
 
 const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -28,13 +27,6 @@ async function kv(command) {
   });
   if (!res.ok) throw new Error('kv ' + res.status);
   return (await res.json()).result;
-}
-
-function keyOk(given) {
-  const KEY = process.env.ADMIN_KEY || '';
-  if (!KEY || !given) return false;
-  const h = s => crypto.createHash('sha256').update(String(s)).digest();
-  return crypto.timingSafeEqual(h(KEY), h(given));
 }
 
 module.exports = async (req, res) => {
@@ -63,7 +55,6 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
       res.setHeader('Cache-Control', 'no-store');
       const body = await readBody(req);
-      if (!keyOk(body.key)) return res.status(401).json({ ok: false, error: 'wrong key' });
       const { slot, img } = body;
       if (!SLOT.test(slot || '')) return res.status(400).json({ ok: false, error: 'bad slot' });
       if (typeof img !== 'string' || img.length > MAX || !/^data:image\/(jpeg|png|webp);base64,/.test(img)) {

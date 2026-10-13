@@ -105,6 +105,8 @@ main{max-width:1440px;margin:0 auto;padding:28px 16px 80px}
 .swap{position:absolute;right:10px;top:10px;border:0;border-radius:999px;background:rgba(14,30,48,.72);color:#fff;font:600 12px Inter,sans-serif;padding:7px 12px;cursor:pointer;opacity:0;transform:translateY(-4px);transition:opacity .2s,transform .2s;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .media:hover .swap,.swap:focus-visible{opacity:1;transform:none}
 @media (hover:none){.swap{opacity:.9;transform:none}}
+.media.sel{outline:3px solid var(--blue);outline-offset:-3px}
+.media.sel::before{content:"Ctrl+V to paste";position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:2;background:var(--blue);color:#fff;font:600 12px Inter,sans-serif;padding:6px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:nowrap}
 .media.drag{outline:3px solid var(--blue);outline-offset:-3px}
 .media.drag::after{content:"Drop image";position:absolute;inset:0;display:grid;place-items:center;background:rgba(58,134,255,.25);color:#fff;font:700 18px Inter,sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.3)}
 .busy{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.6);font:600 13px Inter,sans-serif;color:var(--ink)}
@@ -270,6 +272,7 @@ function render(){
     });
     main.appendChild(sec);
   });
+  markSel();
 }
 
 function copy(t){
@@ -295,9 +298,27 @@ window.addEventListener('resize', placePill);
 
 /* ---------- images: pick / drop → crop if not square → upload ---------- */
 const fileInput = document.getElementById('file');
-let target = null;
+let target = null, selected = null;
+function markSel(){ document.querySelectorAll('.media').forEach(m => m.classList.toggle('sel', m.dataset.id === selected)); }
+const findAd = id => { for (const w of WEEKS) for (const a of w.ads) if (a.id === id) return a; };
+document.addEventListener('paste', e => {
+  if (!selected) return;
+  const items = [...((e.clipboardData && e.clipboardData.items) || [])];
+  const it = items.find(i => i.kind === 'file' && i.type.startsWith('image/'));
+  if (!it) { toast('No image on the clipboard'); return; }
+  e.preventDefault();
+  target = findAd(selected); selected = null; markSel();
+  handleFile(it.getAsFile());
+});
+document.addEventListener('click', e => { if (selected && !e.target.closest('.media')) { selected = null; markSel(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && selected) { selected = null; markSel(); } });
 function wireMedia(el, a){
   el.querySelectorAll('[data-pick]').forEach(p => p.onclick = () => { target = a; fileInput.value = ''; fileInput.click(); });
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const was = selected === a.id;
+    selected = was ? null : a.id; markSel();
+  });
   el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag'); });
   el.addEventListener('dragleave', () => el.classList.remove('drag'));
   el.addEventListener('drop', e => {
@@ -384,20 +405,13 @@ async function save(img, sx, sy, size){
     el.innerHTML = `<img src="${data}" alt=""><div class="busy">Saving…</div>`;
   });
 
-  let key = getKey();
-  if (!key) { key = prompt('Admin key (the same one as the report) to save this image:'); if (!key) { toast('Not saved: no key'); render(); return; } }
   try {
-    const r = await fetch('/api/board', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, slot: a.id, img: data }) });
+    const r = await fetch('/api/board', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slot: a.id, img: data }) });
     const j = await r.json().catch(() => ({}));
-    if (r.status === 401) { setKey(''); toast('Wrong key. Try again.'); render(); return; }
     if (!r.ok || !j.ok) throw new Error(j.error || r.status);
-    setKey(key); versions[a.id] = j.v; render(); toast('Image saved');
+    versions[a.id] = j.v; render(); toast('Image saved');
   } catch (e) { toast('Could not save. Try again.'); render(); }
 }
-
-function getKey(){ try { return localStorage.getItem('zorion_admin_key') || ''; } catch (e) { return ''; } }
-function setKey(k){ try { k ? localStorage.setItem('zorion_admin_key', k) : localStorage.removeItem('zorion_admin_key'); } catch (e) {} }
-(() => { const k = new URLSearchParams(location.search).get('key'); if (k) { setKey(k); history.replaceState(null, '', location.pathname); } })();
 
 let tt; function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
