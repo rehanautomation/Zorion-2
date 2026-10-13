@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Ad Board · Zorion Life</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ink:#0E1E30;--ink-2:#33475B;--ink-3:#5B6B7C;--paper:#fff;--bg:#EEF2F6;--rule:#DCE5EE;
+  --blue:#3A86FF;--gold:#F5B700;--fb:#0866FF;--fbtext:#050505;--fbmuted:#65676B;--fbline:#E4E6EB;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font:inherit;color:inherit}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 30px rgba(14,30,48,.18)}
+.top-in{max-width:1440px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.mark{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;flex:none}
+.mark svg{width:20px;height:20px}
+.logo{font-family:Archivo,sans-serif;font-weight:700;font-size:16px;letter-spacing:.09em;line-height:1}
+.logo b{font-weight:500;opacity:.55}
+.board-name{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px;font-weight:600}
+
+.seg{position:relative;display:flex;background:rgba(255,255,255,.08);border-radius:999px;padding:4px;isolation:isolate}
+.seg button{position:relative;z-index:1;border:0;background:none;color:rgba(255,255,255,.7);padding:8px 16px;border-radius:999px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:color .25s}
+.seg button svg{width:16px;height:16px}
+.seg button[aria-pressed=true]{color:var(--ink)}
+.seg .pill{position:absolute;z-index:0;top:4px;bottom:4px;left:4px;border-radius:999px;background:#fff;transition:transform .35s cubic-bezier(.3,1.3,.5,1),width .35s cubic-bezier(.3,1.3,.5,1);box-shadow:0 2px 10px rgba(0,0,0,.2)}
+
+/* ---------- weeks ---------- */
+main{max-width:1440px;margin:0 auto;padding:28px 16px 80px}
+.week{margin-bottom:44px}
+.week-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.week-head h2{font-family:Archivo,sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;margin:0}
+.week-sub{font-size:14px;color:var(--ink-3);font-weight:500}
+.chip{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:#DCE9FF;color:#1F5FCC;align-self:center}
+.chip.past{background:#E3E8EE;color:var(--ink-3)}
+
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;align-items:start}
+@media (max-width:1180px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:680px){
+  main{padding:20px 0 60px}
+  .week-head{padding:0 16px}
+  .grid{grid-template-columns:1fr;gap:14px}
+  .slot-label{padding:0 16px}
+  .post{border-radius:0!important}
+}
+
+.slot{opacity:0;transform:translateY(14px);animation:rise .55s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i)*70ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slot{animation:none;opacity:1;transform:none}}
+
+.slot-label{display:flex;align-items:center;gap:8px;margin:0 0 8px;min-height:26px}
+.slot-name{font-weight:700;font-size:14px;color:var(--ink)}
+.slot-tag{font-size:12px;color:var(--ink-3);font-weight:500}
+.winner{display:inline-flex;align-items:center;gap:5px;background:var(--gold);color:var(--ink);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px 4px 7px;border-radius:999px;box-shadow:0 2px 10px rgba(245,183,0,.35)}
+.winner svg{width:13px;height:13px}
+.copy{margin-left:auto;border:1px solid var(--rule);background:var(--paper);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:background .2s}
+.copy:hover{background:#F6F8FA}
+
+/* ---------- post shell ---------- */
+.post{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(14,30,48,.06),0 6px 24px rgba(14,30,48,.06);transition:box-shadow .3s,transform .3s;color:var(--fbtext);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.3333}
+.post.is-winner{box-shadow:0 0 0 2px var(--gold),0 8px 30px rgba(245,183,0,.18)}
+@media (hover:hover){.post:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(14,30,48,.06),0 14px 34px rgba(14,30,48,.10)}.post.is-winner:hover{box-shadow:0 0 0 2px var(--gold),0 14px 34px rgba(245,183,0,.25)}}
+.ph{display:flex;align-items:center;gap:8px;padding:12px 12px 8px}
+.av{width:40px;height:40px;border-radius:50%;background:var(--ink);display:grid;place-items:center;flex:none}
+.av svg{width:20px;height:20px}
+.ig .av{width:32px;height:32px;padding:2px;background:var(--ink);box-shadow:0 0 0 1.5px #fff,0 0 0 3px #DBDBDB}
+.ig .av svg{width:15px;height:15px}
+.pname{font-weight:600;font-size:15px;line-height:1.2}
+.psub{font-size:13px;color:var(--fbmuted);line-height:1.3}
+.ig .pname{font-size:14px}
+.ig .psub{font-size:12px;color:#262626}
+.dots{margin-left:auto;color:var(--fbmuted);display:flex;gap:3px}
+.dots i{width:4px;height:4px;border-radius:50%;background:currentColor;display:block}
+
+/* text */
+.txt{padding:0 12px 12px;position:relative;word-wrap:break-word}
+.txt a{color:var(--fb);text-decoration:none}
+.txt.clamped{max-height:calc(1.3333em*3);overflow:hidden;white-space:normal}
+.txt.open{white-space:pre-line}
+.more{border:0;background:none;padding:0;font-weight:600;color:var(--fbmuted);cursor:pointer;font-size:inherit}
+.more:hover{text-decoration:underline}
+.txt .fade{position:absolute;right:12px;bottom:0;padding-left:44px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 40px);line-height:1.3333}
+.txt.clamped .inner{display:block}
+
+/* image */
+.media{position:relative;aspect-ratio:1/1;background:linear-gradient(135deg,#E8EDF3,#DCE3EB);overflow:hidden}
+.media img{width:100%;height:100%;object-fit:cover;display:block;animation:imgin .5s ease}
+@keyframes imgin{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--ink-3);font-family:Inter,sans-serif;padding:20px;cursor:pointer;border:2px dashed transparent;transition:border-color .2s,background .2s}
+.empty:hover{background:rgba(58,134,255,.05)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin:10px 0 4px}
+.empty small{font-size:13px}
+.empty .plus{width:46px;height:46px;border-radius:50%;background:#fff;display:grid;place-items:center;margin:0 auto;box-shadow:0 4px 14px rgba(14,30,48,.1);color:var(--blue);font-size:26px;font-weight:300;line-height:1}
+.swap{position:absolute;right:10px;top:10px;border:0;border-radius:999px;background:rgba(14,30,48,.72);color:#fff;font:600 12px Inter,sans-serif;padding:7px 12px;cursor:pointer;opacity:0;transform:translateY(-4px);transition:opacity .2s,transform .2s;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.media:hover .swap,.swap:focus-visible{opacity:1;transform:none}
+@media (hover:none){.swap{opacity:.9;transform:none}}
+.media.drag{outline:3px solid var(--blue);outline-offset:-3px}
+.media.drag::after{content:"Drop image";position:absolute;inset:0;display:grid;place-items:center;background:rgba(58,134,255,.25);color:#fff;font:700 18px Inter,sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.3)}
+.busy{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.6);font:600 13px Inter,sans-serif;color:var(--ink)}
+
+/* fb link bar */
+.lk{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#F0F2F5}
+.lk .t{flex:1;min-width:0}
+.dom{font-size:12px;color:var(--fbmuted);text-transform:uppercase;letter-spacing:.01em}
+.hl{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.ds{font-size:13px;color:var(--fbmuted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cta{border:0;border-radius:6px;background:#E2E5E9;font-weight:600;font-size:14px;padding:8px 12px;white-space:nowrap;cursor:default}
+.acts{display:flex;justify-content:space-around;margin:0 12px;padding:4px 0;border-top:1px solid var(--fbline);color:var(--fbmuted);font-weight:600;font-size:14px}
+.acts span{display:flex;align-items:center;gap:6px;padding:6px 8px}
+.acts svg{width:18px;height:18px}
+
+/* ig */
+.ig{font-size:14px;line-height:1.3}
+.ig .ph{padding:10px 12px}
+.igcta{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;font-weight:600;font-size:14px;border-bottom:1px solid #EFEFEF;color:#0095F6}
+.igcta svg{width:14px;height:14px}
+.igacts{display:flex;align-items:center;gap:14px;padding:10px 12px 6px}
+.igacts svg{width:24px;height:24px}
+.igacts .bm{margin-left:auto}
+.ig .txt{padding:0 12px 14px}
+.ig .txt.clamped{max-height:calc(1.3em*2)}
+.ig .txt .fade{line-height:1.3;padding-left:38px}
+.ig .more{color:#737373;font-weight:400}
+.ig .user{font-weight:600;margin-right:4px}
+
+/* ---------- crop modal ---------- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(8,16,26,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}}
+.sheet{width:min(520px,100%);background:#fff;border-radius:18px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:pop .3s cubic-bezier(.2,1.2,.4,1)}
+@keyframes pop{from{transform:scale(.94);opacity:0}}
+.sheet h3{font-family:Archivo,sans-serif;font-size:20px;margin:0 0 4px;letter-spacing:-.01em}
+.sheet p{margin:0 0 14px;color:var(--ink-3);font-size:14px}
+.crop{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:10px;background:#111;touch-action:none;cursor:grab;user-select:none}
+.crop:active{cursor:grabbing}
+.crop img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;pointer-events:none}
+.crop .grid3{position:absolute;inset:0;pointer-events:none;background:
+  linear-gradient(90deg,transparent calc(33.333% - .5px),rgba(255,255,255,.35) 0 calc(33.333% + .5px),transparent 0 calc(66.666% - .5px),rgba(255,255,255,.35) 0 calc(66.666% + .5px),transparent 0),
+  linear-gradient(transparent calc(33.333% - .5px),rgba(255,255,255,.35) 0 calc(33.333% + .5px),transparent 0 calc(66.666% - .5px),rgba(255,255,255,.35) 0 calc(66.666% + .5px),transparent 0);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.8);border-radius:10px}
+.zoom{display:flex;align-items:center;gap:10px;margin:14px 0 4px;color:var(--ink-3);font-size:13px;font-weight:600}
+.zoom input{flex:1;accent-color:var(--blue)}
+.row{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+.btn{border:0;border-radius:10px;padding:11px 18px;font-weight:600;font-size:15px;cursor:pointer}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.ghost{background:#EEF2F6;color:var(--ink)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;z-index:60;transition:all .3s cubic-bezier(.2,1.2,.4,1);pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 100 100"><path d="M10 12 H90 V30 L44 70 H90 V88 H10 V70 L56 30 H10 Z" fill="#0E1E30"/></svg></div>
+      <div><div class="logo">ZORION<b> LIFE</b></div><div class="board-name">Ad board</div></div>
+    </div>
+    <div class="seg" role="group" aria-label="Platform">
+      <span class="pill"></span>
+      <button type="button" data-p="fb" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z"/></svg>Facebook</button>
+      <button type="button" data-p="ig" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>Instagram</button>
+    </div>
+  </div>
+</header>
+
+<main id="board"></main>
+<input type="file" id="file" accept="image/*" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+const WEEKS = [{"label": "Week 3", "chip": "This week", "sub": "Batch 3 · four new stories, same Locked angle", "current": true, "ads": [{"id": "w3-deck", "name": "The last deck", "hl": "Would your last cheque reach her?", "ds": "Dave's didn't. Mine wouldn't have.", "t": "Dave's crew finished this deck the week he died. I owed him $38,000. His wife asked me not to send it.\n\n\"Please don't send it to the company,\" Karen said. \"Send it to me. Anywhere but that account.\"\n\nThat was four days after the funeral.\n\nI run a small reno company. Dave was my deck guy for eleven years. Never missed a start date. Never sent me a bill I had to argue with. Heart attack loading his trailer in the driveway. He was 52.\n\n\"Why not the company account?\" I asked her. \"That's where it always goes.\"\n\n\"Because I can't touch it. Nobody can. The bank froze it the day I told them. Nobody signs until the court appoints someone to handle his estate.\"\n\n\"How long does that take?\"\n\n\"They said it usually takes a few months. His guys haven't been paid in two weeks. The mortgage comes out on the first.\"\n\nI told her to give me a day. I'd sort it out.\n\nI called my lawyer that afternoon. I figured it was a formality.\n\n\"Don't do it,\" he said. \"That money is owed to his company. If you pay her instead, the estate can still come after you for the full $38,000. You'd be paying it twice.\"\n\nI asked him three different ways. Same answer every time.\n\nSo the cheque went to Dave's company, like always. Into the one account nobody was allowed to touch.\n\nI couldn't tell her that over the phone. Dave's saw was still sitting on the deck, so I loaded it in my truck and drove it over.\n\nHis trailer was in the driveway with a for-sale sign taped to the tongue.\n\nKaren came out before I'd even parked. She looked at my face and knew.\n\n\"Your lawyer said no.\"\n\n\"I'm sorry, Karen.\"\n\n\"The estate lawyer said you probably would.\"\n\nShe wasn't angry. That was worse.\n\nHis lead hand had already gone to another crew. The other two were waiting to see if they'd get paid at all. She was selling the trailer to make the mortgage.\n\n\"Didn't Dave put anything away?\" I asked.\n\n\"Every month for twenty years. In his name.\" She almost laughed. \"So that's waiting on the court too.\"\n\nMy $38,000. His savings. His business account. All of it sitting there. None of it hers.\n\nThen she said something I didn't understand until later.\n\n\"I asked him twice to fix this. Once when we bought the house. Once when he bought the second truck. Both times he said after the busy season.\"\n\n\"Fix what?\"\n\nShe looked at the trailer. \"Does Jen still do your books?\"\n\n\"Every Friday.\"\n\n\"Go home and ask her what she'd do if it was you.\"\n\nI asked Jen that night at the kitchen table.\n\n\"I'd log in and pay the guys,\" she said. \"I've got all the passwords.\"\n\nSo did Karen.\n\nI told her everything. The phone call. My lawyer. The trailer in the driveway.\n\nThen we did the math on us. Four homeowners and a builder owe us $61,000 right now. Six subs are waiting on that money. If it's me, every one of those cheques goes into an account Jen can't touch. And every one of those customers does exactly what I just did. Calls their lawyer. Pays the company. Says sorry.\n\n\"Then we keep more in the joint account,\" Jen said. \"Enough to cover everything for a while.\"\n\n\"How much is enough?\"\n\nSix subs. The truck. The house. Six months of all of it. We added it up on the back of an invoice.\n\n\"Years,\" Jen said.\n\nNeither of us said anything for a while.\n\nThe next morning I called Karen back.\n\n\"What did you ask him to fix?\"\n\n\"Life insurance. With my name on it.\"\n\n\"I thought that was for funerals.\"\n\n\"That's what Dave said. The estate lawyer told me different. A policy with my name on it doesn't go through the estate. It comes straight to me. Usually in weeks. No court. No frozen account.\"\n\n\"He didn't have anything?\"\n\n\"A little one from years ago. It named his estate, not me. So it's stuck in the same line as everything else.\"\n\n\"Would it have unlocked the business account?\"\n\n\"No. Nothing would have. But I wouldn't be selling his trailer to pay the mortgage. And his guys would've been paid.\"\n\n\"I can't take on another bill right now, Karen. I've got two jobs on the go.\"\n\n\"He said that too. He never once found out what it cost.\"\n\nI hadn't either.\n\n\"How did you even figure out what you needed?\" I asked. \"Without some guy sitting at your kitchen table.\"\n\n\"I did it for myself after Dave. I'm all the kids have now.\"\n\nShe texted me a link while we were still on the phone. \"Do it with Jen. Tonight.\"\n\nWe did it that night at the same kitchen table. Four questions.\n\nEverything I'd signed for gets paid first. The truck, the line of credit, the supply house. Jen gets what's left, whenever the court gets around to it.\n\nThe money people owe me goes into the account she can't touch.\n\nThe mortgage insurance I'd been counting on pays the bank. Not Jen. Not my subs.\n\nThen it showed us what it would cost to fix.\n\nSix years I'd been putting this off because I figured it would cost like another truck payment.\n\nIt wasn't close. Jen made me read the number twice.\n\n\"That's it?\" she said. \"That's what Dave was waiting on the busy season for?\"\n\nWe signed ours that Friday. Payday.\n\nLast week I asked Jen again what she'd do if it was me. She didn't even have to think about it.\n\nI still have Dave's number in my phone under \"Dave Decks.\" Can't bring myself to delete it.\n\nNobody ever asked Dave the question Karen asked me. So I'm asking you. If you've got subs waiting on you, or money owed to you right now, do the four questions with your wife tonight. It took us about a minute. I'd put it off for six years.\n\nDave never made it to the end of the busy season. Nobody's promised that.\n\n$38,000 paid in full. Not a dollar of it reached Karen when it counted.\n\nHope this saves somebody's wife from selling his trailer.\n\nEdit: Sorry, forgot the link. Here's the one Karen sent me: https://zorionlife.com/"}, {"id": "w3-truck", "name": "The truck line", "hl": "Could your buddies carry your crew?", "ds": "We couldn't carry his.", "t": "Every truck in town came out for Rick. None of us could help his wife that Friday.\n\nWe passed a hat. $4,100.\n\nHis payroll was $11,000. And that was only the first Friday.\n\nRick and I met in trade school. Ran roofing crews across town from each other for twenty years. Bid against each other, borrowed each other's guys, split a lift rental more times than I can count. Heart attack at a red light on the way home from a job. He was 54.\n\nAfter the service, his wife, Lisa, found me by my truck.\n\n\"Can I ask you something awful?\"\n\n\"Anything.\"\n\n\"His guys haven't been paid. I called the bank to send it and they froze the business account. Nobody can sign until the court appoints someone.\"\n\n\"How long does that take?\"\n\n\"They said it usually takes a few months.\"\n\n\"Is there money in it?\"\n\n\"Seventy thousand. I can see it every time I log in. I just can't touch it.\"\n\nSo we passed a hat right there in the parking lot. Twelve of us. Cash, a couple of cheques, an e-transfer from a guy who couldn't make it.\n\nWe all felt good about it for about a day.\n\nTwo weeks later Lisa called me.\n\n\"Can you lend me eleven grand till it clears? I'll pay you back the day the court's done.\"\n\nI could. Once.\n\nNot every two weeks for four months. I've got my own guys to pay on Friday.\n\nI said yes the one time. She didn't ask again. I think she knew.\n\nBy week three his guys were taking other jobs. Two of them came to me. I hired them both. I still don't feel good about it.\n\nIn November I saw Rick's truck on a site in Barrie with somebody else's ladders on the rack. Lisa sold it to make the mortgage.\n\nThe night Lisa called about the loan, my wife, Tara, was sitting right there. She waited till I hung up.\n\n\"If it was you, who would I call?\"\n\n\"The guys,\" I said. \"They'd show up.\"\n\n\"Like you showed up for Lisa?\"\n\nI didn't have anything for that.\n\n\"I'd leave more in the business account,\" I said.\n\n\"Rick left seventy thousand.\"\n\n\"There's CPP.\"\n\nShe looked it up on her phone. \"Twenty-five hundred dollars. Once.\"\n\n\"The house is covered. We've got mortgage insurance.\"\n\n\"That pays the bank,\" she said. \"Who pays your guys on Friday?\"\n\nWe went to bed without either of us saying another word.\n\nIn January I dropped off my receipts with Paul, my accountant. Turns out he'd done Rick's books too.\n\n\"Every year at tax time I brought it up,\" he said. \"Every year Rick said the same thing. 'I'm not planning on dying, Paul.'\"\n\n\"Brought what up?\"\n\n\"Life insurance. With Lisa's name on it.\"\n\nI said I always figured that was funeral money.\n\n\"That's what everybody figures,\" he said. \"Everything Rick owned was in his name. The account, the trucks, the money people owed him. All of it waits for the court. A policy with Lisa named on it doesn't. It goes straight to her. Usually in weeks.\"\n\n\"Would it have unlocked the business account?\"\n\n\"No. Nothing does that but the court. But she wouldn't have been calling you for a loan.\"\n\n\"What does something like that run? I've got two trucks on payments.\"\n\n\"Depends on your age and your health. Find out before you decide you can't afford it.\"\n\n\"Paul, I'm bidding six jobs this week. I don't have an afternoon for this.\"\n\n\"It's not an afternoon.\" He was already typing on his phone. \"Do it with Tara tonight. Then tell me you can't afford it.\"\n\nMy phone buzzed before I got back to my truck.\n\nTara and I sat down with it after the kids went to bed. We were done before the kettle boiled.\n\nFor ten years, \"what happens to Tara if it's me\" was a question I never let myself finish. I'd get halfway and go check on a job.\n\nNow the whole answer was sitting on the table between us, and there was nothing left to guess about.\n\nIt wasn't good. Most of what I'd been counting on would never reach her in time.\n\nTara put her hand on my arm and didn't say anything for a while.\n\nThen we saw what it would take to fix it.\n\nI'd been ducking that number for years. I figured it would hurt like a third truck payment.\n\nIt didn't come close.\n\nTara looked at it, then at me. \"That's it? That's what we've been scared of?\"\n\nI slept that night. Actually slept. First time since Rick's funeral.\n\nFor the first time I knew exactly where Tara would stand if it's me. And that it was fixable.\n\nWe signed ours that week.\n\nLast month we were driving home from a job and she asked me again. \"If it's you, who do I call?\"\n\n\"Nobody,\" I said. \"That's the whole point.\"\n\nIf your plan is the same as mine was, that the boys would take care of her, do the four questions tonight. It took us about a minute.\n\nThe boys will show up. I've seen it. They just can't cover the second Friday.\n\nTwelve trucks in that parking lot. $4,100 in the hat. Rick's payroll was $11,000.\n\nEdit: Forgot the link. It's the one Paul sends his clients: https://zorionlife.com/"}, {"id": "w3-chest", "name": "Chest pains", "hl": "Could she make payroll Friday?", "ds": "Mine couldn't. We asked the bank.", "t": "Chest pains on a roof in July. Turned out to be nothing. The call my wife made to our bank the next morning wasn't.\n\n\"If my husband passed away,\" Meg asked them, \"could I keep paying his crew from the business account?\"\n\n\"I'm sorry, no.\"\n\nI was sitting right beside her. She'd put it on speaker so I'd hear it.\n\nI run a small HVAC company. Four guys, two vans. I was setting a rooftop unit on a plaza when my chest locked up and my left arm went heavy. My lead hand, Sean, drove me to emergency in my own truck.\n\nEight hours later the doctor sent me home. \"Not your heart this time,\" he said. \"You're 49. Take the hint.\"\n\nMeg met me in the parking lot. I was sitting in my truck waiting for her, and she stood at my window for a second.\n\n\"If that was the real one,\" she said, \"what do I do Friday?\"\n\n\"Same as always. You've got the online banking and all the passwords. You'd just run payroll.\"\n\nShe drove us home in my truck and didn't say a word the whole way.\n\nThe next morning she made that call. The woman on the line was kind about it, but she didn't soften anything.\n\n\"The account is in his name only. When the owner passes, it's frozen until the court appoints someone to handle the estate.\"\n\n\"How long does that take?\"\n\n\"It usually takes a few months.\"\n\n\"And our savings?\"\n\n\"Is that a joint account?\"\n\nMeg looked at me. I shook my head.\n\n\"Then it would be the same.\"\n\nThere was $52,000 in the business account and every dime of our savings in my name, and all of it would freeze the day she needed it most.\n\nMeg thanked the woman and hung up. Then she looked at me like I was somebody she'd just met.\n\n\"So who pays Sean?\" she said. \"Who pays the supply house? The van payments?\"\n\nI had answers. I'd been carrying them around for twenty years without ever saying them out loud.\n\n\"We move the savings into a joint account.\"\n\n\"That's eighteen thousand dollars. Payroll alone is twelve every two weeks.\"\n\nI did the math. Three weeks, if nothing went wrong.\n\n\"My brother could run the jobs till it's sorted.\"\n\n\"With what? He can't sign on the account either.\"\n\nI didn't have a third answer.\n\nThat week I called our business banker myself. I'd known him fifteen years, so I asked him straight.\n\n\"The guys you deal with whose families come out of this okay. What did they do?\"\n\nHe didn't even have to think about it.\n\n\"Most of them had life insurance with their wife named on it. That doesn't go through the estate. It goes straight to her, usually in weeks.\"\n\n\"It wouldn't unlock the business account?\"\n\n\"No. Only the court does that. But she wouldn't need it to pay your guys.\"\n\nI'd always filed life insurance under funerals, something you buy at 70.\n\nI told Meg that night. I also told her we couldn't take on another bill in July with both vans still on payments.\n\n\"A few days ago you were lying on a stretcher in emergency,\" she said. \"Don't tell me what we can't afford until you know what it costs.\"\n\nShe'd spent the afternoon reading about it while I was on a job. She already had something open on her phone, four questions, and she handed it to me.\n\nWe were done before the coffee finished brewing.\n\nFor years I'd treated that question like a rattle in the van I didn't want to chase down. Turn the radio up and keep driving.\n\nNow the whole thing was laid out in front of us, and there was no radio loud enough.\n\nIt was worse than I thought. Most of what I'd built would never reach Meg in time to matter.\n\nShe held my hand under the table and didn't say anything for a while.\n\nThen we saw what fixing it would cost. I'd been bracing for it like a compressor quote on a hot day.\n\nIt came in under anything I'd guessed.\n\nMeg actually laughed. \"We've been scared of that? For twenty years?\"\n\nThat night I didn't lie awake checking my own heartbeat. First time since the roof.\n\nWe signed ours that week.\n\nIn September I went back for a stress test. Meg drove me. In the parking lot after, she didn't ask what she'd do Friday.\n\nShe asked what I wanted for supper.\n\nIf you're telling yourself you'll deal with it after the season, do the four questions tonight. It took us less time than the coffee.\n\nMost guys don't get a warning. I got mine on a roof in July. Consider this one yours.\n\nEdit: Forgot the link. Here's the one Meg found: https://zorionlife.com/"}, {"id": "w3-chat", "name": "Crew chat", "hl": "Would your crew wait months too?", "ds": "Rob's did.", "t": "Two texts from the boss's phone, three days apart. Only the first one was him.\n\nHe left $70,000 in the bank.\n\nNobody was allowed to touch it. Not even his wife, who'd done his books for twenty years.\n\nI poured concrete with Rob for eleven years. He made me foreman at 26 and taught me how to read a GC before I could read a set of plans. Tuesday morning, before the pour, he had a heart attack in his driveway with our coffees on the seat of his truck. He was 55.\n\nThursday night a text came into the crew chat from Rob's phone. It was his wife, Sandra. \"I'm so sorry boys. Nobody can sign on his account, so I can't pay you tomorrow.\"\n\nFriday morning I drove over to the house. I wanted to hear it from her in person.\n\n\"I know every password he has,\" she said. \"The bank says none of that matters. Nobody signs until the court appoints someone to handle his estate.\"\n\n\"How long does that take?\"\n\n\"They said it usually takes a few months.\"\n\nRob had three foundations booked that month. Two GCs were waiting on us, and one homeowner had already given notice on her rental for the build.\n\nI called the guys from Sandra's driveway to set the schedule. Nobody asked what we'd get paid. Jay just asked what time.\n\nWe finished all three. Jay was behind on his rent by the second one. Luis's wife picked up extra shifts. I covered our mortgage on the line of credit and didn't tell my wife, Kim.\n\nThe money came through in the end. It took months. By then Luis and Matt had gone to other crews, Sandra had sold the trucks, and Rob's company was a name nobody called anymore.\n\nEvery dollar Rob built was still sitting there. It just couldn't reach any of us when it counted.\n\nTwo years later I started my own crew. Kim did the books at our kitchen table, and Jay came with me.\n\nOne Friday last spring, a text came into our crew chat from Jay. \"boss if something happens to you do we get paid?\"\n\nI called him instead of texting back. \"Of course. Kim has the banking and every password.\"\n\n\"So did Sandra,\" he said.\n\nHe wasn't being smart. He had a baby at home, and he'd been doing the math.\n\nThat night I told Kim what he'd asked.\n\n\"Then we put money aside where I can get to it,\" she said. \"A joint account.\"\n\n\"Enough for four guys for a few months? And the house?\"\n\nWe worked it out at the kitchen table. At the rate we were saving, it was years away.\n\n\"I could borrow against the house.\"\n\n\"On what income? You'd be a widow with a concrete crew you can't pay.\"\n\nNeither of us had a third idea.\n\nThe next week I called the lawyer who'd handled Rob's estate. I'd gotten to know him while I chased my back pay.\n\n\"I don't want Jay going through that again,\" I said. \"What actually works?\"\n\n\"For a guy set up like you? Life insurance with your wife named on it. It doesn't go through the estate. It goes straight to her, usually within a few weeks.\"\n\n\"I always figured that was funeral money.\"\n\n\"Most guys do. Sandra would have had money in weeks instead of waiting on me.\"\n\n\"Would it have paid us that first Friday?\"\n\n\"No. Nothing pays that fast. But it might have kept Rob's company going long enough to matter.\"\n\n\"I've got two trucks on payments. I can't take on another bill.\"\n\n\"Then find out what it costs before you decide you can't.\"\n\nI sat on that for a week. Then on Monday, Jay dropped a link in the crew chat.\n\n\"my girlfriend found this. do it boss\"\n\nKim and I sat down with it after the kids were in bed. We were done before the second period started.\n\nFor two years I'd told myself I learned from Rob. Sitting there, I realized I'd only learned what happened to us. I'd never once looked at what would happen to Kim and my guys if it was me.\n\nNow I could see all of it, and most of what I'd built wouldn't reach them in time to matter.\n\nKim put her hand flat on the table, the way she does when a supplier quote comes in high.\n\nThen we saw what it would take to fix it. I'd been bracing for another truck payment.\n\nIt wasn't anywhere close, and Kim looked at me like I'd been carrying this around for no reason.\n\nThat night I finally stopped hearing Jay's question every time I closed my eyes.\n\nWe signed ours that week.\n\nLast Friday Jay texted the crew chat again, half joking. \"still getting paid if you die boss?\"\n\nI texted back, \"Kim pays you. No waiting on a court.\"\n\nHe sent back a thumbs up. That was the whole conversation.\n\nIf your guys would finish your jobs for you, make sure there's a way for them to get paid for it. Do the four questions tonight with your wife. It took us about a minute.\n\nWe finished every job Rob had booked. It was months before any of us saw a dollar for them.\n\nEdit: Forgot the link. It's the one Jay dropped in our crew chat: https://zorionlife.com/"}]}, {"label": "Week 2", "chip": "Last week", "sub": "Batch 2", "current": false, "ads": [{"id": "w2-locked", "name": "Locked", "hl": "Would yours be locked too?", "ds": "His was. So was mine.", "t": "Took this as a joke. Boss napping on his lunch. Six weeks later he was gone.\n\nHe left $60,000 in the business account. That Friday, none of us got paid.\n\nI ran Gary's crew for eleven years. He hired me at 19, when nobody else would. Heart attack at 51.\n\nHis wife, Donna, had been doing the books for years. She had the online banking, the passwords, all of it. So I figured she'd just run payroll.\n\nFriday morning I stood next to her in the shop office while she called the bank. She put it on speaker.\n\n\"I'm very sorry for your loss. Nobody can sign on this account until the court appoints someone.\"\n\n\"How long does that take?\"\n\n\"It can take months.\"\n\nShe wrote the bank guy's name on an envelope, like it was going to help.\n\nThe money was sitting right there. Nobody was allowed to touch it. Not Donna, even with the passwords. Not me. Not his accountant.\n\nAnd nothing else stopped. Holdback from July still sitting with the GC. The supply house calling every morning. Six guys with mortgages of our own.\n\nBy week three our best guy took a job across town. I almost went with him.\n\nThat's when Donna told me the part that still gets me.\n\n\"He saved every month for twenty years,\" she said. \"That was our plan if anything ever happened. It's all in his name.\"\n\nLocked, same as the rest.\n\nHe didn't leave them broke. He left them locked out.\n\nThe money came through eventually. Months later. By then the crew was gone, the customers had moved on, and there was nothing left to save.\n\nTwo years later I started my own crew. The week I signed for my first truck, I called Donna. I asked her what I should do so my wife never had a Friday like hers.\n\nShe was quiet for a second. \"What's your plan?\"\n\n\"Save, like Gary did. But in a joint account, so it doesn't lock.\"\n\n\"How long until there's enough in there to cover your mortgage and your guys for six months?\"\n\nI did the math. Years. Maybe ten.\n\n\"Gary thought he had time too,\" she said.\n\nI didn't say anything.\n\n\"The estate lawyer told me something after,\" she said. \"If Gary had life insurance with my name on it, it would have come straight to me. Usually in weeks, without a court getting in the way.\"\n\n\"I just signed for a truck, Donna. I can't take on another bill.\"\n\n\"Did you even price it?\"\n\nI hadn't.\n\n\"It wouldn't have unlocked the business account,\" she said. \"But I wouldn't have been waiting on a court to pay the mortgage.\"\n\nThat's what got me. Savings take years to build. A policy is the whole amount from the day it starts.\n\nShe'd read everything she could find after Gary. That night she sent me a link. Four questions. \"Do this before you buy a second truck.\"\n\nI did it at the kitchen table with my wife. I would have bet the truck we were fine.\n\nWe weren't.\n\nEverything I'd signed for, the truck, the line at the bank, the supply house, gets paid first. My wife gets what's left.\n\nThe mortgage insurance I'd been counting on pays off the bank's loan. Nothing for any of the rest.\n\nThen it showed us what it would cost to fix. I'd been dreading that number for years.\n\nIt was so much less than I'd figured, I made her read it twice.\n\nYears I'd been putting this off. Over that. I felt like an idiot.\n\nThen she asked me one thing. \"Did Gary ever do this?\"\n\n\"No.\"\n\nWe signed ours before the second truck.\n\nI still have Gary's number in my phone. Can't bring myself to delete it.\n\nNobody ever asked Gary. So I'm asking you. If you've got guys counting on you every Friday, do the four questions tonight. It takes about a minute.\n\nHe didn't know he had six weeks. Nobody does.\n\nHe left them $60,000. They couldn't touch a dollar of it when it counted.\n\nHope this saves somebody's wife that call to the bank.\n\nEdit: Sorry, forgot the link. Here's the one Donna sent me: https://zorionlife.com/", "img": "/assets/adboard/w2-locked.jpg", "winner": true}, {"id": "w2-fire", "name": "Fire sale", "hl": "Would yours take the $1,500?", "ds": "She did. Mine would have.", "t": "I told a widow her husband's tools were worth $18,000. She took $1,500 anyway.\n\nHer listing said: \"Husband's work stuff. No idea what any of it is. Make an offer.\"\n\nAnybody in the trades could see what was in her photo. Gas valves. Controls. Half of it still in the supply-house boxes. Easy $2,000 in that bin alone. Closer to $18,000 with everything in the garage.\n\nHe'd run his own service company for twenty years. Three guys, two vans. Heart attack in the van, driving home from a job.\n\nI called inside an hour to make an offer. So did four other guys.\n\nThen I heard her voice, and I couldn't do it. I told her what she had instead. Sell it piece by piece. Give it a few weeks.\n\n\"That's kind of you,\" she said. \"But the mortgage comes out Friday. So does the van payment. And the guys still need their last cheque.\"\n\nIt was Tuesday.\n\nAnd nobody was allowed to touch anything in his name. Not even the business account. He was the only one who could sign.\n\nThat night one of the other four called her back. \"I'll be there at seven with a trailer. Fifteen hundred cash for the lot.\"\n\nShe took it.\n\nShe knew exactly what it was worth. I'd told her. She just couldn't afford to wait for it.\n\n$16,500. That's what a few weeks were worth. She didn't have a few weeks.\n\nThat's what I can't shake. I always figured if it was ever me, my wife would call a buddy of mine in the trade. He'd tell her what everything was worth, and she'd get a fair price.\n\nThat widow had exactly that. She had me. I told her the real price, and it didn't help her. She needed the money by Friday.\n\nI went home and stood in my own garage for a long time. Didn't even turn the light on. What if it was my wife taking that call on a Tuesday?\n\nEverything due that Friday. The mortgage. Two truck payments. The supplier account. Four guys' cheques.\n\nEverything she could get to that week. Savings in my name, frozen. Mortgage insurance, written to clear the bank's loan.\n\nShe'd have taken the $1,500 too. Anybody would.\n\nFirst I figured I'd keep more cash in the business account. His was in the business account too. Locked, same as everything else.\n\nSo I asked our accountant what my wife could actually get to if it was me. She didn't even look up from her screen.\n\n\"A joint account covers groceries for a while,\" she said. \"Not a mortgage, two trucks and four guys.\"\n\n\"And everything else?\"\n\n\"In your name. It waits.\"\n\n\"So what's the fix?\"\n\nShe finally looked up. \"Money with her name on it.\"\n\n\"Like what?\"\n\n\"Life insurance.\"\n\nI almost laughed. \"That's funeral money.\"\n\n\"Was it the funeral that made that widow take $1,500?\"\n\nI didn't have an answer for that.\n\n\"It's not the funeral that sinks a family like his,\" she said. \"It's the first month.\"\n\nThen she walked me through it. A policy with my wife named on it never goes through the estate. It goes straight to her, usually within a few weeks.\n\n\"That still wouldn't have beat Friday,\" I said.\n\n\"No. But would she have taken $1,500 if she knew the money was coming?\"\n\nNo. She'd have sold it piece by piece, like I told her to.\n\nBefore I left, she sent me a link. Four questions. \"Do that before you argue with me again.\"\n\nI did it that night at the kitchen table with my wife reading over my shoulder. It showed us what I'd signed for, and how little of what we had would actually reach her. And what it would cost to change that at my age.\n\nMy wife went quiet for a minute. Then she said, \"Thursday.\"\n\nWe signed ours at that same table on Thursday. She read every page. I just wanted it done.\n\nI'd put it off for ten years because I figured it would cost a fortune. It didn't. Not even close. I felt stupid for every year I waited.\n\nThat night I slept straight through for the first time since that widow's call.\n\nIf it's ever me, nobody's backing a trailer up to my garage.\n\nI still think about her. I never even got her last name.\n\nI'm not telling anybody what to do with their own money. But if you've got guys waiting on a cheque from you every Friday, do the four questions tonight. Took me about a minute. Took my wife a lot longer to stop being mad at me.\n\nHe was driving home from a regular job. Nobody gets a warning.\n\n$18,000 in the garage. $1,500 in her hand. The difference was one Friday.\n\nHope this saves somebody's wife a Tuesday like hers.\n\nEdit: Sorry, forgot the link. Here's the one my accountant sent me: https://zorionlife.com/", "img": "/assets/adboard/w2-fire.jpg", "winner": false}, {"id": "w2-competitor", "name": "Competitor", "hl": "Would yours text the next guy?", "ds": "His did. Mine would.", "t": "I tried to pay his widow for this. My accountant stopped me with one question.\n\nDoug was my biggest competitor for twenty-two years. The day after his funeral, one of his customers sent me this.\n\nTwo vans, three guys, always booked out. He was 54. Married, two kids in high school. Heart attack on a Saturday morning, mowing his lawn.\n\nWe bid against each other for most of those years. He beat me on some jobs. I beat him on others. I always figured I'd outlast him. I never figured it would be like this.\n\nNobody took over his business. His customers just went looking for the next guy. By spring, forty-one of them had called or texted me. I never ran an ad.\n\nThen two of his guys showed up at my shop asking for work. I hired them both.\n\nA month in, it didn't sit right. Twenty-two years of Doug's work was paying my bills.\n\nSo I decided to buy the business from his wife, Brenda. Pay her properly for what he built.\n\nI figured it was worth a couple hundred grand. His name on the vans. The best reputation in the county. Twenty-two years of customers.\n\nBefore I called her, I sat down with my accountant to put a real number on it. I wanted to do it right.\n\nHe heard me out. Then he took his glasses off. \"What exactly are you buying?\"\n\nSo I started listing it.\n\nThe customers? Already calling me. His guys? Already working for me. His reputation? That was Doug. It went with him.\n\nWhat was left was two vans, some tools, and a phone number nobody answered.\n\nI'd been thinking about it as his business. It was just him.\n\nI sat in my truck outside Brenda's house for twenty minutes before I went in.\n\n\"There isn't a business left to buy,\" I told her. \"I'm sorry. But I'll pay you what the vans and tools are actually worth. $31,000. Not what a dealer would give you.\"\n\nShe said yes before I finished.\n\n\"The landlord wants the shop empty by the thirtieth,\" she said. \"You're the first person who's offered me anything.\"\n\nTwenty-two years of work. $31,000. And I was the good offer.\n\nThat night I did the same math on my own business. Twenty-four years. Three trucks. Six guys.\n\nSame answer.\n\nIf I'm gone tomorrow, my customers call the next guy. My guys find the next shop. My wife gets three trucks and a phone that stops ringing. Two of those trucks still have payments on them.\n\nAnd somewhere across town there's a guy just like me. If I go first, he gets my customers for free.\n\nI spent the next few months trying to make my shop worth something without me.\n\nI tried grooming my foreman to take over. Great tech. Hates the phone. The customers call me, not him.\n\nI asked a business broker what it would sell for without me in it. Same answer as my accountant. Trucks and tools.\n\nSo I went back to my accountant.\n\n\"For twenty years I've told my wife not to worry,\" I said. \"The business is our savings. Our retirement. Our life insurance.\"\n\n\"And the day you're not in it?\"\n\n\"It's worth what the trucks are worth.\"\n\n\"Then whatever she gets can't come from the business,\" he said. \"It has to be money that doesn't need you to earn it, and doesn't need anybody to buy it.\"\n\n\"What did you do?\"\n\n\"A policy with my wife named on it. The week our first was born. It goes straight to her, usually in weeks.\"\n\n\"So I pay them for twenty years, and if I'm still here, they keep it.\"\n\n\"That's the good outcome,\" he said. \"Ask Brenda if she'd have taken that deal.\"\n\nI thought about her saying yes before I finished.\n\nHe wrote a link on the back of his card. Four questions. \"Do it with your wife.\"\n\nWe did it that night at the kitchen table. I'd told her not to worry for twenty years, so I figured I knew what it would say.\n\nIt showed us what I'd signed for. The two trucks still owing. The line at the bank. All of it gets paid first. And how little of what we had would actually reach her.\n\nMy wife didn't say anything for a while.\n\nThen it showed us what it would cost to fix. It was so much less than I'd figured. Twenty years of telling her not to worry, and I'd never even checked.\n\nWe signed ours before the busy season started.\n\nIf it's ever me, she's not waiting on the guy across town to make her an offer.\n\nI still drive past Doug's old shop. There's a flooring outfit in there now.\n\nIf your customers call you by name and not the company, do the four questions this week. It takes about a minute.\n\nHis customers started texting the day after the funeral. Just not Brenda.\n\nHope this saves somebody's wife from needing an offer like mine.\n\nEdit: Literally forgot to even put the link: https://zorionlife.com/", "img": "/assets/adboard/w2-competitor.jpg", "winner": false}, {"id": "w2-signature", "name": "Signature", "hl": "Who gets paid before yours?", "ds": "Mine had four ahead of her.", "t": "I signed for this shop in 10 seconds. My lawyer told me who pays for it if I die.\n\nI took this photo six years ago. First day in our own shop. One van, one key, and a lease I never read.\n\nI'm a plumber. I'm 46. Wife, two girls. Four vans and nine guys now.\n\nHer brother had a heart attack in June. He's fine. In July my wife, Jen, finally got us in to do our wills. She wasn't going to wait anymore.\n\nThe lawyer had a yellow notepad and a pen that kept dying. First thing he asked: \"What have you signed personally for the business?\"\n\n\"Nothing,\" I said. \"The company signs for everything.\"\n\nHe asked about the shop lease. The line of credit at the bank. The credit app at the supply house. The four vans.\n\nI'd signed every one. Same line on every one. Personally guaranteed. Ten seconds each, then back to work.\n\nI thought the company was the wall between the business and my family. My signature was the door.\n\nHe added it up and turned the notepad around. $412,000 with my name on it.\n\nSo I said what everybody says. \"Debt dies with you in Canada, right?\"\n\n\"It does,\" he said. \"Nobody can pass it to your kids.\"\n\nFor a second I actually relaxed.\n\n\"But it doesn't disappear. It goes to your estate. And your estate pays every creditor before your family gets anything.\"\n\nThe landlord. The bank. The supply house. Whoever financed the vans. Everything in my name pays first. Jen gets what's left.\n\nShe was sitting right next to me.\n\nWe didn't talk the whole drive home. I can't un-sign any of it. None of us can. The bank won't lend without it. The landlord won't lease without it.\n\nThe next day I called him back. I had ideas.\n\n\"I'll pay it all down faster.\"\n\n\"How's that gone so far?\"\n\nEvery time I paid one down, I signed another.\n\n\"Then I'll put the house in Jen's name.\"\n\n\"That can get undone if it looks like you're dodging creditors. And more landlords want her signature on the lease now anyway.\"\n\n\"So what can I leave her that none of them can touch?\"\n\n\"Life insurance with her named on it. It never goes through the estate. Your creditors can't touch it. It goes straight to her.\"\n\n\"I've been pitched life insurance a hundred times. It's always about the funeral.\"\n\n\"This isn't for the funeral,\" he said. \"It's for the $412,000. The policy has to be big enough to cover what you've signed. And you have to get it while you're healthy enough to qualify.\"\n\nThat night Jen showed me something on her phone. A check with four questions about what I'd signed for, and what would actually reach her.\n\nShe'd done it back in June, the night her brother came home from the hospital. What it showed her is why she booked the lawyer.\n\n\"Why didn't you just tell me?\"\n\n\"I tried. You told me the company signs for everything.\"\n\nI took her phone and went through the questions myself. Mine came out worse than hers.\n\nThen it showed us what it would cost to fix. I'd been dodging that number for years. It was nothing like what I'd built up in my head. A lot less.\n\nSigned for it the next week. Ten seconds, same as all the others. First signature that's for her.\n\nThe guarantees are all still there. I'll sign more next spring. But now there's money with her name on it that none of them can reach.\n\nShe talked the whole drive home.\n\nIf you've ever signed a credit app to open a supply account, do the four questions tonight. It takes about a minute. The first one asks what you've signed for personally. If your first answer is \"nothing,\" so was mine.\n\nHer brother got his warning in June. Most of us don't get one.\n\nDebt dies with you. It just gets paid first.\n\nHope this saves somebody a very quiet drive home.\n\nEdit: Sorry, forgot the link. It's the one Jen found: https://zorionlife.com/", "img": "/assets/adboard/w2-signature.jpg", "winner": false}]}];
+
+const Z = '<svg viewBox="0 0 100 100"><path d="M10 12 H90 V30 L44 70 H90 V88 H10 V70 L56 30 H10 Z" fill="#fff"/></svg>';
+const I = {
+  like:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 10v11H3V10h4zm0 0 4-8c1.7 0 3 1.3 3 3v3h5.3a2 2 0 0 1 2 2.3l-1.4 8A2 2 0 0 1 18 21H7"/></svg>',
+  comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5A8.5 8.5 0 1 1 21 11.5z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 4l7 7-7 7v-4c-6 0-9 2-11 6 1-7 4-11 11-12V4z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.9"><path d="M12 20.5s-8.5-5.2-8.5-11A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 8.5 2.9c0 5.8-8.5 11-8.5 11z"/></svg>',
+  bubble:'<svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.9" stroke-linejoin="round"><path d="M20.7 16.5A9 9 0 1 0 17 20.4L21.5 21.5z"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.9" stroke-linejoin="round"><path d="M22 3 9.2 10.1M22 3l-7 19-5.8-11.9L2 7.4z"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.9" stroke-linejoin="round"><path d="M19 21l-7-6-7 6V3h14z"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 5 7 7-7 7"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3V2H7v1H3v3a4 4 0 0 0 4 4h.3A5 5 0 0 0 11 13.9V17H8v3h8v-3h-3v-3.1A5 5 0 0 0 16.7 10H17a4 4 0 0 0 4-4V3h-4zM5 6V5h2v3a2 2 0 0 1-2-2zm14 0a2 2 0 0 1-2 2V5h2v1z"/></svg>'
+};
+
+let platform = 'fb';
+try { if (localStorage.getItem('adboard_p') === 'ig') platform = 'ig'; } catch (e) {}
+let versions = {};
+
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const linkify = s => esc(s).replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+const imgUrl = a => versions[a.id] ? `/api/board?slot=${a.id}&v=${versions[a.id]}` : (a.img || '');
+
+function mediaHTML(a){
+  const src = imgUrl(a);
+  return `<div class="media" data-id="${a.id}">
+    ${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">` :
+      `<div class="empty" data-pick><div><div class="plus">+</div><b>Add image</b><small>Click or drop a file</small></div></div>`}
+    ${src ? `<button class="swap" type="button" data-pick>Replace image</button>` : ''}
+  </div>`;
+}
+
+function fbHTML(a){
+  return `<div class="ph"><div class="av">${Z}</div><div><div class="pname">Zorion Life</div><div class="psub">Sponsored · <svg width="11" height="11" viewBox="0 0 16 16" fill="#65676B" style="vertical-align:-1px"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm5.9 7h-2.5a12 12 0 0 0-1-4.6A6 6 0 0 1 13.9 7zM8 2c.7.8 1.3 2.6 1.4 5H6.6C6.7 4.6 7.3 2.8 8 2zM5.6 2.4A12 12 0 0 0 4.6 7H2.1a6 6 0 0 1 3.5-4.6zM2.1 9h2.5a12 12 0 0 0 1 4.6A6 6 0 0 1 2.1 9zM8 14c-.7-.8-1.3-2.6-1.4-5h2.8c-.1 2.4-.7 4.2-1.4 5zm2.4-.4a12 12 0 0 0 1-4.6h2.5a6 6 0 0 1-3.5 4.6z"/></svg></div></div><div class="dots"><i></i><i></i><i></i></div></div>
+    <div class="txt"></div>
+    ${mediaHTML(a)}
+    <div class="lk"><div class="t"><div class="dom">zorionlife.com</div><div class="hl">${esc(a.hl||'')}</div><div class="ds">${esc(a.ds||'')}</div></div><span class="cta">Learn more</span></div>
+    <div class="acts"><span>${I.like}Like</span><span>${I.comment}Comment</span><span>${I.share}Share</span></div>`;
+}
+function igHTML(a){
+  return `<div class="ph"><div class="av">${Z}</div><div><div class="pname">zorionlife</div><div class="psub">Sponsored</div></div><div class="dots"><i></i><i></i><i></i></div></div>
+    ${mediaHTML(a)}
+    <div class="igcta"><span>Learn more</span>${I.chev}</div>
+    <div class="igacts">${I.heart}${I.bubble}${I.send}<span class="bm">${I.save}</span></div>
+    <div class="txt"></div>`;
+}
+
+function setText(box, a, ig){
+  const prefix = ig ? '<span class="user">zorionlife</span>' : '';
+  const collapse = () => {
+    box.className = 'txt clamped';
+    box.innerHTML = `<span class="inner">${prefix}${linkify(a.t.replace(/\s*\n+\s*/g, ' '))}</span>`;
+    requestAnimationFrame(() => {
+      if (box.scrollHeight > box.clientHeight + 2) {
+        const f = document.createElement('span'); f.className = 'fade';
+        f.innerHTML = `${ig ? '… ' : '... '}<button class="more" type="button">${ig ? 'more' : 'See more'}</button>`;
+        f.querySelector('button').onclick = expand; box.appendChild(f);
+      } else { box.className = 'txt open'; }
+    });
+  };
+  const expand = () => {
+    box.className = 'txt open';
+    box.innerHTML = `${prefix}${linkify(a.t)} <button class="more" type="button">${ig ? 'less' : 'See less'}</button>`;
+    box.querySelector('.more').onclick = () => {
+      collapse();
+      const r = box.closest('.post').getBoundingClientRect();
+      if (r.top < 70) window.scrollBy({ top: r.top - 90, behavior: 'smooth' });
+    };
+  };
+  collapse();
+}
+
+function render(){
+  const main = document.getElementById('board');
+  main.innerHTML = '';
+  WEEKS.forEach(w => {
+    const sec = document.createElement('section'); sec.className = 'week';
+    sec.innerHTML = `<div class="week-head"><h2>${esc(w.label)}</h2><span class="chip ${w.current ? '' : 'past'}">${esc(w.chip)}</span><span class="week-sub">${esc(w.sub)}</span></div><div class="grid"></div>`;
+    const grid = sec.querySelector('.grid');
+    w.ads.forEach((a, i) => {
+      const slot = document.createElement('div'); slot.className = 'slot'; slot.style.setProperty('--i', i);
+      slot.innerHTML = `<div class="slot-label"><span class="slot-name">${esc(a.name)}</span>${a.tag ? `<span class="slot-tag">${esc(a.tag)}</span>` : ''}${a.winner ? `<span class="winner">${I.trophy}Winner</span>` : ''}<button class="copy" type="button">Copy text</button></div>
+        <article class="post ${platform} ${a.winner ? 'is-winner' : ''}">${platform === 'ig' ? igHTML(a) : fbHTML(a)}</article>`;
+      grid.appendChild(slot);
+      setText(slot.querySelector('.txt'), a, platform === 'ig');
+      wireMedia(slot.querySelector('.media'), a);
+      const cb = slot.querySelector('.copy');
+      cb.onclick = () => copy(a.t).then(() => { cb.textContent = 'Copied'; setTimeout(() => cb.textContent = 'Copy text', 1400); });
+    });
+    main.appendChild(sec);
+  });
+}
+
+function copy(t){
+  try { return navigator.clipboard.writeText(t); }
+  catch (e) { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove(); return Promise.resolve(); }
+}
+
+/* ---------- platform switch ---------- */
+const seg = document.querySelector('.seg'), pill = seg.querySelector('.pill');
+function placePill(){
+  const b = seg.querySelector(`[data-p="${platform}"]`);
+  pill.style.width = b.offsetWidth + 'px';
+  pill.style.transform = `translateX(${b.offsetLeft - 4}px)`;
+  seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+}
+seg.querySelectorAll('button').forEach(b => b.onclick = () => {
+  if (b.dataset.p === platform) return;
+  platform = b.dataset.p;
+  try { localStorage.setItem('adboard_p', platform); } catch (e) {}
+  placePill(); render();
+});
+window.addEventListener('resize', placePill);
+
+/* ---------- images: pick / drop → crop if not square → upload ---------- */
+const fileInput = document.getElementById('file');
+let target = null;
+function wireMedia(el, a){
+  el.querySelectorAll('[data-pick]').forEach(p => p.onclick = () => { target = a; fileInput.value = ''; fileInput.click(); });
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag'); });
+  el.addEventListener('dragleave', () => el.classList.remove('drag'));
+  el.addEventListener('drop', e => {
+    e.preventDefault(); el.classList.remove('drag');
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) { target = a; handleFile(f); }
+  });
+}
+fileInput.onchange = () => { const f = fileInput.files[0]; if (f) handleFile(f); };
+
+function handleFile(f){
+  const url = URL.createObjectURL(f);
+  const img = new Image();
+  img.onload = () => {
+    const ratio = img.naturalWidth / img.naturalHeight;
+    if (Math.abs(ratio - 1) < 0.01) save(img, 0, 0, img.naturalWidth);
+    else openCrop(img);
+  };
+  img.onerror = () => toast('Could not read that image');
+  img.src = url;
+}
+
+function openCrop(img){
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = `<div class="sheet" role="dialog" aria-label="Crop image">
+    <h3>Pick the square</h3><p>This image is ${W}×${H}. Drag to choose what shows. Zoom if you need it tighter.</p>
+    <div class="crop"><div class="grid3"></div></div>
+    <label class="zoom">Zoom <input type="range" min="1" max="4" step="0.01" value="1"></label>
+    <div class="row"><button class="btn ghost" type="button" data-x>Cancel</button><button class="btn primary" type="button" data-ok>Use this crop</button></div></div>`;
+  document.body.appendChild(m);
+  const box = m.querySelector('.crop'); box.prepend(img);
+  const range = m.querySelector('input');
+  let V = box.clientWidth, base = V / Math.min(W, H), z = 1, x = 0, y = 0;
+  // x, y = offset of the image's top-left inside the square, in screen px
+  const s = () => base * z;
+  const clamp = () => { x = Math.min(0, Math.max(V - W * s(), x)); y = Math.min(0, Math.max(V - H * s(), y)); };
+  const draw = () => { clamp(); img.style.width = W + 'px'; img.style.transform = `translate(${x}px,${y}px) scale(${s()})`; };
+  x = (V - W * s()) / 2; y = (V - H * s()) / 2; draw();
+
+  const zoomTo = (nz, cx = V / 2, cy = V / 2) => {
+    nz = Math.min(4, Math.max(1, nz));
+    const k = nz / z; x = cx - (cx - x) * k; y = cy - (cy - y) * k; z = nz; range.value = z; draw();
+  };
+  range.oninput = () => zoomTo(+range.value);
+  box.addEventListener('wheel', e => { e.preventDefault(); const r = box.getBoundingClientRect(); zoomTo(z * (e.deltaY < 0 ? 1.08 : 1 / 1.08), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+
+  const pts = new Map(); let last = null, pinch = null;
+  box.addEventListener('pointerdown', e => { box.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); last = [e.clientX, e.clientY]; });
+  box.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      const r = box.getBoundingClientRect();
+      if (pinch) zoomTo(z * d / pinch, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top);
+      pinch = d; return;
+    }
+    x += e.clientX - last[0]; y += e.clientY - last[1]; last = [e.clientX, e.clientY]; draw();
+  });
+  const up = e => { pts.delete(e.pointerId); pinch = null; const p = [...pts.values()][0]; if (p) last = p; };
+  box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
+
+  const close = () => { m.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  m.addEventListener('click', e => { if (e.target === m) close(); });
+  m.querySelector('[data-x]').onclick = close;
+  m.querySelector('[data-ok]').onclick = () => { const k = s(); close(); save(img, -x / k, -y / k, V / k); };
+}
+
+async function save(img, sx, sy, size){
+  const a = target; if (!a) return;
+  const out = Math.min(1080, Math.round(size));
+  const c = document.createElement('canvas'); c.width = c.height = out;
+  const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+  g.fillStyle = '#fff'; g.fillRect(0, 0, out, out);
+  g.drawImage(img, sx, sy, size, size, 0, 0, out, out);
+  let data = c.toDataURL('image/jpeg', 0.86);
+  if (data.length > 2.6e6) data = c.toDataURL('image/jpeg', 0.7);
+
+  // show it right away
+  document.querySelectorAll(`.media[data-id="${a.id}"]`).forEach(el => {
+    el.innerHTML = `<img src="${data}" alt=""><div class="busy">Saving…</div>`;
+  });
+
+  let key = getKey();
+  if (!key) { key = prompt('Admin key (the same one as the report) to save this image:'); if (!key) { toast('Not saved: no key'); render(); return; } }
+  try {
+    const r = await fetch('/api/board', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, slot: a.id, img: data }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) { setKey(''); toast('Wrong key. Try again.'); render(); return; }
+    if (!r.ok || !j.ok) throw new Error(j.error || r.status);
+    setKey(key); versions[a.id] = j.v; render(); toast('Image saved');
+  } catch (e) { toast('Could not save. Try again.'); render(); }
+}
+
+function getKey(){ try { return localStorage.getItem('zorion_admin_key') || ''; } catch (e) { return ''; } }
+function setKey(k){ try { k ? localStorage.setItem('zorion_admin_key', k) : localStorage.removeItem('zorion_admin_key'); } catch (e) {} }
+(() => { const k = new URLSearchParams(location.search).get('key'); if (k) { setKey(k); history.replaceState(null, '', location.pathname); } })();
+
+let tt; function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
+
+/* ---------- go ---------- */
+render();
+requestAnimationFrame(placePill);
+if (document.fonts) document.fonts.ready.then(placePill);
+fetch('/api/board').then(r => r.json()).then(j => { if (j && j.v && Object.keys(j.v).length) { versions = j.v; render(); } }).catch(() => {});
+</script>
+</body>
+</html>
