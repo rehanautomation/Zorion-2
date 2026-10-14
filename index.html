@@ -607,52 +607,11 @@ main{min-height:calc(100vh - var(--header-h));min-height:calc(100svh - var(--hea
   background:#E7F5EC;color:#1B7A3E;font-family:Archivo,sans-serif;font-weight:700;font-size:13px;
   letter-spacing:.06em;text-transform:uppercase;line-height:1.2}
 .ready-q{text-align:center}
-.ready-list{display:none;list-style:none;margin:var(--sp-2) auto var(--sp-6);padding:0;max-width:420px;text-align:left}
-.ready-list li{position:relative;padding-left:32px;margin:0 0 var(--sp-4);font-size:17px;line-height:1.45;color:var(--ink-2)}
-.ready-list li:last-child{margin-bottom:0}
-.ready-list li b{color:var(--ink);font-weight:700}
-.ready-list li svg{position:absolute;left:0;top:3px}
-#s6.lay-b .ready-list{display:block}
-#s6.lay-b .ready-q{font-size:21px}
-.lay-toggle{position:fixed;right:10px;bottom:10px;z-index:41;background:var(--paper) !important;border:1px solid var(--rule);background:transparent;
-  color:var(--ink-3);font:600 11px/1 Inter,system-ui,sans-serif;padding:6px 9px;border-radius:99px;cursor:pointer;opacity:.7}
-.lay-toggle,.lay-toggle[hidden]{display:none}
-body.is-contact .lay-toggle:not([hidden]){display:block}
 /* layout B is built to fit one phone screen, pill to button, no scroll */
-#s6.lay-b{padding-top:var(--sp-4)}
-#s6.lay-b .ready-top{margin-bottom:var(--sp-2)}
-#s6.lay-b .ready-pill{margin-bottom:var(--sp-3);padding:6px 14px;font-size:12px}
-#s6.lay-b .ready-list{margin:0 auto var(--sp-4)}
-#s6.lay-b .ready-list li{font-size:15.5px;line-height:1.38;padding-left:28px;margin-bottom:10px}
-#s6.lay-b .ready-list li svg{width:18px;height:18px;top:2px}
-#s6.lay-b .ready-q{font-size:19px;line-height:1.25}
-#s6.lay-b form{display:flex;flex-direction:column}
-#s6.lay-b .field{position:relative;margin-top:10px}
-#s6.lay-b .field label{position:absolute;left:17px;top:8px;z-index:1;margin:0;font-size:12px;font-weight:600;color:var(--ink-3);pointer-events:none}
-#s6.lay-b .field input{min-height:54px;padding-top:19px;font-size:16px}
-#s6.lay-b .verify{height:40px}
-#s6.lay-b .field-help{margin-top:5px;font-size:12.5px}
-#s6.lay-b .btn{margin-top:var(--sp-4);min-height:54px}
-#s6.lay-b .no-spam{order:3;margin:10px 0 0;font-size:14px;font-weight:600;color:var(--ink-2)}
-#s6.lay-c .ready-list li{font-size:16.5px;margin-bottom:9px}
-#s6.lay-c .ready-list li svg{top:3px}
-#s6.lay-c .ready-list li{font-size:15.5px;margin-bottom:8px}
-#s6.lay-c .ready-list li svg{top:2px}
-#s6.lay-c .ready-list{margin-bottom:var(--sp-5)}
-#s6.lay-c .ready-q{text-align:left;font-size:27px;line-height:1.15;letter-spacing:-.02em}
-#s6.lay-c .field{margin-top:10px}
-#s6.lay-c .field label{position:static;margin:0 0 5px;font-size:14px;font-weight:600;color:var(--ink)}
-#s6.lay-c .field input{padding-top:0}
-#s6.lay-c{padding-top:10px}
-#s6.lay-c .ready-pill{margin-bottom:20px;padding:8px 18px;font-size:15px;letter-spacing:.05em}
-#s6.lay-c .ready-list{margin-bottom:26px}
-#s6.lay-c .ready-top{margin-bottom:var(--sp-1)}
-#s6.lay-c .field-help{display:none}
-#s6.lay-c .btn{margin-top:var(--sp-4)}
 /* test mode: one tap hides every test control so the page looks like a visitor's */
 .dev-clean{position:fixed;left:10px;bottom:44px;z-index:42;border:1px solid var(--rule);background:var(--paper);
   color:var(--ink-3);font:600 11px/1 Inter,system-ui,sans-serif;padding:6px 9px;border-radius:99px;cursor:pointer;opacity:.85}
-body.is-clean .qnav,body.is-clean .lay-toggle,body.is-clean .dev-badge{display:none !important}
+body.is-clean .qnav,body.is-clean .dev-badge{display:none !important}
 body.is-clean .dev-clean{left:auto;right:6px;top:6px;bottom:auto;width:14px;height:14px;padding:0;font-size:0;opacity:.18;background:#8FA3B7;border:0}
 </style>
 <script>
@@ -760,10 +719,8 @@ window.ZL_PIXEL_ID = '1091428479971058';
 </section>
 
 <section class="screen" id="s6" data-step="4">
-  <button type="button" class="lay-toggle" id="layToggle" hidden>Layout A</button>
   <div class="ready-top">
     <p class="ready-pill">Your breakdown is ready</p>
-    <ul class="ready-list" id="readyList"></ul>
     <h1 class="t-q ready-q">Where should we text your breakdown?</h1>
   </div>
   <form id="contact" novalidate>
@@ -1110,7 +1067,6 @@ function paint(i){
   document.body.classList.toggle('is-results', i===RESULTS);
   document.body.classList.toggle('is-loading', i===BUILDING);
   document.body.classList.toggle('is-contact', i===CONTACT);
-  if(i===CONTACT) try{ fillReady(answers()); }catch(_){}
 }
 /* dir: 'r' or 'l' slides the next screen in from that side (swipes and
    the back / next buttons); anything else is the usual soft fade. */
@@ -1189,12 +1145,16 @@ function answered(i){
    submitting anything; blanks get the sample answers. */
 function canBack(){ return (current>=1&&current<=3)||current===CONTACT||current===RESULTS; }
 function canNext(){ return current<=3||current===CONTACT; }
+/* Stand-in contact for our own test runs. The name "Test" makes any
+   booking inert: no Discord, no record, no Meta event. */
+var TEST_WHO={name:'Test',email:'test@gmail.com',phone:'(416) 555-0123'};
 function previewResults(){
   var a=answers();
   if(!a.q2) a.q2='250-500';
   if(!a.q3.length) a.q3=['mortgage'];
   if(!a.q4) a.q4='wife';
   if(!a.q5) a.q5='35-44';
+  if(!knowWho()) try{ sessionStorage.setItem('zl_last',JSON.stringify({a:a,c:TEST_WHO})); }catch(_){}
   try{ buildResults(a); }catch(_){}
   go(RESULTS,NEXT_DIR);
 }
@@ -1265,57 +1225,6 @@ var PERSON={
   family :{who:'your family', short:'Family', obj:'your family', subj:'Your family', poss:'your family’s', gets:'gets', stands:'stands'}
 };
 function personFor(q){ return q==='wife'?PERSON.wife:(q==='kids'?PERSON.kids:PERSON.family); }
-
-/* ---- contact screen, layout B: three lines on what the breakdown
-   holds, written to his own answers. Only our own browsers (?nolog)
-   can switch to it for now; visitors get layout A. ---- */
-var READY_CHECK='<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#22A35A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-var LAYOUT='A';
-function readyLines(a){
-  var p=personFor(a.q4), q3=(a.q3&&a.q3[0])||'';
-  var them=p===PERSON.wife?'her':'them';
-  if(LAYOUT==='C') return [
-    '<b>Who gets paid before '+p.who+'.</b>',
-    {
-      mortgage:'<b>Who mortgage insurance really pays.</b>',
-      spouse  :'<b>When her work coverage stops.</b>',
-      personal:'<b>If your old policy still holds up.</b>'
-    }[q3] || '<b>What actually reaches '+them+'.</b>',
-    '<b>What it costs to fix.</b> Most guess high.'
-  ];
-  var cover={
-    mortgage:'<b>Who your mortgage insurance really pays,</b> and what it leaves '+them+'.',
-    spouse  :'<b>What your wife’s work coverage would pay,</b> and the day it stops.',
-    personal:'<b>Whether your own policy still covers</b> what you’ve signed since.'
-  }[q3] || '<b>What would actually reach '+p.who+',</b> and what wouldn’t.';
-  return [
-    '<b>Who gets paid before '+p.who+',</b> and what’s left for '+them+'.',
-    cover,
-    '<b>What it costs to fix at your age.</b> Most people guess way too high.'
-  ];
-}
-function fillReady(a){
-  var ul=document.getElementById('readyList'); if(!ul) return;
-  ul.innerHTML=readyLines(a).map(function(t){ return '<li>'+READY_CHECK+t+'</li>'; }).join('');
-}
-function setLayout(l){
-  var sc=document.getElementById('s6'), t=document.getElementById('layToggle');
-  LAYOUT=l;
-  if(sc){ sc.classList.toggle('lay-b', l!=='A'); sc.classList.toggle('lay-c', l==='C'); }
-  if(t) t.textContent='Layout '+l;
-  try{ fillReady(answers()); }catch(_){}
-}
-(function(){
-  /* Visitors get layout A (back to A on Oct 12). */
-  if(typeof NOLOG==='undefined'||!NOLOG){ setLayout('A'); return; }
-  var t=document.getElementById('layToggle'); if(!t){ setLayout('A'); return; }
-  var l='A'; try{ l=localStorage.getItem('zl_layout')||'A'; if(!/^[ABC]$/.test(l)) l='A'; }catch(_){}
-  document.body.appendChild(t); t.hidden=false; setLayout(l);
-  t.addEventListener('click',function(){
-    l={A:'B',B:'C',C:'A'}[l]; setLayout(l);
-    try{ localStorage.setItem('zl_layout',l); }catch(_){}
-  });
-})();
 
 /* The one sentence he repeats if he closes the tab. Keyed on the raw
    answer: the partner line is about the partner, not the family. */
@@ -1973,7 +1882,8 @@ function isPreview(){
 if(isPreview()){
   var stored=null;
   try{ stored=JSON.parse(sessionStorage.getItem('zl_last')||'null'); }catch(_){}
-  var demo=stored||{a:{q2:'250-500',q3:['mortgage','spouse'],q4:'wife',q5:'35-44'}};
+  var demo=stored||{a:{q2:'250-500',q3:['mortgage'],q4:'wife',q5:'35-44'}};
+  if(NOLOG && !(stored&&stored.c&&stored.c.name)) try{ sessionStorage.setItem('zl_last',JSON.stringify({a:demo.a,c:TEST_WHO})); }catch(_){}
   try{ buildResults(demo.a); }catch(_){}
   screens[0].classList.remove('is-active');
   screens[RESULTS].classList.add('is-active');
