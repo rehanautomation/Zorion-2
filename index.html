@@ -703,7 +703,8 @@ window.ZL_PIXEL_ID = '1091428479971058';
     <label class="option is-radio"><input type="radio" name="q5" value="25-34"><span class="box"></span><span>25 – 34</span></label>
     <label class="option is-radio"><input type="radio" name="q5" value="35-44"><span class="box"></span><span>35 – 44</span></label>
     <label class="option is-radio"><input type="radio" name="q5" value="45-54"><span class="box"></span><span>45 – 54</span></label>
-    <label class="option is-radio"><input type="radio" name="q5" value="55+"><span class="box"></span><span>55+</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="55-64"><span class="box"></span><span>55 – 64</span></label>
+    <label class="option is-radio"><input type="radio" name="q5" value="65+"><span class="box"></span><span>65+</span></label>
   </div>
 </section>
 
@@ -1211,10 +1212,12 @@ var BANDS={
   'over-500':{label:'Over $500,000',short:'Over $500K',price:750000}
 };
 var RATES={
-  100000:{'25-34':[9,15],'35-44':[12,20],'45-54':[22,38],'55+':[50,85]},
-  250000:{'25-34':[15,25],'35-44':[20,35],'45-54':[40,70],'55+':[95,160]},
-  500000:{'25-34':[22,35],'35-44':[30,50],'45-54':[70,120],'55+':[175,290]},
-  750000:{'25-34':[30,48],'35-44':[42,70],'45-54':[100,170],'55+':[250,420]}
+  /* 55-64 = the old 55+ figures. 65+ is a rough estimate (Oct 15), not
+     carrier-checked: confirm with Alicia. */
+  100000:{'25-34':[9,15],'35-44':[12,20],'45-54':[22,38],'55-64':[50,85],'65+':[120,210]},
+  250000:{'25-34':[15,25],'35-44':[20,35],'45-54':[40,70],'55-64':[95,160],'65+':[240,420]},
+  500000:{'25-34':[22,35],'35-44':[30,50],'45-54':[70,120],'55-64':[175,290],'65+':[450,780]},
+  750000:{'25-34':[30,48],'35-44':[42,70],'45-54':[100,170],'55-64':[250,420],'65+':[650,1150]}
 };
 /* Q2 decides who the page is talking about, everywhere. A partner or a
    "not sure" is spoken of as the family. Each form is spelled out, so

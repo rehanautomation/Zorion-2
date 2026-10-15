@@ -19,7 +19,7 @@ const QUESTIONS = [
   { key: 'q3', label: 'What have you got in place right now?', multi: true,
     options: { 'mortgage':'Mortgage insurance through the bank','personal':'A personal life insurance policy','spouse':"Something through my wife's work",'nothing':'Nothing','unsure':'Not sure' } },
   { key: 'q5', label: 'How old are you?',
-    options: { '25-34':'25 - 34','35-44':'35 - 44','45-54':'45 - 54','55+':'55+' } }
+    options: { '25-34':'25 - 34','35-44':'35 - 44','45-54':'45 - 54','55-64':'55 - 64','65+':'65+','55+':'55+' } }
 ];
 
 function label(q, raw) {
