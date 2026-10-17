@@ -196,6 +196,40 @@ async function allDwell() {
   return readSide('dwell');
 }
 
+/* ---- CRM: one entry per lead id holding its pipeline state ---- */
+const CRM = 'zorion_crm_v1';
+
+async function crmAll() {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['HGETALL', CRM]);
+    const r = out.result || [];
+    const map = {};
+    if (Array.isArray(r)) {
+      for (let i = 0; i + 1 < r.length; i += 2) { try { map[r[i]] = JSON.parse(r[i + 1]); } catch (_) {} }
+    } else if (r && typeof r === 'object') {
+      for (const k of Object.keys(r)) { try { map[k] = typeof r[k] === 'string' ? JSON.parse(r[k]) : r[k]; } catch (_) {} }
+    }
+    return map;
+  }
+  return readSide('crm');
+}
+
+async function crmGet(id) {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['HGET', CRM, id]);
+    try { return out.result ? JSON.parse(out.result) : null; } catch (_) { return null; }
+  }
+  return readSide('crm')[id] || null;
+}
+
+async function crmSet(id, state) {
+  if (KV_URL && KV_TOKEN) {
+    await kv(['HSET', CRM, id, JSON.stringify(state)]);
+    return;
+  }
+  const m = readSide('crm'); m[id] = state; writeSide('crm', m);
+}
+
 function readBody(req) {
   return new Promise(resolve => {
     if (req.body && typeof req.body === 'object') return resolve(req.body);
@@ -211,5 +245,6 @@ function readBody(req) {
 module.exports = {
   push, all, clear, readBody, isAdmin, clientIp, adminIps,
   markClick, setDwell, allDwell, reserveSlot, allBookings,
+  crmAll, crmGet, crmSet,
   persistent: Boolean(KV_URL && KV_TOKEN)
 };

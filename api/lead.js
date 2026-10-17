@@ -112,4 +112,5 @@ module.exports = async (req, res) => {
 /* api/book.js posts call bookings to the same channel unless
    BOOKING_WEBHOOK_URL is set. */
 module.exports.WEBHOOK = WEBHOOK;
+module.exports.QUESTIONS = QUESTIONS;
 module.exports.ALICIA_ID = ALICIA_ID;
