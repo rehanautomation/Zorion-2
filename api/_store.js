@@ -230,6 +230,31 @@ async function crmSet(id, state) {
   const m = readSide('crm'); m[id] = state; writeSide('crm', m);
 }
 
+/* ---- reminders: each one is sent once, ever ---- */
+const SENT = 'zorion_reminders_v1';
+
+/* true the first time a key is seen */
+async function firstTime(key) {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['SADD', SENT, key]);
+    return Number(out.result) === 1;
+  }
+  const m = readSide('sent'); if (m[key]) return false;
+  m[key] = 1; writeSide('sent', m); return true;
+}
+async function forget(key) {
+  if (KV_URL && KV_TOKEN) { await kv(['SREM', SENT, key]); return; }
+  const m = readSide('sent'); delete m[key]; writeSide('sent', m);
+}
+/* a short lock, so two runs at once never double-send */
+async function lock(name, seconds) {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['SET', 'zorion_lock_' + name, '1', 'NX', 'EX', seconds]);
+    return out.result === 'OK';
+  }
+  return true;
+}
+
 function readBody(req) {
   return new Promise(resolve => {
     if (req.body && typeof req.body === 'object') return resolve(req.body);
@@ -245,6 +270,6 @@ function readBody(req) {
 module.exports = {
   push, all, clear, readBody, isAdmin, clientIp, adminIps,
   markClick, setDwell, allDwell, reserveSlot, allBookings,
-  crmAll, crmGet, crmSet,
+  crmAll, crmGet, crmSet, firstTime, forget, lock,
   persistent: Boolean(KV_URL && KV_TOKEN)
 };

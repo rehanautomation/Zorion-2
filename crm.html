@@ -244,17 +244,29 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 .acts .won{color:var(--green)} .acts .lost{color:var(--red)}
 .acts button.sel{border-color:var(--blue);box-shadow:0 0 0 3px rgba(58,134,255,.15)}
 .picker{border-radius:18px;padding:14px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;overflow:hidden;animation:open .45s var(--spring) both}
-@keyframes open{from{opacity:0;transform:translateY(-6px);max-height:0;padding-block:0}to{opacity:1;transform:none;max-height:260px}}
+@keyframes open{from{opacity:0;transform:translateY(-6px);max-height:0;padding-block:0}to{opacity:1;transform:none;max-height:640px}}
+.days{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;padding:6px 4px 8px;margin:-4px -4px 0;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;scroll-snap-align:start;width:56px;height:64px;border-radius:16px;background:rgba(14,30,48,.045);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  transition:background .25s var(--ease),color .25s,transform .35s var(--spring),box-shadow .3s}
+.day:hover:not(:disabled):not(.sel){background:var(--blue-soft)}
+.day small{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.day b{font:700 20px/1 var(--display)}
+.day.sel{background:linear-gradient(180deg,#4B92FF,#2F78F2);color:#fff;transform:scale(1.05);box-shadow:0 10px 18px -10px var(--blue-glow)}
+.day.sel small{color:rgba(255,255,255,.85)}
+.day:disabled{opacity:.32;cursor:default}
+.tg{display:flex;flex-direction:column;gap:6px}
+.tg > span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.times{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.times button{height:38px;border-radius:12px;background:rgba(14,30,48,.045);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums;transition:background .2s,color .2s,transform .3s var(--spring)}
+.times button:hover:not(.sel){background:var(--blue-soft);color:var(--blue-ink)}
+.times button.sel{background:var(--blue);color:#fff;animation:pop .4s var(--spring)}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.pk-save{height:48px;border-radius:14px;background:linear-gradient(180deg,#4B92FF,#2F78F2);color:#fff;font-weight:600;box-shadow:0 12px 22px -12px var(--blue-glow);transition:transform .3s var(--spring),opacity .2s}
+.pk-save:active{transform:scale(.98)}
+.pk-save:disabled{opacity:.4}
 .picker .h{font-weight:600}
 .picker .h small{font-weight:500;color:var(--muted)}
-.quick{display:flex;flex-wrap:wrap;gap:6px}
-.quick button{height:32px;padding:0 12px;border-radius:99px;background:rgba(14,30,48,.05);font-size:13px;font-weight:600;transition:background .2s,color .2s}
-.quick button:hover{background:var(--blue-soft);color:var(--blue-ink)}
-.quick button.sel{background:var(--blue);color:#fff}
-.pk-row{display:flex;gap:8px}
-.pk-row input{flex:1;height:40px;border-radius:12px;border:1px solid var(--line-2);padding:0 12px;background:#fff;outline:none}
-.pk-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(58,134,255,.12)}
-.pk-row button{height:40px;padding:0 18px;border-radius:12px;background:var(--blue);color:#fff;font-weight:600}
 .undo{align-self:flex-start;font-size:13px;font-weight:600;color:var(--blue-ink);display:inline-flex;gap:6px;align-items:center;margin-top:-6px}
 .undo svg{width:14px;height:14px}
 .sec h3{margin:0 0 8px;font:700 11px/1 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
@@ -299,27 +311,58 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 .skel{border-radius:16px;height:96px;background:linear-gradient(100deg,rgba(255,255,255,.5) 30%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.5) 70%);background-size:300% 100%;animation:shimmer 1.4s linear infinite}
 @keyframes shimmer{from{background-position:100% 0}to{background-position:0 0}}
 
-/* ---------- phone (basic; full mobile pass later) ---------- */
-.tabbar{display:none}
+/* ---------- phone: one thing at a time, big targets ---------- */
+.tabbar,.mcall,.stabs{display:none}
 @media (max-width:860px){
-  body{overflow:auto}
+  body{overflow:auto;font-size:15px}
+  .amb i{filter:blur(50px)}
   .app{grid-template-columns:1fr;height:auto;min-height:100%}
   .side{display:none}
-  main{height:auto;min-height:100vh;padding:18px max(16px,env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
-  .top h1{font-size:28px} .search{width:100%;order:9}
-  .board{grid-auto-columns:86%;scroll-snap-type:x mandatory;min-height:70vh}
-  .col{scroll-snap-align:start}
-  .leads{grid-template-columns:1fr}
-  .row{grid-template-columns:72px minmax(0,1fr) auto}
+  main{height:auto;min-height:100vh;padding:calc(14px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+  .top{gap:8px;margin-bottom:14px}
+  .top h1{font-size:30px}
+  .top .grow,.search,.chip.warn{display:none}
+  #chips{width:100%}
+  .view{display:block}
+  .board{display:block;overflow:visible}
+  .stabs{display:flex;gap:8px;overflow-x:auto;margin:0 calc(-1 * max(16px,env(safe-area-inset-left))) 14px;padding:2px max(16px,env(safe-area-inset-left)) 4px;scrollbar-width:none}
+  .stabs::-webkit-scrollbar{display:none}
+  .stabs button{flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:99px;font-weight:600;
+    background:var(--glass-hi);border:1px solid var(--glass-line);box-shadow:var(--shadow-1);transition:background .3s var(--ease),color .3s,transform .35s var(--spring)}
+  .stabs button .n{font-size:12px;color:var(--muted);background:rgba(14,30,48,.06);border-radius:99px;padding:1px 8px}
+  .stabs button.on{background:linear-gradient(180deg,#4B92FF,#2F78F2);color:#fff;border-color:transparent;box-shadow:0 10px 20px -10px var(--blue-glow)}
+  .stabs button.on .n{background:rgba(255,255,255,.25);color:#fff}
+  .stabs .sd{width:8px;height:8px;border-radius:50%}
+  .stabs button.on .sd{background:#fff}
+  .mlist{display:flex;flex-direction:column;gap:10px}
+  .card{padding:16px 66px 15px 16px;border-radius:20px;gap:8px}
+  .card:hover{transform:none}
+  .card .nm{font-size:17px}
+  .card .age{position:absolute;right:16px;top:12px}
+  .mcall{display:grid;position:absolute;right:14px;top:50%;margin-top:-6px;width:44px;height:44px}
+  .mcall svg{width:20px;height:20px}
+  .scroll{overflow:visible;padding:0}
+  .today{gap:18px}
+  .row{grid-template-columns:70px minmax(0,1fr) 44px;padding:16px 14px;gap:12px}
   .row .pill{display:none}
-  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;justify-content:space-around;padding:8px 16px calc(8px + env(safe-area-inset-bottom));
+  .row .callbtn{width:44px;height:44px}
+  .row .who b{font-size:16px}
+  .leads{grid-template-columns:1fr;gap:16px}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;justify-content:space-around;padding:8px 12px calc(8px + env(safe-area-inset-bottom));
     background:var(--glass-hi);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border-top:1px solid var(--line)}
-  .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--faint);padding:4px 18px;transition:color .3s}
+  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--faint);padding:6px 0;transition:color .3s}
   .tabbar button.on{color:var(--blue)}
-  .tabbar svg{width:24px;height:24px}
-  .scrim{padding:calc(44px + env(safe-area-inset-top)) 0 calc(36px + env(safe-area-inset-bottom))}
-  .sheet{max-width:none;border-radius:30px}
-  .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .tabbar svg{width:26px;height:26px}
+  .tabbar .ti{position:relative}
+  .tabbar .count{position:absolute;top:-4px;right:-12px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--red);color:#fff}
+  .scrim{padding:calc(40px + env(safe-area-inset-top)) 0 calc(28px + env(safe-area-inset-bottom));place-items:stretch}
+  .sheet{max-width:none;border-radius:30px;padding:20px 16px;align-self:center}
+  .acts button{height:52px;font-size:15px}
+  .contact a,.contact button.cp{height:40px}
+  .times{grid-template-columns:repeat(3,1fr)}
+  .times button{height:44px;font-size:14px}
+  .pk-save{height:52px;font-size:15px}
+  .toast{bottom:calc(92px + env(safe-area-inset-bottom));max-width:calc(100% - 32px)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
@@ -381,7 +424,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 
 <nav class="tabbar" id="tabbar" aria-label="Main">
   <button data-view="pipeline" class="on"><svg><use href="#i-pipe"/></svg>Pipeline</button>
-  <button data-view="today"><svg><use href="#i-phone"/></svg>Today</button>
+  <button data-view="today"><span class="ti"><svg><use href="#i-phone"/></svg><span class="count" id="todayCount2" hidden>0</span></span>Today</button>
   <button data-view="leads"><svg><use href="#i-cal"/></svg>Leads</button>
 </nav>
 
@@ -462,16 +505,56 @@ function renderHeader(){
   $('#date').textContent = Z.DOW[p.dow] + ', ' + Z.MON[p.m-1] + ' ' + p.d;
   $('#clock').textContent = Z.time12(t);
   var chips = '', sab = Z.sabbath(t);
-  if (sab) chips += '<span class="chip sab"><svg><use href="#i-moon"/></svg>Sabbath until ' + sabEnd(sab, t) + '</span>';
+  if (sab && view !== 'today') chips += '<span class="chip sab"><svg><use href="#i-moon"/></svg>Sabbath until ' + sabEnd(sab, t) + '</span>';
   var dueN = LEADS.filter(function(l){ var d = D(l); return d.stage !== 'done' && d.next && d.next <= t + 15*60e3; }).length;
   if (dueN && view !== 'today') chips += ' <span class="chip warn"><span class="ld"></span>' + dueN + ' to call now</span>';
   $('#chips').innerHTML = chips;
   var todayN = LEADS.filter(function(l){ var d = D(l); return d.stage !== 'done' && d.next && d.next < Z.dayStart(t) + 864e5; }).length;
-  var c = $('#todayCount'); c.textContent = todayN; c.hidden = !todayN;
+  ['#todayCount','#todayCount2'].forEach(function(id){ var c = $(id); c.textContent = todayN; c.hidden = !todayN; });
 }
 
 /* ---------- pipeline ---------- */
+var MQ = window.matchMedia('(max-width:860px)');
+var mStage = store('zcrm_mstage') || '';
+function cardHTML(l, d, s, fresh, i){
+  var t = now();
+  var h = '<div class="card' + (fresh ? ' rv' : '') + '" style="--i:' + i + '" draggable="' + (MQ.matches ? 'false' : 'true') + '" role="button" tabindex="0" data-id="' + esc(l.id) + '">'
+    + '<span class="r1"><span class="nm">' + esc(l.name || 'No name') + '</span><span class="age" title="Lead age">' + Z.ago(l.ts, t) + '</span></span>'
+    + (l.ad ? '<span class="ad">' + esc(l.ad) + '</span>' : '');
+  if (s === 'done') h += '<span class="tag ' + d.result + '">' + stageLabel(d) + '</span>';
+  else {
+    if (s === 'new' || s === 'calling') h += dots(d.noAnswers);
+    h += nextLine(d);
+    if (l.phone) h += '<a class="callbtn mcall" href="tel:' + esc(l.phone.replace(/[^\d+]/g,'')) + '" aria-label="Call ' + esc(l.name) + '" data-stop><svg><use href="#i-phone"/></svg></a>';
+  }
+  return h + '</div>';
+}
+function stageRows(k){
+  var rows = LEADS.filter(match).map(function(l){ return { l:l, d:D(l) }; }).filter(function(x){ return x.d.stage === k; });
+  rows.sort(function(a, b){
+    if (k === 'done') return (b.l.state && b.l.state.updated || b.l.ts) - (a.l.state && a.l.state.updated || a.l.ts);
+    return (a.d.next || 9e15) - (b.d.next || 9e15) || b.l.ts - a.l.ts;
+  });
+  return rows;
+}
+/* phone: one stage at a time, picked from a row of tabs */
+function renderBoardMobile(anim){
+  var counts = {}; Z.STAGES.forEach(function(s){ counts[s.k] = stageRows(s.k).length; });
+  if (!mStage || !counts.hasOwnProperty(mStage)) mStage = Z.STAGES.filter(function(s){ return counts[s.k]; }).map(function(s){ return s.k; })[0] || 'new';
+  var h = '<div class="stabs" id="stabs">' + Z.STAGES.map(function(s){
+    return '<button type="button" data-stab="' + s.k + '" class="' + (s.k === mStage ? 'on' : '') + '"><span class="sd ' + s.k + '"></span>' + s.label + '<span class="n">' + counts[s.k] + '</span></button>';
+  }).join('') + '</div><div class="mlist">';
+  var rows = stageRows(mStage);
+  if (!rows.length) h += '<div class="list fade"><div class="nothing"><b>' + (loaded ? 'Nothing here' : 'Loading…') + '</b>' + (query ? 'No match for your search.' : '') + '</div></div>';
+  rows.forEach(function(x, i){ h += cardHTML(x.l, x.d, mStage, anim || !SEEN[x.l.id], i); });
+  var sl = $('#stabs') ? $('#stabs').scrollLeft : 0;
+  $('#board').innerHTML = h + '</div>';
+  $('#stabs').scrollLeft = sl;
+  var on = $('#stabs .on'); if (on && anim) on.scrollIntoView({ inline:'center', block:'nearest' });
+  LEADS.forEach(function(l){ SEEN[l.id] = 1; });
+}
 function renderBoard(anim){
+  if (MQ.matches) return renderBoardMobile(anim);
   var t = now(), html = '', i = 0;
   Z.STAGES.forEach(function(s, ci){
     var rows = LEADS.filter(match).map(function(l){ return { l:l, d:D(l) }; }).filter(function(x){ return x.d.stage === s.k; });
@@ -484,15 +567,7 @@ function renderBoard(anim){
     if (!rows.length) html += '<div class="empty-col">' + (query ? 'No match' : 'Drop here') + '</div>';
     rows.forEach(function(x){
       var l = x.l, d = x.d, fresh = anim || !SEEN[l.id];
-      html += '<div class="card' + (fresh ? ' rv' : '') + '" style="--i:' + (anim ? ci + (i++) * .6 : 0) + '" draggable="true" role="button" tabindex="0" data-id="' + esc(l.id) + '">'
-        + '<span class="r1"><span class="nm">' + esc(l.name || 'No name') + '</span><span class="age" title="Lead age">' + Z.ago(l.ts, t) + '</span></span>'
-        + (l.ad ? '<span class="ad">' + esc(l.ad) + '</span>' : '');
-      if (s.k === 'done') html += '<span class="tag ' + d.result + '">' + stageLabel(d) + '</span>';
-      else {
-        if (s.k === 'new' || s.k === 'calling') html += dots(d.noAnswers);
-        html += nextLine(d);
-      }
-      html += '</div>';
+      html += cardHTML(l, d, s.k, fresh, anim ? ci + (i++) * .6 : 0);
     });
     html += '</div></div>';
   });
@@ -617,6 +692,7 @@ function load(first){
   setSync('busy', 'Syncing');
   inflight = api('GET').then(function(j){
     timeOff = j.now - Date.now();
+    fetch('/api/remind').catch(function(){});   // the CRM being open also keeps reminders on time
     var hadAny = loaded;
     LEADS = j.leads; loaded = true; lastSync = Date.now();
     store('zcrm_cache', JSON.stringify({ at: lastSync, leads: LEADS }));
@@ -677,17 +753,55 @@ $('#toastUndo').addEventListener('click', function(){
 });
 
 /* ---------- lead sheet ---------- */
-function torontoInputValue(ts){ var p = Z.parts(ts); return p.y + '-' + Z.pad(p.m) + '-' + Z.pad(p.d) + 'T' + Z.pad(p.h) + ':' + Z.pad(p.mi); }
-function fromInput(v){ var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(v || ''); return m ? Z.at(+m[1], +m[2], +m[3], +m[4]*60 + +m[5]) : null; }
-function quickTimes(){
-  var t = now(), out = [];
-  var tonight = Z.dayStart(t), p = Z.parts(t);
-  var eve = Z.at(p.y, p.m, p.d, 18*60);
-  if (eve > t + 30*60e3) out.push({ k:'Tonight 6 PM', at: Z.allowed(eve) });
-  out.push({ k:'Tomorrow 10 AM', at: Z.tomorrowMorning(t) });
-  var d2 = Z.dateAfter(t, 2); out.push({ k:'In 2 days', at: Z.allowed(Z.at(d2.y, d2.m, d2.d, 600)) });
-  var d7 = Z.dateAfter(t, 7); out.push({ k:'Next week', at: Z.allowed(Z.at(d7.y, d7.m, d7.d, 600)) });
+/* ---------- the time picker: day chips + time chips, Toronto time ---------- */
+var pkDay = null, pkAt = null;
+function slotsFor(ymd){
+  var p = ymd.split('-'), out = [], t = now();
+  for (var m = Z.CALL_START; m <= Z.CALL_END; m += 30){
+    var ts = Z.at(+p[0], +p[1], +p[2], m);
+    if (ts > t + 10*60e3 && Z.allowed(ts) === ts) out.push(ts);
+  }
   return out;
+}
+function pickerDays(){ var t = now(), out = []; for (var i = 0; i < 14; i++){ var d = Z.dateAfter(t, i); out.push(d.y + '-' + Z.pad(d.m) + '-' + Z.pad(d.d)); } return out; }
+function pickerReset(){
+  var want = Z.tomorrowMorning(now()), days = pickerDays();
+  pkDay = null; pkAt = null;
+  for (var i = 0; i < days.length && !pkAt; i++){
+    var sl = slotsFor(days[i]).filter(function(ts){ return ts >= want - 60e3; });
+    if (sl.length){ pkDay = days[i]; pkAt = sl[0]; }
+  }
+}
+function pickerHTML(){
+  if (!pkDay) pickerReset();
+  var t = now(), todayKey = Z.ymd(t), tom = Z.ymd(Z.dayStart(t) + 36*3600e3);
+  var h = '<div class="picker"><div class="h">' + (pickMode === 'booked' ? 'When is the call?' : 'When to follow up?') + ' <small>Toronto time</small></div><div class="days" id="pkDays">';
+  pickerDays().forEach(function(k){
+    var p = k.split('-'), ts = Z.at(+p[0], +p[1], +p[2], 720), pp = Z.parts(ts), n = slotsFor(k).length;
+    var top = k === todayKey ? 'Today' : k === tom ? 'Tmrw' : Z.DOW[pp.dow];
+    h += '<button type="button" class="day' + (k === pkDay ? ' sel' : '') + '" data-pkday="' + k + '"' + (n ? '' : ' disabled title="No call times"') + '><small>' + top + '</small><b>' + pp.d + '</b></button>';
+  });
+  h += '</div>';
+  var slots = slotsFor(pkDay), groups = [['Morning', 0, 720], ['Afternoon', 720, 1020], ['Evening', 1020, 1441]];
+  if (!slots.length) h += '<div class="none">No call times left this day.</div>';
+  groups.forEach(function(g){
+    var list = slots.filter(function(ts){ var p = Z.parts(ts), m = p.h*60 + p.mi; return m >= g[1] && m < g[2]; });
+    if (!list.length) return;
+    h += '<div class="tg"><span>' + g[0] + '</span><div class="times">' + list.map(function(ts){
+      return '<button type="button" data-pkat="' + ts + '"' + (ts === pkAt ? ' class="sel"' : '') + '>' + Z.time12(ts).replace(' ', ' ') + '</button>';
+    }).join('') + '</div></div>';
+  });
+  var ok = pkAt && Z.ymd(pkAt) === pkDay;
+  h += '<button type="button" class="pk-save" data-save' + (ok ? '' : ' disabled') + '>' + (pickMode === 'booked' ? 'Book' : 'Set follow-up') + (ok ? ' · ' + esc(Z.when(pkAt, t)) : '') + '</button></div>';
+  return h;
+}
+function redrawPicker(){
+  var old = document.querySelector('#sheet .picker'); if (!old) return;
+  var sl = $('#pkDays') ? $('#pkDays').scrollLeft : 0;
+  var tmp = document.createElement('div'); tmp.innerHTML = pickerHTML();
+  var nu = tmp.firstChild; nu.style.animation = 'none';
+  old.parentNode.replaceChild(nu, old);
+  if ($('#pkDays')) $('#pkDays').scrollLeft = sl;
 }
 function sheetHTML(l){
   var d = D(l), t = now(), i = 0, h = '';
@@ -710,12 +824,7 @@ function sheetHTML(l){
       + '<button type="button" data-act="no_answer">No answer</button>'
       + '<button type="button" data-pick="talked"' + (pickMode === 'talked' ? ' class="sel"' : '') + '>Talked</button>'
       + '<button type="button" class="pri' + (pickMode === 'booked' ? ' sel' : '') + '" data-pick="booked">Booked</button></div>';
-    if (pickMode){
-      var qt = quickTimes();
-      h += '<div class="picker"><div class="h">' + (pickMode === 'booked' ? 'When is the call?' : 'When to follow up?') + ' <small>Toronto time</small></div><div class="quick">'
-        + qt.map(function(q){ return '<button type="button" data-at="' + q.at + '">' + esc(Z.when(q.at, now())) + '</button>'; }).join('')
-        + '</div><div class="pk-row"><input id="pkWhen" type="datetime-local" value="' + torontoInputValue(qt[0].at) + '"><button type="button" data-save>Save</button></div></div>';
-    }
+    if (pickMode) h += pickerHTML();
     h += '<div class="acts two" style="--i:' + (i++) + '"><button type="button" class="won" data-act="won">Won</button><button type="button" class="lost" data-act="lost">Not interested</button></div>';
   } else {
     h += '<div class="acts two" style="--i:' + (i++) + '"><button type="button" data-act="reopen">Reopen</button><button type="button" class="' + (d.result === 'won' ? 'lost" data-act="lost">Not interested' : 'won" data-act="won">Won') + '</button></div>';
@@ -777,11 +886,20 @@ $('#sheet').addEventListener('click', function(e){
     (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function(){ toast('Number copied'); }, function(){ toast(v); });
     return;
   }
-  if ((b = e.target.closest('[data-pick]'))){ pickMode = pickMode === b.dataset.pick ? null : b.dataset.pick; refreshSheet(); var inp = $('#pkWhen'); if (inp) inp.focus({ preventScroll:true }); return; }
-  if ((b = e.target.closest('[data-at]'))){ act(openId, { action: pickMode, at: +b.dataset.at }); pickMode = null; refreshSheet(); return; }
+  if ((b = e.target.closest('[data-pick]'))){
+    pickMode = pickMode === b.dataset.pick ? null : b.dataset.pick; pkDay = null; refreshSheet();
+    var pk = document.querySelector('#sheet .picker'); if (pk) pk.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    return;
+  }
+  if ((b = e.target.closest('[data-pkday]'))){
+    pkDay = b.dataset.pkday; var sl = slotsFor(pkDay);
+    if (!pkAt || Z.ymd(pkAt) !== pkDay){ var p = Z.parts(pkAt || 0), want = p.h*60 + p.mi; pkAt = sl.filter(function(ts){ var q = Z.parts(ts); return q.h*60 + q.mi >= want; })[0] || sl[0] || null; }
+    redrawPicker(); return;
+  }
+  if ((b = e.target.closest('[data-pkat]'))){ pkAt = +b.dataset.pkat; redrawPicker(); return; }
   if ((b = e.target.closest('[data-save]'))){
-    var at = fromInput($('#pkWhen').value);
-    if (!at){ $('#pkWhen').classList.add('shake'); setTimeout(function(){ $('#pkWhen') && $('#pkWhen').classList.remove('shake'); }, 500); return; }
+    var at = pkAt;
+    if (!at) return;
     act(openId, { action: pickMode, at: at }); pickMode = null; refreshSheet(); return;
   }
   if ((b = e.target.closest('[data-act]'))){ act(openId, { action: b.dataset.act }); }
@@ -807,6 +925,11 @@ document.addEventListener('keydown', function(e){
   if (e.key === '/'){ e.preventDefault(); $('#q').focus(); }
   if (e.key === '1') show('pipeline'); if (e.key === '2') show('today'); if (e.key === '3') show('leads');
 });
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-stab]'); if (!b) return;
+  mStage = b.dataset.stab; store('zcrm_mstage', mStage); renderBoardMobile(true);
+});
+MQ.addEventListener && MQ.addEventListener('change', function(){ render(false); });
 $('#q').addEventListener('input', function(){ query = this.value.trim(); render(false); });
 
 /* ---------- drag between columns ---------- */
@@ -837,7 +960,7 @@ $('#board').addEventListener('drop', function(e){
   dragging = null;
   $$('.col.over').forEach(function(c){ c.classList.remove('over'); });
   if (!l || D(l).stage === to) return render(false);
-  if (to === 'booked' || to === 'talked'){ render(false); openSheet(id); pickMode = to; refreshSheet(); return; }
+  if (to === 'booked' || to === 'talked'){ render(false); openSheet(id); pickMode = to; pkDay = null; refreshSheet(); return; }
   if (to === 'done'){ render(false); openSheet(id); return; }
   act(id, { action:'stage', stage: to });
 });

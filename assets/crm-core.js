@@ -11,7 +11,7 @@
      Day 7  morning
    Seven calls in all. "No answer" moves a lead to the next one.
 
-   Calls only happen between CALL_START and CALL_END, and never during
+   Calls only happen between CALL_START and CALL_END (9 AM to 7 PM), and never during
    the Sabbath (Friday sunset to Saturday sunset). A call that would
    land there moves to the next allowed time.
    ------------------------------------------------------------------ */
@@ -24,7 +24,7 @@
   var TZ = 'America/Toronto';
   var LAT = 43.65, LON = -79.38;          // Toronto
   var CALL_START = 9 * 60;                // 9:00 AM
-  var CALL_END = 20 * 60 + 30;            // 8:30 PM
+  var CALL_END = 19 * 60;                 // 7:00 PM (working hours 9 to 7)
   var MORNING = 10 * 60, EVENING = 18 * 60;
   var MIN = 60e3, DAY = 864e5;
 
@@ -250,6 +250,7 @@
   }
 
   return {
+    CALL_START: CALL_START, CALL_END: CALL_END,
     TZ: TZ, PLAN: PLAN, TOTAL: TOTAL, STAGES: STAGES, AD_LABELS: AD_LABELS, ACTIONS: ACTIONS,
     derive: derive, apply: apply, noAnswers: noAnswers, tomorrowMorning: tomorrowMorning, TOTAL: TOTAL, STAGES: STAGES, AD_LABELS: AD_LABELS,
     parts: parts, at: at, ymd: ymd, dayStart: dayStart, dateAfter: dateAfter,
