@@ -73,6 +73,9 @@ module.exports = async (req, res) => {
       if (APPT && await firstTime('hello:appt')) out.appt = await post(APPT, '✅ Appointment reminders connected');
       return res.status(200).json({ ok: true, hello: out });
     }
+    /* REMINDERS_PAUSED=1 in Vercel stops every reminder (set Oct 17, user's call).
+       Resuming never floods: only reminders from the last 40 minutes go out. */
+    if (process.env.REMINDERS_PAUSED === '1') return res.status(200).json({ ok: true, paused: true });
     if (!(await lock('remind', 50))) return res.status(200).json({ ok: true, busy: true });
     const now = Date.now();
     const leads = await load();
