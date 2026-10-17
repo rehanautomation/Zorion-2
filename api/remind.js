@@ -80,7 +80,8 @@ module.exports = async (req, res) => {
     }
     res.status(200).json({ ok: true, sent, waiting, followup: Boolean(FOLLOWUP), appt: Boolean(APPT) });
   } catch (err) {
-    res.status(500).json({ ok: false, error: String(err && err.message || err) });
+    console.error('remind failed', err);
+    res.status(200).json({ ok: false, error: String(err && err.message || err) });
   }
 };
 module.exports.plan = plan;

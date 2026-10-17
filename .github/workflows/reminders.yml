@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - run: curl -fsS --max-time 40 https://www.zorionlife.com/api/remind
+      - run: curl -fsS --max-time 40 https://www.zorionlife.com/api/remind | tee /dev/stderr | grep -q '"ok":true'
