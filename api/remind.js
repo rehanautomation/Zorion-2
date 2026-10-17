@@ -66,6 +66,13 @@ async function post(hook, text) {
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   try {
+    /* ?hello=1 posts one "connected" line to each channel, once ever */
+    if (String(req.url || '').indexOf('hello=1') !== -1) {
+      const out = {};
+      if (FOLLOWUP && await firstTime('hello:followup')) out.followup = await post(FOLLOWUP, '✅ Call reminders connected');
+      if (APPT && await firstTime('hello:appt')) out.appt = await post(APPT, '✅ Appointment reminders connected');
+      return res.status(200).json({ ok: true, hello: out });
+    }
     if (!(await lock('remind', 50))) return res.status(200).json({ ok: true, busy: true });
     const now = Date.now();
     const leads = await load();
