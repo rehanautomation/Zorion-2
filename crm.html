@@ -452,9 +452,11 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(
 function store(k, v){ try{ if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(_){ return null; } }
 
 /* ---------- state ---------- */
+var OPEN_LEAD = new URLSearchParams(location.search).get('lead') || '';
 var KEY = (function(){
   var q = new URLSearchParams(location.search).get('key');
-  if (q){ store('zl_admin_key', q); history.replaceState(null, '', location.pathname); }
+  if (q) store('zl_admin_key', q);
+  if (q || OPEN_LEAD) history.replaceState(null, '', location.pathname);
   return store('zl_admin_key') || '';
 })();
 var LEADS = [];            // [{id, ts, name, ..., state, canUndo}]
@@ -476,14 +478,15 @@ function match(l){
 }
 function stageLabel(d){ if (d.stage === 'done') return d.result === 'won' ? 'Won' : 'Not interested'; return Z.STAGES.filter(function(s){ return s.k === d.stage; })[0].label; }
 function pill(d){ return '<span class="pill ' + (d.stage === 'done' ? d.result : d.stage) + '">' + stageLabel(d) + '</span>'; }
-function dots(n){
-  var h = '<div class="dots" aria-label="' + n + ' of ' + Z.TOTAL + ' calls">';
-  for (var i = 0; i < Z.TOTAL; i++) h += '<i class="' + (i < n ? 'on' : '') + '"></i>';
-  return h + '<span>' + Math.min(n, Z.TOTAL) + '/' + Z.TOTAL + '</span></div>';
+function dots(n, total){
+  total = total || Z.TOTAL;
+  var h = '<div class="dots" aria-label="' + n + ' of ' + total + ' calls">';
+  for (var i = 0; i < total; i++) h += '<i class="' + (i < n ? 'on' : '') + '"></i>';
+  return h + '<span>' + Math.min(n, total) + '/' + total + '</span></div>';
 }
 function nextLine(d){
   if (d.stage === 'done') return '';
-  if (!d.next) return '<span class="nx"><svg><use href="#i-clock"/></svg>' + (d.kind === 'finished' ? 'All 7 calls made' : 'No time set') + '</span>';
+  if (!d.next) return '<span class="nx"><svg><use href="#i-clock"/></svg>' + (d.kind === 'finished' ? 'All calls made' : 'No time set') + '</span>';
   var t = now();
   if (d.kind === 'booked') return '<span class="nx booked"><svg><use href="#i-cal"/></svg>' + esc(Z.when(d.next, t)) + '</span>';
   if (d.overdue) return '<span class="nx over" title="Was due ' + esc(Z.when(d.next, t)) + '"><span class="live"></span>Overdue · ' + Z.ago(d.next, t) + '</span>';
@@ -493,7 +496,7 @@ function nextLine(d){
 function stepLabel(d){
   if (d.kind === 'booked') return 'Booked call';
   if (d.kind === 'followup') return 'Follow-up';
-  if (d.kind === 'cadence') return 'Call ' + (d.noAnswers + 1) + ' of ' + Z.TOTAL + ' · ' + (Z.PLAN[d.noAnswers] || {}).label;
+  if (d.kind === 'cadence') return 'Call ' + (d.noAnswers + 1) + ' of ' + d.total + ' · ' + d.step;
   return '';
 }
 
@@ -523,7 +526,7 @@ function cardHTML(l, d, s, fresh, i){
     + (l.ad ? '<span class="ad">' + esc(l.ad) + '</span>' : '');
   if (s === 'done') h += '<span class="tag ' + d.result + '">' + stageLabel(d) + '</span>';
   else {
-    if (s === 'new' || s === 'calling') h += dots(d.noAnswers);
+    if (s === 'new' || s === 'calling') h += dots(d.noAnswers, d.total);
     h += nextLine(d);
     if (l.phone) h += '<a class="callbtn mcall" href="tel:' + esc(l.phone.replace(/[^\d+]/g,'')) + '" aria-label="Call ' + esc(l.name) + '" data-stop><svg><use href="#i-phone"/></svg></a>';
   }
@@ -699,7 +702,8 @@ function load(first){
     syncLabel();
     if (dragging) return;
     render(!hadAny && first);
-    if (openId) refreshSheet();
+    if (OPEN_LEAD && find(OPEN_LEAD)){ var ol = OPEN_LEAD; OPEN_LEAD = ''; openSheet(ol); }
+    else if (openId) refreshSheet();
   }).catch(function(e){ if (e.message !== 'key') setSync('err', 'Offline · showing saved'); })
     .then(function(){ inflight = null; });
   return inflight;
@@ -708,7 +712,7 @@ $('#refresh').addEventListener('click', function(){ load(); });
 
 /* ---------- actions (instant on screen, saved in the background) ---------- */
 function find(id){ return LEADS.filter(function(l){ return l.id === id; })[0]; }
-var TOAST = { no_answer:'No answer logged', talked:'Marked talked', booked:'Call booked', won:'Marked won', lost:'Marked not interested', reopen:'Reopened', stage:'Moved', undo:'Undone' };
+var TOAST = { restart:'Call plan restarted', no_answer:'No answer logged', talked:'Marked talked', booked:'Call booked', won:'Marked won', lost:'Marked not interested', reopen:'Reopened', stage:'Moved', undo:'Undone' };
 var QUEUE = {};   // one save at a time per lead, in order
 function act(id, a){
   var l = find(id); if (!l) return;
@@ -817,9 +821,9 @@ function sheetHTML(l){
     var cls = d.kind === 'booked' ? 'booked' : d.overdue ? 'over' : !d.next ? 'fin' : '';
     var lab = d.kind === 'booked' ? 'Booked call' : d.kind === 'followup' ? 'Follow-up' : d.kind === 'finished' ? 'Cadence done' : d.overdue ? 'Overdue' : 'Next call';
     h += '<div class="nextbox ' + cls + '" style="--i:' + (i++) + '"><div><div class="l">' + lab + '</div><div class="v">'
-      + (d.next ? esc(Z.when(d.next, t)) : d.kind === 'finished' ? 'All 7 calls made' : 'No time set') + '</div>'
-      + (d.kind === 'cadence' ? '<div class="s">' + esc(Z.PLAN[d.noAnswers].label) + '</div>' : '') + '</div>'
-      + ((d.stage === 'new' || d.stage === 'calling') ? dots(d.noAnswers) : '') + '</div>';
+      + (d.next ? esc(Z.when(d.next, t)) : d.kind === 'finished' ? 'All calls made' : 'No time set') + '</div>'
+      + (d.kind === 'cadence' ? '<div class="s">' + esc(d.step) + '</div>' : '') + '</div>'
+      + ((d.stage === 'new' || d.stage === 'calling') ? dots(d.noAnswers, d.total) : '') + '</div>';
     h += '<div class="acts" style="--i:' + (i++) + '">'
       + '<button type="button" data-act="no_answer">No answer</button>'
       + '<button type="button" data-pick="talked"' + (pickMode === 'talked' ? ' class="sel"' : '') + '>Talked</button>'
@@ -829,6 +833,7 @@ function sheetHTML(l){
   } else {
     h += '<div class="acts two" style="--i:' + (i++) + '"><button type="button" data-act="reopen">Reopen</button><button type="button" class="' + (d.result === 'won' ? 'lost" data-act="lost">Not interested' : 'won" data-act="won">Won') + '</button></div>';
   }
+  if (d.kind === 'finished' || d.stage === 'talked') h += '<button class="undo" type="button" data-act="restart" style="--i:' + (i++) + '"><svg><use href="#i-undo"/></svg>Restart call plan</button>';
   if (l.canUndo) h += '<button class="undo" type="button" data-act="undo" style="--i:' + (i++) + '"><svg><use href="#i-undo"/></svg>Undo last change</button>';
 
   h += '<div class="sec" style="--i:' + (i++) + '"><h3>His answers</h3><div class="qa">'

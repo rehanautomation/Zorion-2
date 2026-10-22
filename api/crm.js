@@ -73,6 +73,20 @@ async function load() {
     if (digits(b.phone)) byPhone[digits(b.phone)] = row;
   }
 
+  /* One-time restart (Oct 22, Rehan): the two older leads were barely
+     called, so their call plan starts over on Fri Oct 23 at 9 AM Toronto.
+     Runs once per lead; the tag stops it running again. */
+  const RESTARTS = [/delfuego/i, /demelo/i];
+  const RESTART_AT = Z.at(2026, 10, 23, 9 * 60);
+  for (const e of leads) {
+    if (!RESTARTS.some(r => r.test(e.name || ''))) continue;
+    const id = leadId(e), st = states[id] || {};
+    if (st.restartTag === 'oct23' || (st.stage === 'done')) continue;
+    const next = Z.apply(st, { action: 'restart', at: RESTART_AT }, Date.now());
+    next.restartTag = 'oct23';
+    try { await crmSet(id, next); states[id] = next; } catch (_) {}
+  }
+
   return leads.map(e => {
     const id = leadId(e);
     const st = states[id] || null;

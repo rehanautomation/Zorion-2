@@ -4,12 +4,18 @@
 
    Everything is Ontario time (America/Toronto).
 
-   The follow-up cadence (Sales/Lead handling §3):
-     Day 0  call within 5 minutes, then 30 and 60 minutes later
-     Day 1  morning and evening
-     Day 2  morning
-     Day 7  morning
-   Seven calls in all. "No answer" moves a lead to the next one.
+   The call plan, built around when a home-service owner can pick up:
+   on the tools in the morning, free at lunch and at the end of the day.
+     Day 1   double dial right away, again 30 min later, then the
+             evening slot (+ a text)
+     Day 2   lunch and evening
+     Day 5   evening · Day 7 lunch · Day 14 evening
+   Eight calls. "No answer" moves the lead to the next one. A lead who
+   comes in outside call hours gets his first call at 9 AM, then waits
+   for the lunch slot instead of 30 minutes. A slot that is too close
+   to the last call, or falls in the Sabbath, rolls to the next slot.
+   A restarted lead (old lead, plan reset) gets: lunch + evening on the
+   restart day, then Day 4 evening, Day 6 lunch, Day 13 evening.
 
    Calls only happen between CALL_START and CALL_END (9 AM to 7 PM), and never during
    the Sabbath (Friday sunset to Saturday sunset). A call that would
@@ -26,17 +32,27 @@
   var CALL_START = 9 * 60;                // 9:00 AM
   var CALL_END = 19 * 60;                 // 7:00 PM (working hours 9 to 7)
   var MORNING = 10 * 60, EVENING = 18 * 60;
+  var LUNCH = 12 * 60 + 15, EVE = 17 * 60 + 30, LATE = 18 * 60 + 30;
+  var SLOTS = [LUNCH, EVE, LATE];        // when owners are off the tools
   var MIN = 60e3, DAY = 864e5;
 
   /* The plan: what each call is, by index (0 = first call). */
   var PLAN = [
-    { day: 0, gap: 0,  label: 'Right away' },
-    { day: 0, gap: 30, label: 'Day 0, 30 min later' },
-    { day: 0, gap: 30, label: 'Day 0, 30 min later' },
-    { day: 1, at: MORNING, label: 'Day 1 morning' },
-    { day: 1, at: EVENING, label: 'Day 1 evening' },
-    { day: 2, at: MORNING, label: 'Day 2' },
-    { day: 7, at: MORNING, label: 'Day 7, last call' }
+    { day: 0, now: true, label: 'Day 1 · double dial now' },
+    { day: 0, gap: 30, label: 'Day 1 · 30 min later' },
+    { day: 0, at: EVE, text: true, label: 'Day 1 · evening + text' },
+    { day: 1, at: LUNCH, label: 'Day 2 · lunch' },
+    { day: 1, at: EVE, label: 'Day 2 · evening' },
+    { day: 4, at: EVE, label: 'Day 5 · evening' },
+    { day: 6, at: LUNCH, label: 'Day 7 · lunch' },
+    { day: 13, at: EVE, label: 'Day 14 · last call' }
+  ];
+  var RESTART = [
+    { day: 0, at: LUNCH, label: 'Restart · lunch' },
+    { day: 0, at: EVE, text: true, label: 'Restart · evening + text' },
+    { day: 3, at: EVE, label: 'Restart · day 4 evening' },
+    { day: 5, at: LUNCH, label: 'Restart · day 6 lunch' },
+    { day: 12, at: EVE, label: 'Restart · last call' }
   ];
   var TOTAL = PLAN.length;
 
@@ -124,13 +140,32 @@
 
   /* When call number k (0-based) is due. leadTs: when he filled the
      form. lastCall: when the previous call was made (if any). */
-  function dueAt(k, leadTs, lastCall) {
-    if (k >= TOTAL) return null;
-    var step = PLAN[k], t;
-    if (step.day === 0) t = (k === 0 ? leadTs : (lastCall || leadTs)) + step.gap * MIN;
-    else { var dd = dateAfter(leadTs, step.day); t = at(dd.y, dd.m, dd.d, step.at); }
-    if (lastCall && t < lastCall + 30 * MIN) t = lastCall + 30 * MIN;
-    return allowed(t);
+  /* The first lunch/evening slot at or after t0 that calls are allowed in. */
+  function rollToSlot(t0) {
+    for (var i = 0; i < 30; i++) {
+      var d = dateAfter(t0, i);
+      for (var j = 0; j < SLOTS.length; j++) {
+        var t = at(d.y, d.m, d.d, SLOTS[j]);
+        if (t >= t0 && allowed(t) === t) return t;
+      }
+    }
+    return allowed(t0);
+  }
+  function dueAt(k, leadTs, lastCall, plan) {
+    plan = plan || PLAN;
+    if (k >= plan.length) return null;
+    var step = plan[k], t;
+    var minT = lastCall ? lastCall + 60 * MIN : 0;
+    if (step.now) return allowed(leadTs);
+    if (step.gap) {
+      var inHours = allowed(leadTs) === leadTs;
+      t = (lastCall || leadTs) + step.gap * MIN;
+      if (inHours && allowed(t) === t) return t;
+      return rollToSlot(Math.max(t, minT));          // came in after hours: wait for a slot
+    }
+    var dd = dateAfter(allowed(leadTs), step.day);     // day 1 = the day of the first call
+    t = at(dd.y, dd.m, dd.d, step.at);
+    return rollToSlot(Math.max(t, minT));
   }
 
   /* ---------- labels ---------- */
@@ -164,7 +199,8 @@
      call; cadence calls are worked out from the call log. */
 
   function noAnswers(st) {
-    return (st && st.calls || []).filter(function (c) { return c.o === 'no_answer'; }).length;
+    var from = (st && st.restartAt) || 0;
+    return (st && st.calls || []).filter(function (c) { return c.o === 'no_answer' && c.ts >= from; }).length;
   }
   function lastCallTs(st) {
     var c = (st && st.calls || []).filter(function (c) { return c.o === 'no_answer' || c.o === 'talked' || c.o === 'booked'; });
@@ -180,9 +216,11 @@
     var stage = st.stage || 'new', next = null, kind = null;
     if (booking && (stage === 'new' || stage === 'calling')) { stage = 'booked'; st = Object.assign({}, st, { next: booking.at }); }
     if (stage === 'new' || stage === 'calling') {
-      var k = noAnswers(st);
-      next = dueAt(k, lead.ts, lastCallTs(st));
+      var k = noAnswers(st), plan = st.restartAt ? RESTART : PLAN;
+      var lc = lastCallTs(st); if (st.restartAt && lc && lc < st.restartAt) lc = null;
+      next = dueAt(k, st.restartAt || lead.ts, lc, plan);
       kind = next ? 'cadence' : 'finished';
+      var step = plan[k] || null;
       if (k > 0 && stage === 'new') stage = 'calling';
     } else if (stage === 'talked') { next = st.next || null; kind = 'followup'; }
     else if (stage === 'booked') { next = st.next || (booking && booking.at) || null; kind = 'booked'; }
@@ -191,6 +229,10 @@
       result: stage === 'done' ? (st.result || 'lost') : null,
       next: next, kind: kind,
       noAnswers: noAnswers(st),
+      total: st.restartAt ? RESTART.length : PLAN.length,
+      step: (typeof step !== 'undefined' && step) ? step.label : '',
+      text: Boolean(typeof step !== 'undefined' && step && step.text),
+      restarted: Boolean(st.restartAt),
       calls: st.calls || [],
       notes: st.notes || '',
       overdue: Boolean(next && next < now - 5 * MIN),
@@ -198,7 +240,7 @@
     };
   }
 
-  var ACTIONS = ['no_answer', 'talked', 'booked', 'won', 'lost', 'stage', 'note', 'undo', 'reopen'];
+  var ACTIONS = ['restart', 'no_answer', 'talked', 'booked', 'won', 'lost', 'stage', 'note', 'undo', 'reopen'];
   var STAGE_KEYS = STAGES.map(function (s) { return s.k; });
 
   /* Apply one action to a saved state; returns the new state. The
@@ -236,6 +278,7 @@
         break;
       case 'won': st.calls.push({ ts: now, o: 'won' }); st.stage = 'done'; st.result = 'won'; st.next = null; break;
       case 'lost': st.calls.push({ ts: now, o: 'lost' }); st.stage = 'done'; st.result = 'lost'; st.next = null; break;
+      case 'restart': st.restartAt = a.at || now; st.stage = 'calling'; st.result = null; st.next = null; break;
       case 'reopen': st.stage = noAnswers(st) ? 'calling' : 'new'; st.result = null; st.next = null; break;
       case 'stage':
         if (STAGE_KEYS.indexOf(a.stage) === -1) break;
@@ -251,7 +294,7 @@
 
   return {
     CALL_START: CALL_START, CALL_END: CALL_END,
-    TZ: TZ, PLAN: PLAN, TOTAL: TOTAL, STAGES: STAGES, AD_LABELS: AD_LABELS, ACTIONS: ACTIONS,
+    TZ: TZ, PLAN: PLAN, RESTART: RESTART, TOTAL: TOTAL, rollToSlot: rollToSlot, STAGES: STAGES, AD_LABELS: AD_LABELS, ACTIONS: ACTIONS,
     derive: derive, apply: apply, noAnswers: noAnswers, tomorrowMorning: tomorrowMorning, TOTAL: TOTAL, STAGES: STAGES, AD_LABELS: AD_LABELS,
     parts: parts, at: at, ymd: ymd, dayStart: dayStart, dateAfter: dateAfter,
     sunset: sunset, sabbath: sabbath, allowed: allowed, dueAt: dueAt,
