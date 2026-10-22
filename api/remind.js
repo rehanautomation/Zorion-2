@@ -1,6 +1,7 @@
 /* ------------------------------------------------------------------
-   Discord call reminders. Run every few minutes (GitHub Actions hits
-   this; the CRM page also nudges it while open). Each reminder is sent
+   Discord call reminders. Run often: GitHub Actions every 5 min (in
+   practice less often), a Vercel cron every hour of the call day, and
+   the CRM page while open. Each reminder is sent
    once, ever, and only while it is still fresh (within FRESH of its
    time), so a late or missed run never floods the channel.
 
@@ -23,7 +24,7 @@ const { ALICIA_ID } = require('./lead');
 
 const FOLLOWUP = process.env.REMIND_FOLLOWUP_WEBHOOK || '';
 const APPT = process.env.REMIND_APPT_WEBHOOK || '';
-const MIN = 60e3, FRESH = 40 * MIN;
+const MIN = 60e3, FRESH = 90 * MIN;   // runs can be late (GitHub, hourly Vercel crons)
 const AT = '<@' + ALICIA_ID + '>';
 const md = s => String(s || '').replace(/([\\*_~`|>])/g, '\\$1');
 
