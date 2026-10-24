@@ -108,15 +108,15 @@ module.exports = async (req, res) => {
         if (ok) sent++; else await forget(r.key);     // try again next run
       }
     }
-    /* One-off (Oct 25, Rehan): call reminder for Michael DelFuego at
+    /* One-off (Oct 25, Rehan): call reminder for Jeremy Hart at
        Sun Oct 25 2026, 6:50 PM Toronto (EDT = UTC-4). Sent once, same
        freshness window as every other reminder. Safe to delete after. */
     const ONEOFF = Date.UTC(2026, 9, 25, 22, 50);
     if (FOLLOWUP && now >= ONEOFF && now - ONEOFF < FRESH) {
-      const mk = leads.find(x => String(x.phone || '').replace(/\D/g, '').slice(-10) === '2896529248');
-      const key = 'oneoff:michael:' + ONEOFF;
+      const mk = leads.find(x => String(x.phone || '').replace(/\D/g, '').slice(-10) === '5195733831');
+      const key = 'oneoff:jeremy:' + ONEOFF;
       if (mk && await firstTime(key)) {
-        const ok = await post(FOLLOWUP, msg('Call · Michael', { id: mk.id, name: 'Michael DelFuego', phone: '(289) 652-9248' }, 'call 1/5')).catch(() => false);
+        const ok = await post(FOLLOWUP, msg('Call · Jeremy', { id: mk.id, name: mk.name || 'Jeremy Hart', phone: '(519) 573-3831' }, 'call 1/8')).catch(() => false);
         if (ok) sent++; else await forget(key);
       }
     }
