@@ -108,17 +108,23 @@ module.exports = async (req, res) => {
         if (ok) sent++; else await forget(r.key);     // try again next run
       }
     }
-    /* One-off (Oct 25, Rehan): call reminder for Jeremy Hart at
-       Mon Oct 26 2026, 10:00 AM Toronto (EDT = UTC-4). Sent once, same
-       freshness window as every other reminder. Safe to delete after. */
-    const ONEOFF = Date.UTC(2026, 9, 26, 14, 0);
-    if (FOLLOWUP && now >= ONEOFF && now - ONEOFF < FRESH) {
-      const mk = leads.find(x => String(x.phone || '').replace(/\D/g, '').slice(-10) === '5195733831');
-      const key = 'oneoff:jeremy:' + ONEOFF;
-      if (mk && await firstTime(key)) {
-        const ok = await post(FOLLOWUP, msg('Call · Jeremy', { id: mk.id, name: mk.name || 'Jeremy Hart', phone: '(519) 573-3831' }, 'call 1/8')).catch(() => false);
-        if (ok) sent++; else await forget(key);
-      }
+    /* One-offs (Oct 25, Rehan): Mon Oct 26 2026 (Toronto, EDT = UTC-4),
+       10:00 Jeremy Hart, 10:30 DeMelo, 11:00 Michael DelFuego. Each sent
+       once, within the usual freshness window. Safe to delete after. */
+    const ONEOFFS = [
+      { t: Date.UTC(2026, 9, 26, 14, 0),  k: 'jeremy',  re: /hart/i },
+      { t: Date.UTC(2026, 9, 26, 14, 30), k: 'demelo',  re: /demelo/i },
+      { t: Date.UTC(2026, 9, 26, 15, 0),  k: 'michael', re: /delfuego/i }
+    ];
+    for (const o of ONEOFFS) {
+      if (!FOLLOWUP || now < o.t || now - o.t >= FRESH) continue;
+      const mk = leads.find(x => o.re.test(x.name || ''));
+      const key = 'oneoff:' + o.k + ':' + o.t;
+      if (!mk || !(await firstTime(key))) continue;
+      let what = 'call';
+      try { const d = Z.derive(mk, mk.state, mk.booking, now); what = 'call ' + (d.noAnswers + 1) + '/' + d.total; } catch (_) {}
+      const ok = await post(FOLLOWUP, msg('Call · ' + (mk.name || 'lead').split(' ')[0], mk, what)).catch(() => false);
+      if (ok) sent++; else await forget(key);
     }
     res.status(200).json({ ok: true, sent, waiting, followup: Boolean(FOLLOWUP), appt: Boolean(APPT) });
   } catch (err) {
