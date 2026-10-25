@@ -1,13 +1,27 @@
-# Sends the CRM's Discord call reminders. Vercel's free plan only runs
-# a cron once a day, so GitHub runs this every 5 minutes instead.
+# Sends the CRM's Discord call reminders by asking /api/remind every
+# 5 minutes. GitHub only starts scheduled runs every 2-4 hours in
+# practice, so each run stays awake for ~5h50m and asks every 5 minutes
+# itself. Only one run works at a time; the next scheduled run waits in
+# line and takes over when this one ends, so there's no gap.
+# The repo is public, so Actions minutes are free.
 name: CRM reminders
 on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+concurrency:
+  group: crm-reminders
+  cancel-in-progress: false
 jobs:
   remind:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 355
     steps:
-      - run: curl -fsS --max-time 40 https://www.zorionlife.com/api/remind | tee /dev/stderr | grep -q '"ok":true'
+      - name: Ask for reminders every 5 minutes for ~5h50m
+        run: |
+          for i in $(seq 1 70); do
+            date -u +%H:%M
+            curl -sS --max-time 40 https://www.zorionlife.com/api/remind || echo "call failed, trying again in 5 min"
+            echo
+            sleep 300
+          done
