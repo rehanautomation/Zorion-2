@@ -4,22 +4,25 @@
 
    Everything is Ontario time (America/Toronto).
 
-   The call plan, built around when a home-service owner can pick up:
-   on the tools in the morning, free at lunch and at the end of the day.
-     Day 1   double dial right away, again 30 min later, then the
-             evening slot (+ a text)
-     Day 2   lunch and evening
-     Day 5   evening · Day 7 lunch · Day 14 evening
-   Eight calls. "No answer" moves the lead to the next one. A lead who
-   comes in outside call hours gets his first call at 9 AM, then waits
-   for the lunch slot instead of 30 minutes. A slot that is too close
-   to the last call, or falls in the Sabbath, rolls to the next slot.
-   A restarted lead (old lead, plan reset) gets: lunch + evening on the
-   restart day, then Day 4 evening, Day 6 lunch, Day 13 evening.
+   Three call windows (Oct 26, Rehan): Morning 9–11, Lunch 12–2,
+   Evening 5–7.
 
-   Calls only happen between CALL_START and CALL_END (9 AM to 7 PM), and never during
-   the Sabbath (Friday sunset to Saturday sunset). A call that would
-   land there moves to the next allowed time.
+   The call plan. "No answer" moves the lead to the next call:
+     Call 1     right when he opts in
+     Calls 2–4  the next window: morning or lunch → that evening,
+                evening → next morning (at least 2 hours after the last call)
+     Calls 5–8  Day 3 lunch · Day 5 evening · Day 7 morning · Day 10 lunch
+                (Day 1 = the day of the first call)
+   That's 4 calls in the first 48 hours and 8 calls in total.
+
+   Nags. A call stays open until she taps an outcome; until then:
+     new lead     3 pings, 15 min apart, from 10 min after he opts in
+                  (opted in at night: 9:00, 9:15, 9:30)
+     other call   3 pings, 30 min apart, when it's due
+     still open   3 pings, 30 min apart, in every window after that
+   Nothing waits on her. The only quiet times are outside
+   CALL_START..CALL_END (9 AM to 7 PM) and the Sabbath (Friday sunset
+   to Saturday sunset); a ping that lands there is skipped.
    ------------------------------------------------------------------ */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -31,30 +34,31 @@
   var LAT = 43.65, LON = -79.38;          // Toronto
   var CALL_START = 9 * 60;                // 9:00 AM
   var CALL_END = 19 * 60;                 // 7:00 PM (working hours 9 to 7)
-  var MORNING = 10 * 60, EVENING = 18 * 60;
-  var LUNCH = 12 * 60 + 15, EVE = 17 * 60 + 30, LATE = 18 * 60 + 30;
-  var SLOTS = [LUNCH, EVE, LATE];        // when owners are off the tools
+  var MORNING = 10 * 60;                  // default follow-up time
   var MIN = 60e3, DAY = 864e5;
+
+  /* The call windows, in the order they come in a day. */
+  var WINDOWS = [
+    { k: 'morning', s: 9 * 60, e: 11 * 60, label: 'Morning' },
+    { k: 'lunch', s: 12 * 60, e: 14 * 60, label: 'Lunch' },
+    { k: 'evening', s: 17 * 60, e: 19 * 60, label: 'Evening' }
+  ];
+  var WIN = {}; WINDOWS.forEach(function (w) { WIN[w.k] = w; });
 
   /* The plan: what each call is, by index (0 = first call). */
   var PLAN = [
-    { day: 0, now: true, label: 'Day 1 · double dial now' },
-    { day: 0, gap: 30, label: 'Day 1 · 30 min later' },
-    { day: 0, at: EVE, text: true, label: 'Day 1 · evening + text' },
-    { day: 1, at: LUNCH, label: 'Day 2 · lunch' },
-    { day: 1, at: EVE, label: 'Day 2 · evening' },
-    { day: 4, at: EVE, label: 'Day 5 · evening' },
-    { day: 6, at: LUNCH, label: 'Day 7 · lunch' },
-    { day: 13, at: EVE, label: 'Day 14 · last call' }
+    { now: true, label: 'Day 1 · right away' },
+    { next: true },
+    { next: true },
+    { next: true },
+    { day: 2, w: 'lunch' },
+    { day: 4, w: 'evening' },
+    { day: 6, w: 'morning' },
+    { day: 9, w: 'lunch', label: 'Day 10 · last call' }
   ];
-  var RESTART = [
-    { day: 0, at: LUNCH, label: 'Restart · lunch' },
-    { day: 0, at: EVE, text: true, label: 'Restart · evening + text' },
-    { day: 3, at: EVE, label: 'Restart · day 4 evening' },
-    { day: 5, at: LUNCH, label: 'Restart · day 6 lunch' },
-    { day: 12, at: EVE, label: 'Restart · last call' }
-  ];
+  var RESTART = PLAN;                     // a restarted lead runs the same plan
   var TOTAL = PLAN.length;
+  var NEW_GAP = 15, NAG_GAP = 30, NAGS = 3, MIN_GAP = 120;
 
   var STAGES = [
     { k: 'new', label: 'New' },
@@ -138,34 +142,83 @@
     return ts;
   }
 
-  /* When call number k (0-based) is due. leadTs: when he filled the
-     form. lastCall: when the previous call was made (if any). */
-  /* The first lunch/evening slot at or after t0 that calls are allowed in. */
-  function rollToSlot(t0) {
-    for (var i = 0; i < 30; i++) {
-      var d = dateAfter(t0, i);
-      for (var j = 0; j < SLOTS.length; j++) {
-        var t = at(d.y, d.m, d.d, SLOTS[j]);
-        if (t >= t0 && allowed(t) === t) return t;
+  /* ---------- windows ---------- */
+  function winAt(d, k) { return at(d.y, d.m, d.d, WIN[k].s); }
+  /* which window a moment belongs to: before noon = morning, before
+     5 PM = lunch, later = evening; before 9 AM = 'night' */
+  function slotOf(ts) {
+    var p = parts(ts), m = p.h * 60 + p.mi;
+    return m < CALL_START ? 'night' : m < 12 * 60 ? 'morning' : m < 17 * 60 ? 'lunch' : 'evening';
+  }
+  /* Every window start at or after t, in order (morning, lunch, evening, next day…). */
+  function eachWindow(t, fn) {
+    for (var i = 0; i < 400; i++) {
+      var d = dateAfter(t, i);
+      for (var j = 0; j < WINDOWS.length; j++) {
+        var w = winAt(d, WINDOWS[j].k);
+        if (w >= t && fn(w, WINDOWS[j]) === false) return;
       }
     }
-    return allowed(t0);
   }
-  function dueAt(k, leadTs, lastCall, plan) {
+  /* The window a call goes to after a no answer at t: morning or lunch →
+     that evening, evening → next morning. It must be at least MIN_GAP
+     after t and outside the Sabbath, else the one after that. */
+  function nextWindow(t) {
+    var s = slotOf(t), d = dateAfter(t, 0), w;
+    if (s === 'night') w = winAt(d, 'morning');
+    else if (s === 'evening') w = winAt(dateAfter(t, 1), 'morning');
+    else w = winAt(d, 'evening');
+    for (var i = 0; i < 30; i++) {
+      if (w >= t + MIN_GAP * MIN && allowed(w) === w) return w;
+      w = slotOf(w) === 'evening' ? winAt(dateAfter(w, 1), 'morning') : winAt(dateAfter(w, 0), 'evening');
+    }
+    return allowed(w);
+  }
+  /* The first allowed window start at or after t. */
+  function firstOpenWindow(t) {
+    var out = null;
+    eachWindow(t, function (w) { if (allowed(w) === w) { out = w; return false; } });
+    return out || allowed(t);
+  }
+
+  /* When call number k (0-based) is due. startTs: when he filled the
+     form (or the restart time). lastCall: when the last call was logged. */
+  function dueAt(k, startTs, lastCall, plan) {
     plan = plan || PLAN;
     if (k >= plan.length) return null;
-    var step = plan[k], t;
-    var minT = lastCall ? lastCall + 60 * MIN : 0;
-    if (step.now) return allowed(leadTs);
-    if (step.gap) {
-      var inHours = allowed(leadTs) === leadTs;
-      t = (lastCall || leadTs) + step.gap * MIN;
-      if (inHours && allowed(t) === t) return t;
-      return rollToSlot(Math.max(t, minT));          // came in after hours: wait for a slot
-    }
-    var dd = dateAfter(allowed(leadTs), step.day);     // day 1 = the day of the first call
-    t = at(dd.y, dd.m, dd.d, step.at);
-    return rollToSlot(Math.max(t, minT));
+    var step = plan[k];
+    if (step.now) return allowed(startTs);
+    var base = lastCall || allowed(startTs);
+    if (step.next) return nextWindow(base);
+    var dd = dateAfter(allowed(startTs), step.day);      // day 1 = the day of the first call
+    var t = winAt(dd, step.w);
+    if (t < base + MIN_GAP * MIN) return nextWindow(base); // running late: next window instead
+    return firstOpenWindow(t);
+  }
+
+  /* The pings for one open call, between from and to (ms).
+     due: when the call is due. fresh: a brand-new lead (first call).
+     leadTs: when he opted in. Returns [{t, n}] (n = ping number within its burst, 1..3). */
+  function nagTimes(due, fresh, leadTs, from, to) {
+    var out = [], s, gap;
+    if (fresh) {
+      gap = NEW_GAP;
+      s = allowed(leadTs) === leadTs ? leadTs + 10 * MIN : allowed(leadTs);
+    } else { gap = NAG_GAP; s = due; }
+    var burst = function (b, g) {
+      for (var i = 0; i < NAGS; i++) {
+        var t = b + i * g * MIN;
+        if (t >= from && t <= to && allowed(t) === t) out.push({ t: t, n: i + 1, first: b === s });
+      }
+    };
+    burst(s, gap);
+    var last = s + (NAGS - 1) * gap * MIN;
+    var startAt = Math.max(last + 1, from - (NAGS - 1) * NAG_GAP * MIN);
+    eachWindow(startAt, function (w) {
+      if (w > to) return false;
+      burst(w, NAG_GAP);
+    });
+    return out;
   }
 
   /* ---------- labels ---------- */
@@ -222,6 +275,14 @@
       kind = next ? 'cadence' : 'finished';
       var step = plan[k] || null;
       if (k > 0 && stage === 'new') stage = 'calling';
+      var fresh = kind === 'cadence' && k === 0 && !st.restartAt && !(st.calls || []).length;
+      var label = '';
+      if (step) {
+        var day1 = dayStart(allowed(st.restartAt || lead.ts));
+        var dn = Math.round((dayStart(next) - day1) / DAY) + 1;
+        label = step.label || ('Day ' + dn + ' · ' + (WIN[slotOf(next)] || WIN.morning).label.toLowerCase());
+        if (k === 0 && st.restartAt) label = 'Restart · first call';
+      }
     } else if (stage === 'talked') { next = st.next || null; kind = 'followup'; }
     else if (stage === 'booked') { next = st.next || (booking && booking.at) || null; kind = 'booked'; }
     return {
@@ -230,14 +291,40 @@
       next: next, kind: kind,
       noAnswers: noAnswers(st),
       total: st.restartAt ? RESTART.length : PLAN.length,
-      step: (typeof step !== 'undefined' && step) ? step.label : '',
-      text: Boolean(typeof step !== 'undefined' && step && step.text),
+      step: label || '',
+      text: false,
+      fresh: Boolean(fresh),
       restarted: Boolean(st.restartAt),
       calls: st.calls || [],
       notes: st.notes || '',
       overdue: Boolean(next && next < now - 5 * MIN),
       due: Boolean(next && next <= now + 15 * MIN)
     };
+  }
+
+  /* Every ping a lead will get between from and to if nobody taps
+     anything: [{t, kind, n, label}] in time order.
+     kind: 'new' (new lead) · 'call' · 'followup' · 'appt' */
+  function nags(lead, st, booking, from, to) {
+    var d = derive(lead, st, booking, from), out = [];
+    if (!d.next || d.stage === 'done') return out;
+    if (d.kind === 'booked') {
+      [[60, 'Appointment in 1 hr'], [15, 'Appointment in 15 min']].forEach(function (a) {
+        var t = d.next - a[0] * MIN;
+        if (t >= from && t <= to) out.push({ t: t, kind: 'appt', n: 1, label: a[1] });
+      });
+      return out;
+    }
+    if (d.kind !== 'cadence' && d.kind !== 'followup') return out;
+    var what = d.kind === 'followup' ? 'Follow-up' : 'Call ' + (d.noAnswers + 1) + '/' + d.total;
+    nagTimes(d.next, d.fresh, (st && st.restartAt) || lead.ts, from, to).forEach(function (x) {
+      var kind = d.fresh && x.first ? 'new' : d.kind === 'followup' ? 'followup' : 'call';
+      var lbl = kind === 'new' ? 'New lead · ping ' + x.n + '/3'
+        : x.first ? what + ' · ping ' + x.n + '/3'
+        : what + ' · not called yet · ' + (WIN[slotOf(x.t)] || WIN.morning).label.toLowerCase() + ' ' + x.n + '/3';
+      out.push({ t: x.t, kind: kind, n: x.n, label: lbl });
+    });
+    return out;
   }
 
   var ACTIONS = ['restart', 'no_answer', 'talked', 'booked', 'won', 'lost', 'stage', 'note', 'undo', 'reopen'];
@@ -294,7 +381,8 @@
 
   return {
     CALL_START: CALL_START, CALL_END: CALL_END,
-    TZ: TZ, PLAN: PLAN, RESTART: RESTART, TOTAL: TOTAL, rollToSlot: rollToSlot, STAGES: STAGES, AD_LABELS: AD_LABELS, ACTIONS: ACTIONS,
+    TZ: TZ, PLAN: PLAN, RESTART: RESTART, TOTAL: TOTAL, WINDOWS: WINDOWS, STAGES: STAGES, AD_LABELS: AD_LABELS, ACTIONS: ACTIONS,
+    nags: nags, nagTimes: nagTimes, nextWindow: nextWindow, slotOf: slotOf,
     derive: derive, apply: apply, noAnswers: noAnswers, tomorrowMorning: tomorrowMorning, TOTAL: TOTAL, STAGES: STAGES, AD_LABELS: AD_LABELS,
     parts: parts, at: at, ymd: ymd, dayStart: dayStart, dateAfter: dateAfter,
     sunset: sunset, sabbath: sabbath, allowed: allowed, dueAt: dueAt,

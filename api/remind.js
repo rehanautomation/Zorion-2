@@ -1,21 +1,24 @@
 /* ------------------------------------------------------------------
    Discord call reminders. Run often: GitHub Actions every 5 min (in
-   practice less often), a Vercel cron every hour of the call day, and
-   the CRM page while open. Each reminder is sent
-   once, ever, and only while it is still fresh (within FRESH of its
-   time), so a late or missed run never floods the channel.
+   practice less often), hourly Vercel crons through the call day, and
+   the CRM page while open.
 
-   Call reminders channel (REMIND_FOLLOWUP_WEBHOOK):
-     new lead, not called yet   one nudge 30 min after it was due (plus the
-                                first call itself if it came in after hours)
-     each call in the plan      when it is due (one message per call)
-     follow-up                  at the time she picked
-   Appointments channel (REMIND_APPT_WEBHOOK):
-     booked call                1 hour and 15 minutes before
+   The rules live in assets/crm-core.js (Z.nags). In short: a call stays
+   open until Alicia taps an outcome, and until then she gets pinged:
+     new lead     3 pings, 15 min apart
+     other call   3 pings, 30 min apart, when it's due
+     still open   3 pings, 30 min apart, in every call window after
+                  (Morning 9–11, Lunch 12–2, Evening 5–7)
+   Nothing ever goes quiet while a call is open, except outside 9 AM to
+   7 PM and in the Sabbath.
 
-   Every reminder @mentions Alicia. Only inside call hours (9 AM to
-   7 PM Toronto, never in the Sabbath), except booked calls, which go
-   when they are booked for.
+   Call reminders channel (REMIND_FOLLOWUP_WEBHOOK): one message per
+   round, listing every open call, follow-ups she promised first, then
+   newest opt-in first. A round goes out whenever any lead has a ping
+   due. Each ping is sent once; a late run still sends the latest ping
+   if it is under NAG_FRESH old.
+   Appointments channel (REMIND_APPT_WEBHOOK): 1 hour and 15 minutes
+   before a booked call, any hour.
    ------------------------------------------------------------------ */
 const Z = require('../assets/crm-core.js');
 const { firstTime, forget, lock } = require('./_store');
@@ -24,54 +27,49 @@ const { ALICIA_ID } = require('./lead');
 
 const FOLLOWUP = process.env.REMIND_FOLLOWUP_WEBHOOK || '';
 const APPT = process.env.REMIND_APPT_WEBHOOK || '';
-const MIN = 60e3, FRESH = 90 * MIN;   // runs can be late (GitHub, hourly Vercel crons)
+const MIN = 60e3, FRESH = 90 * MIN, NAG_FRESH = 45 * MIN;
 const AT = '<@' + ALICIA_ID + '>';
 const md = s => String(s || '').replace(/([\\*_~`|>])/g, '\\$1');
-
-/* Every reminder starts with the same bell line so it reads at a glance:
-     🔔 New lead · call now         a lead came in outside hours (first call)
-     🔔 New lead · not called yet   one nudge, 30 min after a new lead
-     🔔 Call · <name>               next call in the plan is due
-     🔔 Follow-up · <name>          a follow-up time she picked is here
-     🔔 Appointment in 1 hr / 15 min
-   Line 2: name · phone · what. Line 3: the link opens that lead's card. */
 const CRM = 'https://www.zorionlife.com/crm?lead=';
+const first = l => (l.name || 'lead').split(' ')[0];
+
 function msg(head, l, what) {
   const who = md(l.name || 'Lead'), ph = l.phone ? ' · ' + l.phone : '';
   return '🔔 **' + head + '** ' + AT + '\n' + who + ph + (what ? ' · ' + what : '') + '\n<' + CRM + encodeURIComponent(l.id) + '>';
 }
 
-/* every reminder a lead should get right now: [{key, hook, text}] */
+/* One lead right now: its latest ping (if any, and fresh), whether its
+   call is open, and its appointment pings. */
 function plan(l, now) {
   const d = Z.derive(l, l.state, l.booking, now);
-  if (d.stage === 'done' || !d.next) return [];
-  const out = [];
-  const add = (key, at, hook, text, anyHour) => {
-    if (at > now || now - at > FRESH) return;
-    if (!anyHour && Z.allowed(at) !== at) return;
-    out.push({ key: l.id + ':' + key + ':' + at, hook, text });
-  };
-
+  const out = { lead: l, d, open: false, ping: null, appts: [] };
+  if (d.stage === 'done' || !d.next) return out;
+  const list = Z.nags(l, l.state, l.booking, now - FRESH, now);
   if (d.kind === 'booked') {
-    add('appt60', d.next - 60 * MIN, APPT, msg('Appointment in 1 hr', l, Z.time12(d.next)), true);
-    add('appt15', d.next - 15 * MIN, APPT, msg('Appointment in 15 min', l, Z.time12(d.next)), true);
+    out.appts = list.map(n => ({ key: l.id + ':appt:' + n.t, text: msg(n.label, l, Z.time12(d.next)) }));
     return out;
   }
-  const called = (d.calls || []).length > 0;
-  if (!called && d.stage === 'new' && !d.restarted) {
-    /* in hours, the #leads ping is the first call reminder */
-    if (d.next > l.ts + 10 * MIN) add('first', d.next, FOLLOWUP, msg('New lead · call now', l, 'double dial'));
-    add('nudge', d.next + 30 * MIN, FOLLOWUP, msg('New lead · not called yet', l, 'double dial'));
-    return out;
-  }
-  if (d.kind === 'cadence') {
-    const what = 'call ' + (d.noAnswers + 1) + '/' + d.total + (d.text ? ' + text' : '');
-    add('due', d.next, FOLLOWUP, msg('Call · ' + (l.name || 'lead').split(' ')[0], l, what));
-    /* not logged by the next lunch/evening slot: one more nudge, then quiet */
-    add('again', Z.rollToSlot(d.next + 60 * MIN), FOLLOWUP, msg('Call · ' + (l.name || 'lead').split(' ')[0], l, what + ' · still open'));
-  }
-  if (d.kind === 'followup') add('due', d.next, FOLLOWUP, msg('Follow-up · ' + (l.name || 'lead').split(' ')[0], l, 'they asked for this time'));
+  if (d.kind !== 'cadence' && d.kind !== 'followup') return out;
+  out.open = d.next <= now;
+  const last = list.filter(n => now - n.t <= NAG_FRESH).pop();
+  if (last) { out.ping = { key: l.id + ':nag:' + last.t, label: last.label }; out.open = true; }
   return out;
+}
+
+/* The round message: every open call, follow-ups first, then newest lead first. */
+function roundText(rows, now) {
+  rows = rows.slice().sort((a, b) =>
+    ((b.d.kind === 'followup') - (a.d.kind === 'followup')) || (b.lead.ts - a.lead.ts));
+  const MAX = 10, lines = [];
+  rows.slice(0, MAX).forEach((r, i) => {
+    const l = r.lead, ph = l.phone ? ' · ' + l.phone : '';
+    const what = r.ping ? r.ping.label
+      : (r.d.kind === 'followup' ? 'Follow-up' : 'Call ' + (r.d.noAnswers + 1) + '/' + r.d.total) + ' · open since ' + Z.when(r.d.next, now);
+    lines.push((i + 1) + '. **' + md(l.name || 'Lead') + '**' + ph + ' · ' + what + '\n<' + CRM + encodeURIComponent(l.id) + '>');
+  });
+  if (rows.length > MAX) lines.push('…and ' + (rows.length - MAX) + ' more in the CRM');
+  const head = rows.length === 1 ? 'Call now' : 'Call now · ' + rows.length + ' leads, top first';
+  return '🔔 **' + head + '** ' + AT + '\n' + lines.join('\n') + '\nTap the outcome in the CRM to stop these.';
 }
 
 async function post(hook, text) {
@@ -100,14 +98,26 @@ module.exports = async (req, res) => {
     const now = Date.now();
     const leads = await load();
     let sent = 0, waiting = 0;
-    for (const l of leads) {
-      for (const r of plan(l, now)) {
-        if (!r.hook) { waiting++; continue; }          // channel not set up yet
-        if (!(await firstTime(r.key))) continue;
-        const ok = await post(r.hook, r.text).catch(() => false);
-        if (ok) sent++; else await forget(r.key);     // try again next run
-      }
+    const rows = leads.map(l => plan(l, now));
+
+    /* appointments: one message each, any hour */
+    for (const r of rows) for (const a of r.appts) {
+      if (!APPT) { waiting++; continue; }
+      if (!(await firstTime(a.key))) continue;
+      const ok = await post(APPT, a.text).catch(() => false);
+      if (ok) sent++; else await forget(a.key);
     }
+
+    /* calls: one round message when any open call has a new ping */
+    const open = rows.filter(r => r.open);
+    const fresh = [];
+    for (const r of open) if (r.ping && FOLLOWUP && await firstTime(r.ping.key)) fresh.push(r.ping.key);
+    if (!FOLLOWUP && open.some(r => r.ping)) waiting++;
+    if (fresh.length) {
+      const ok = await post(FOLLOWUP, roundText(open, now)).catch(() => false);
+      if (ok) sent++; else for (const k of fresh) await forget(k);
+    }
+
     /* One-offs (Oct 25, Rehan): Mon Oct 26 2026 (Toronto, EDT = UTC-4),
        10:00 Jeremy Hart, 10:30 DeMelo, 11:00 Michael DelFuego. Each sent
        once, within the usual freshness window. Safe to delete after. */
@@ -126,10 +136,11 @@ module.exports = async (req, res) => {
       const ok = await post(FOLLOWUP, msg('Call · ' + (mk.name || 'lead').split(' ')[0], mk, what)).catch(() => false);
       if (ok) sent++; else await forget(key);
     }
-    res.status(200).json({ ok: true, sent, waiting, followup: Boolean(FOLLOWUP), appt: Boolean(APPT) });
+    res.status(200).json({ ok: true, sent, waiting, open: open.length, followup: Boolean(FOLLOWUP), appt: Boolean(APPT) });
   } catch (err) {
     console.error('remind failed', err);
     res.status(200).json({ ok: false, error: String(err && err.message || err) });
   }
 };
 module.exports.plan = plan;
+module.exports.roundText = roundText;

@@ -218,6 +218,26 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 .sh-top .who{flex:1;min-width:0}
 .sh-top .who b{display:block;font:800 22px/1.1 var(--display);letter-spacing:-.015em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sh-top .who .pill{margin-top:5px}
+.bell{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(14,30,48,.06);flex:none;position:relative;color:var(--ink);transition:background .2s,color .2s,transform .3s var(--spring)}
+.bell:hover{background:rgba(58,134,255,.14);color:var(--blue-ink)}
+.bell.on{background:var(--blue);color:#fff;box-shadow:0 8px 16px -8px var(--blue-glow)}
+.bell svg{width:17px;height:17px}
+.bell em{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--red);color:#fff;font:700 10px/16px var(--body);font-style:normal;text-align:center;box-shadow:0 0 0 2px #fff}
+.sheet.flip{animation:flipin .5s var(--spring) both}
+@keyframes flipin{from{opacity:.2;transform:perspective(1200px) rotateY(-80deg)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sheet.flip{animation:none}}
+.pings-h{display:flex;flex-direction:column;gap:3px}
+.pings-h b{font:800 18px/1.15 var(--display);letter-spacing:-.01em}
+.pings-h span{font-size:13px;color:var(--muted)}
+.pday{display:flex;flex-direction:column;gap:6px}
+.pday h4{margin:0;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ping{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.ping time{font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
+.ping span{font-size:13px;color:var(--ink2,#33445C);display:flex;align-items:center;gap:8px;min-width:0}
+.ping span i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--blue)}
+.ping.new span i{background:var(--green)} .ping.call span i{background:var(--blue)} .ping.again span i{background:var(--red)} .ping.followup span i{background:var(--amber)} .ping.appt span i{background:var(--green)}
+.ping.past{opacity:.45}
+.pnote{font-size:12.5px;color:var(--muted);padding:10px 12px;border-radius:14px;background:rgba(14,30,48,.04)}
 .x{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(14,30,48,.06);flex:none;transition:background .2s,transform .3s var(--spring)}
 .x:hover{background:rgba(14,30,48,.1);transform:rotate(90deg)}
 .x svg{width:16px;height:16px}
@@ -377,6 +397,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 7l10 10M17 7 7 17"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
   <symbol id="i-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></symbol>
@@ -463,7 +484,7 @@ var LEADS = [];            // [{id, ts, name, ..., state, canUndo}]
 var SEEN = {};             // ids already drawn, so only new ones animate in
 var view = store('zcrm_view') || 'pipeline';
 if (['pipeline','today','leads'].indexOf(view) === -1) view = 'pipeline';
-var openId = null, pickMode = null, query = '';
+var openId = null, pickMode = null, query = '', bellOn = false;
 var calMonth = null, calDay = null;
 var lastSync = 0, timeOff = 0;
 function now(){ return Date.now() + timeOff; }
@@ -807,10 +828,37 @@ function redrawPicker(){
   old.parentNode.replaceChild(nu, old);
   if ($('#pkDays')) $('#pkDays').scrollLeft = sl;
 }
+/* ---------- the bell: every ping Alicia gets for this lead in the next 2 days ---------- */
+function upcoming(l, hrs){ var t = now(); return Z.nags(l, l.state, l.booking, t - 60e3, t + hrs*3600e3); }
+function bellBtn(l){
+  var n = upcoming(l, 24).length;
+  return '<button class="bell' + (bellOn ? ' on' : '') + '" type="button" data-bell aria-pressed="' + bellOn + '" title="Pings to Alicia, next 2 days"><svg><use href="#i-bell"/></svg>' + (n && !bellOn ? '<em>' + n + '</em>' : '') + '</button>';
+}
+function pingsHTML(l, i){
+  var t = now(), d = D(l), list = upcoming(l, 48), h = '';
+  h += '<div class="pings-h" style="--i:' + (i++) + '"><b>Pings to Alicia · next 2 days</b><span>' + (d.kind === 'booked' ? 'Appointment reminders.' : 'If nobody taps an outcome. Tapping No answer, Talked, Booked, Won or Not interested stops them.') + '</span></div>';
+  if (!list.length){
+    var why = d.stage === 'done' ? 'This lead is closed.' : d.kind === 'finished' ? 'All 8 calls are done.' : d.next ? 'Next ping ' + Z.when(d.next, t) + '.' : 'Nothing scheduled.';
+    return h + '<div class="pnote" style="--i:' + (i++) + '">No pings in the next 2 days. ' + esc(why) + '</div>';
+  }
+  var byDay = {}, order = [];
+  list.forEach(function(p){ var k = Z.ymd(p.t); if (!byDay[k]){ byDay[k] = []; order.push(k); } byDay[k].push(p); });
+  order.forEach(function(k){
+    var first = byDay[k][0].t, diff = Math.round((Z.dayStart(first) - Z.dayStart(t)) / 864e5), pp = Z.parts(first);
+    var w = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : Z.DOW[pp.dow] + ' ' + Z.MON[pp.m - 1] + ' ' + pp.d;
+    h += '<div class="pday" style="--i:' + (i++) + '"><h4>' + esc(w) + ' · ' + byDay[k].length + ' ping' + (byDay[k].length > 1 ? 's' : '') + '</h4>'
+      + byDay[k].map(function(p){
+          var cls = p.kind === 'call' && /not called yet/.test(p.label) ? 'again' : p.kind;
+          return '<div class="ping ' + cls + (p.t < t ? ' past' : '') + '"><time>' + esc(Z.time12(p.t)) + '</time><span><i></i>' + esc(p.label) + '</span></div>';
+        }).join('') + '</div>';
+  });
+  return h;
+}
 function sheetHTML(l){
   var d = D(l), t = now(), i = 0, h = '';
   h += '<div class="sh-top" style="--i:' + (i++) + '"><div class="av">' + esc(initials(l.name)) + '</div><div class="who"><b id="shName">' + esc(l.name || 'No name') + '</b>' + pill(d) + '</div>'
-    + '<button class="x" type="button" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>';
+    + bellBtn(l) + '<button class="x" type="button" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>';
+  if (bellOn) return h + pingsHTML(l, i);
   h += '<div class="contact" style="--i:' + (i++) + '">'
     + (l.phone ? '<a class="tel" href="tel:' + esc(l.phone.replace(/[^\d+]/g,'')) + '"><svg><use href="#i-phone"/></svg>' + esc(l.phone) + '</a><button class="cp" type="button" data-copy="' + esc(l.phone) + '" title="Copy number"><svg><use href="#i-copy"/></svg>Copy</button>' : '')
     + (l.email ? '<a href="mailto:' + esc(l.email) + '"><svg><use href="#i-mail"/></svg>' + esc(l.email) + '</a>' : '')
@@ -851,7 +899,7 @@ function sheetHTML(l){
 var lastFocus = null;
 function openSheet(id){
   var l = find(id); if (!l) return;
-  openId = id; pickMode = null;
+  openId = id; pickMode = null; bellOn = false;
   lastFocus = document.activeElement;
   var sh = $('#sheet'); sh.classList.remove('settled'); sh.innerHTML = sheetHTML(l);
   var sc = $('#scrim'); sc.classList.remove('out'); sc.hidden = false;
@@ -867,7 +915,7 @@ function refreshSheet(){
 function closeSheet(){
   if (!openId) return;
   saveNote();
-  openId = null; pickMode = null;
+  openId = null; pickMode = null; bellOn = false;
   var sc = $('#scrim'); sc.classList.add('out');
   setTimeout(function(){ if (!openId){ sc.hidden = true; sc.classList.remove('out'); } }, 230);
   if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll:true });
@@ -886,6 +934,12 @@ $('#sheet').addEventListener('focusout', function(e){ if (e.target.id === 'note'
 $('#sheet').addEventListener('click', function(e){
   var b;
   if ((b = e.target.closest('[data-close]'))) return closeSheet();
+  if ((b = e.target.closest('[data-bell]'))){
+    bellOn = !bellOn; pickMode = null; refreshSheet();
+    var sh = $('#sheet'); sh.classList.remove('flip'); void sh.offsetWidth; sh.classList.add('flip');
+    sh.scrollTop = 0; var bb = sh.querySelector('[data-bell]'); if (bb) bb.focus({ preventScroll:true });
+    return;
+  }
   if ((b = e.target.closest('[data-copy]'))){
     var v = b.dataset.copy;
     (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function(){ toast('Number copied'); }, function(){ toast(v); });
