@@ -108,6 +108,18 @@ module.exports = async (req, res) => {
         if (ok) sent++; else await forget(r.key);     // try again next run
       }
     }
+    /* One-off (Oct 25, Rehan): call reminder for Jeremy Hart at
+       Mon Oct 26 2026, 10:00 AM Toronto (EDT = UTC-4). Sent once, same
+       freshness window as every other reminder. Safe to delete after. */
+    const ONEOFF = Date.UTC(2026, 9, 26, 14, 0);
+    if (FOLLOWUP && now >= ONEOFF && now - ONEOFF < FRESH) {
+      const mk = leads.find(x => String(x.phone || '').replace(/\D/g, '').slice(-10) === '5195733831');
+      const key = 'oneoff:jeremy:' + ONEOFF;
+      if (mk && await firstTime(key)) {
+        const ok = await post(FOLLOWUP, msg('Call · Jeremy', { id: mk.id, name: mk.name || 'Jeremy Hart', phone: '(519) 573-3831' }, 'call 1/8')).catch(() => false);
+        if (ok) sent++; else await forget(key);
+      }
+    }
     res.status(200).json({ ok: true, sent, waiting, followup: Boolean(FOLLOWUP), appt: Boolean(APPT) });
   } catch (err) {
     console.error('remind failed', err);
