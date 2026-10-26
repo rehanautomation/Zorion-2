@@ -12,10 +12,17 @@
 
    The rules (cadence, Sabbath, what each action does) live in
    assets/crm-core.js, shared with the page.
+
+   Email (the CRM's Emails view), on this same endpoint so the site
+   stays under Vercel Hobby's 12-function cap:
+   GET   ?emails=1   the last 50 emails sent from the CRM
+   POST  { op:'email', to, subject, body }
+         Sends one plain-text email through Resend (RESEND_API_KEY),
+         from alicia@zorionlife.com, and logs it.
    ------------------------------------------------------------------ */
 const crypto = require('crypto');
 const Z = require('../assets/crm-core.js');
-const { all, readBody, allBookings, crmAll, crmGet, crmSet } = require('./_store');
+const { all, readBody, allBookings, crmAll, crmGet, crmSet, logEmail, allEmails } = require('./_store');
 const { QUESTIONS } = require('./lead');
 
 const SHORT = { q2: 'Signed for', q4: 'Left holding it', q3: 'Has now', q5: 'Age' };
@@ -104,18 +111,58 @@ async function load() {
   }).sort((a, b) => b.ts - a.ts);
 }
 
+/* ---- email ---- */
+const FROM_ADDR = 'alicia@zorionlife.com';
+const FROM = 'Alicia from Zorion Life <' + FROM_ADDR + '>';
+const EMAIL_RE = /^[^\s@<>,;"]+@[^\s@<>,;"]+\.[^\s@<>,;"]{2,}$/;
+
+async function sendEmail(b) {
+  const to = String(b.to || '').trim().toLowerCase();
+  const subject = String(b.subject || '').replace(/[\r\n]+/g, ' ').trim();
+  const body = String(b.body || '').replace(/\r\n/g, '\n');
+  if (!EMAIL_RE.test(to)) return { status: 400, out: { ok: false, error: 'That email address doesn’t look right.' } };
+  if (!subject) return { status: 400, out: { ok: false, error: 'Add a subject.' } };
+  if (!body.trim()) return { status: 400, out: { ok: false, error: 'Write the email first.' } };
+  if (subject.length > 250 || body.length > 20000) return { status: 400, out: { ok: false, error: 'Too long.' } };
+  const KEY = process.env.RESEND_API_KEY;
+  if (!KEY) return { status: 500, out: { ok: false, error: 'RESEND_API_KEY isn’t set in Vercel.' } };
+
+  const payload = { from: FROM, to: [to], subject, text: body };
+  if (process.env.EMAIL_REPLY_TO) payload.reply_to = process.env.EMAIL_REPLY_TO;
+  const headers = { Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+  const nonce = String(b.nonce || '').replace(/[^\w-]/g, '').slice(0, 200);
+  if (nonce) headers['Idempotency-Key'] = 'crm-' + nonce;   // a double tap sends once
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers, body: JSON.stringify(payload) });
+  let j = {};
+  try { j = await r.json(); } catch (_) {}
+  if (!r.ok || !j.id) {
+    const msg = (j && (j.message || j.error)) || ('Resend error ' + r.status);
+    return { status: 502, out: { ok: false, error: String(msg) } };
+  }
+  const row = { id: j.id, at: Date.now(), to, subject, body: body.slice(0, 2000) };
+  try { await logEmail(row); } catch (_) {}
+  return { status: 200, out: { ok: true, email: row } };
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex');
   if (!hasKey(req)) return res.status(401).json({ ok: false, error: 'key' });
 
   try {
+    if (req.method === 'GET' && req.query && req.query.emails) {
+      return res.status(200).json({ ok: true, from: FROM_ADDR, emails: await allEmails(50) });
+    }
     if (req.method === 'GET') {
       return res.status(200).json({ ok: true, now: Date.now(), leads: await load() });
     }
     if (req.method !== 'POST') return res.status(405).json({ ok: false });
 
     const b = await readBody(req);
+    if (b.op === 'email') {
+      const { status, out } = await sendEmail(b);
+      return res.status(status).json(out);
+    }
     const id = String(b.id || '').slice(0, 60);
     if (!id || Z.ACTIONS.indexOf(b.action) === -1) return res.status(400).json({ ok: false, error: 'bad_request' });
 

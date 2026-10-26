@@ -308,6 +308,44 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 .notes .saved{position:absolute;right:4px;top:-20px;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s}
 .notes .saved.on{opacity:1}
 
+/* ---------- emails ---------- */
+.mail{max-width:760px;display:flex;flex-direction:column;gap:18px}
+.mtabs{position:relative;display:inline-flex;align-self:flex-start;padding:4px;border-radius:14px;background:rgba(14,30,48,.06)}
+.mtabs .mpill{position:absolute;top:4px;left:4px;height:36px;border-radius:11px;background:#fff;box-shadow:0 1px 2px rgba(14,30,48,.08),0 6px 14px -8px rgba(14,30,48,.3);transition:transform .45s var(--spring),width .45s var(--spring)}
+.mtabs button{position:relative;z-index:1;height:36px;padding:0 18px;border-radius:11px;font-weight:600;color:var(--muted);transition:color .25s}
+.mtabs button.on{color:var(--ink)}
+.compose{border-radius:24px;background:var(--glass-hi);border:1px solid var(--glass-line);box-shadow:var(--shadow-1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);overflow:hidden}
+.fld{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid var(--line);min-height:54px}
+.fld > span{font-size:13px;font-weight:600;color:var(--muted)}
+.fld input{height:54px;border:0;outline:none;background:transparent;font-size:15px;min-width:0}
+.fld .from{font-size:15px;font-weight:500;display:flex;align-items:center;gap:8px;min-width:0}
+.fld .from i{font-style:normal;font-size:12px;font-weight:600;color:var(--green);background:var(--green-soft);border-radius:99px;padding:2px 9px}
+.compose textarea{display:block;width:100%;min-height:260px;resize:vertical;border:0;outline:none;background:transparent;padding:16px 18px;font-size:15px;line-height:1.55}
+.cbar{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.5)}
+.cbar small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.cbar .grow{flex:1}
+.sendbtn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 22px;border-radius:14px;background:linear-gradient(180deg,#4B92FF,#2F78F2);color:#fff;font-weight:600;
+  box-shadow:0 12px 22px -12px var(--blue-glow);transition:transform .3s var(--spring),opacity .2s;flex:none}
+.sendbtn:active{transform:scale(.97)}
+.sendbtn:disabled{opacity:.45;cursor:default}
+.sendbtn svg{width:17px;height:17px}
+.sendbtn .spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.merr{color:var(--red);font-size:13px;font-weight:500;padding:0 4px;min-height:0}
+.sent .row{grid-template-columns:110px minmax(0,1fr) auto;cursor:default}
+.sent .row .who small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.soonbox{border-radius:24px;padding:40px 24px;text-align:center;color:var(--muted);background:var(--glass-hi);border:1px solid var(--glass-line);box-shadow:var(--shadow-1)}
+.soonbox b{display:block;color:var(--ink);font:700 18px/1.2 var(--display);margin-bottom:6px}
+@media (max-width:860px){
+  .fld{grid-template-columns:64px minmax(0,1fr);padding:0 14px}
+  .compose textarea{min-height:220px;padding:14px}
+  .cbar{flex-wrap:wrap}
+  .cbar small{order:2;width:100%}
+  .sendbtn{margin-left:auto;height:50px}
+  .sent .row{grid-template-columns:76px minmax(0,1fr)}
+  .sent .row .pill{display:none}
+}
+
 /* ---------- toast ---------- */
 .toast{position:fixed;left:50%;bottom:26px;z-index:80;display:flex;align-items:center;gap:14px;padding:12px 14px 12px 18px;border-radius:18px;color:#fff;
   background:rgba(14,30,48,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 40px -16px rgba(14,30,48,.5);
@@ -403,6 +441,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   <symbol id="i-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></symbol>
   <symbol id="i-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3 14.5 21l-4.5-7-7-4.5Z"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
 </svg>
 
@@ -416,7 +455,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
       <button data-view="pipeline" class="on"><svg><use href="#i-pipe"/></svg>Pipeline</button>
       <button data-view="today"><svg><use href="#i-phone"/></svg>Today<span class="count" id="todayCount" hidden>0</span></button>
       <button data-view="leads"><svg><use href="#i-cal"/></svg>Leads</button>
-      <button class="soon" tabindex="-1" aria-disabled="true"><svg><use href="#i-mail"/></svg>Emails<small>Soon</small></button>
+      <button data-view="emails"><svg><use href="#i-mail"/></svg>Emails</button>
     </nav>
     <div class="side-foot">
       <div class="clock"><b id="clock">--:--</b><span>Toronto</span></div>
@@ -440,6 +479,32 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
         <div><div class="day-h"><b id="dayTitle"></b><span id="dayCount"></span></div><div id="dayList"></div></div>
       </div></div>
     </section>
+    <section class="view" id="v-emails" hidden>
+      <div class="scroll"><div class="mail">
+        <div class="mtabs" id="mtabs" role="tablist">
+          <span class="mpill" id="mpill" aria-hidden="true"></span>
+          <button type="button" role="tab" data-mtab="send" class="on">Send email</button>
+          <button type="button" role="tab" data-mtab="auto">Automation</button>
+        </div>
+        <div id="m-send">
+          <form class="compose" id="compose" autocomplete="off" novalidate>
+            <div class="fld"><span>From</span><span class="from"><span id="mFrom">alicia@zorionlife.com</span></span></div>
+            <label class="fld"><span>To</span><input id="mTo" type="email" inputmode="email" placeholder="name@example.com" list="mLeads" autocapitalize="off" spellcheck="false" required></label>
+            <label class="fld"><span>Subject</span><input id="mSubject" type="text" maxlength="250" placeholder="Subject" required></label>
+            <textarea id="mBody" placeholder="Write your email…" aria-label="Email body"></textarea>
+            <div class="cbar">
+              <small id="mNote">Sends as plain text. Replies to this address don’t reach an inbox yet.</small>
+              <span class="grow"></span>
+              <button class="sendbtn" id="mSend" type="submit"><svg><use href="#i-send"/></svg>Send</button>
+            </div>
+          </form>
+          <div class="merr" id="mErr" role="alert"></div>
+          <datalist id="mLeads"></datalist>
+          <div class="grp sent" style="margin-top:18px"><h2>Sent</h2><div id="mSent"></div></div>
+        </div>
+        <div id="m-auto" hidden><div class="soonbox"><b>Automation</b>Coming soon.</div></div>
+      </div></div>
+    </section>
   </main>
 </div>
 
@@ -447,6 +512,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   <button data-view="pipeline" class="on"><svg><use href="#i-pipe"/></svg>Pipeline</button>
   <button data-view="today"><span class="ti"><svg><use href="#i-phone"/></svg><span class="count" id="todayCount2" hidden>0</span></span>Today</button>
   <button data-view="leads"><svg><use href="#i-cal"/></svg>Leads</button>
+  <button data-view="emails"><svg><use href="#i-mail"/></svg>Emails</button>
 </nav>
 
 <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shName"></div></div>
@@ -483,7 +549,7 @@ var KEY = (function(){
 var LEADS = [];            // [{id, ts, name, ..., state, canUndo}]
 var SEEN = {};             // ids already drawn, so only new ones animate in
 var view = store('zcrm_view') || 'pipeline';
-if (['pipeline','today','leads'].indexOf(view) === -1) view = 'pipeline';
+if (['pipeline','today','leads','emails'].indexOf(view) === -1) view = 'pipeline';
 var openId = null, pickMode = null, query = '', bellOn = false;
 var calMonth = null, calDay = null;
 var lastSync = 0, timeOff = 0;
@@ -522,7 +588,7 @@ function stepLabel(d){
 }
 
 /* ---------- header ---------- */
-var TITLES = { pipeline:'Pipeline', today:'Today', leads:'Leads' };
+var TITLES = { pipeline:'Pipeline', today:'Today', leads:'Leads', emails:'Emails' };
 function sabEnd(sab, t){ return (Z.dayStart(sab.end) === Z.dayStart(t) ? '' : Z.DOW[Z.parts(sab.end).dow] + ' ') + Z.time12(sab.end); }
 function renderHeader(){
   var t = now(), p = Z.parts(t);
@@ -673,14 +739,16 @@ function render(anim){
   renderHeader();
   if (view === 'pipeline') renderBoard(anim);
   else if (view === 'today') renderToday(anim);
+  else if (view === 'emails') renderEmails(anim);
   else renderLeads(anim);
 }
 function show(v, first){
   if (v === view && !first) return;
   view = v; store('zcrm_view', v);
-  ['pipeline','today','leads'].forEach(function(k){ $('#v-' + k).hidden = k !== v; });
+  ['pipeline','today','leads','emails'].forEach(function(k){ $('#v-' + k).hidden = k !== v; });
   $$('[data-view]').forEach(function(b){ b.classList.toggle('on', b.dataset.view === v); });
   $('#title').textContent = TITLES[v];
+  $('.search').style.visibility = v === 'emails' ? 'hidden' : '';
   $('#title').classList.remove('rv'); void $('#title').offsetWidth; $('#title').classList.add('rv');
   moveNavPill();
   render(true);
@@ -761,6 +829,85 @@ function flash(id){
   var c = document.querySelector('.card[data-id="' + CSS.escape(id) + '"]');
   if (c){ c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); }
 }
+
+/* ---------- emails ---------- */
+var SENT = null, sentBusy = false, mNonce = '';
+function emailApi(method, body, qs){
+  return fetch('/api/crm' + (qs || ''), {
+    method: method,
+    headers: Object.assign({ 'x-crm-key': KEY }, body ? { 'Content-Type':'application/json' } : {}),
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r){
+    if (r.status === 401){ lock(); throw new Error('key'); }
+    return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || !j.ok) throw new Error(j.error || ('Error ' + r.status)); return j; });
+  });
+}
+function mtab(t){
+  $$('[data-mtab]').forEach(function(b){ b.classList.toggle('on', b.dataset.mtab === t); });
+  $('#m-send').hidden = t !== 'send'; $('#m-auto').hidden = t !== 'auto';
+  var on = $('[data-mtab].on'), pl = $('#mpill');
+  if (on && on.offsetWidth){ pl.style.width = on.offsetWidth + 'px'; pl.style.transform = 'translateX(' + (on.offsetLeft - 4) + 'px)'; }
+}
+$$('[data-mtab]').forEach(function(b){ b.addEventListener('click', function(){ mtab(b.dataset.mtab); }); });
+function fmtSent(at){
+  var t = now(), p = Z.parts(at), today = Z.dayStart(t) === Z.dayStart(at);
+  return { a: today ? Z.time12(at) : Z.MON[p.m-1] + ' ' + p.d, b: today ? 'Today' : Z.time12(at) };
+}
+function drawSent(){
+  var box = $('#mSent');
+  if (SENT === null){ box.innerHTML = '<div class="skel"></div>'; return; }
+  if (!SENT.length){ box.innerHTML = '<div class="list"><div class="nothing"><b>Nothing sent yet</b>Emails you send here show up in this list.</div></div>'; return; }
+  box.innerHTML = '<div class="list">' + SENT.map(function(m){
+    var f = fmtSent(m.at);
+    var preview = String(m.body || '').replace(/\s+/g, ' ').slice(0, 140);
+    return '<div class="row" title="' + esc(m.body || '') + '"><span class="t">' + esc(f.a) + '<small>' + esc(f.b) + '</small></span>'
+      + '<span class="who"><b>' + esc(m.subject) + '</b><small>To ' + esc(m.to) + (preview ? ' · ' + esc(preview) : '') + '</small></span>'
+      + '<span class="pill booked">Sent</span></div>';
+  }).join('') + '</div>';
+}
+function loadSent(){
+  if (sentBusy || !KEY) return;
+  sentBusy = true;
+  emailApi('GET', null, '?emails=1').then(function(j){
+    SENT = j.emails || [];
+    if (j.from) $('#mFrom').textContent = j.from;
+    drawSent();
+  }).catch(function(e){ if (e.message !== 'key'){ if (SENT === null) SENT = []; drawSent(); } })
+    .then(function(){ sentBusy = false; });
+}
+function renderEmails(){
+  var seen = {}, opts = '';
+  LEADS.forEach(function(l){
+    var e = String(l.email || '').trim(); if (!e || seen[e.toLowerCase()]) return; seen[e.toLowerCase()] = 1;
+    opts += '<option value="' + esc(e) + '">' + esc(l.name || '') + '</option>';
+  });
+  $('#mLeads').innerHTML = opts;
+  mtab($('[data-mtab].on').dataset.mtab);
+  drawSent(); loadSent();
+}
+function mBusy(on){
+  var b = $('#mSend'); b.disabled = on;
+  b.innerHTML = on ? '<span class="spin"></span>Sending' : '<svg><use href="#i-send"/></svg>Send';
+}
+$('#compose').addEventListener('submit', function(e){
+  e.preventDefault();
+  var to = $('#mTo').value.trim(), subject = $('#mSubject').value.trim(), body = $('#mBody').value;
+  var err = !/^[^\s@<>,;"]+@[^\s@<>,;"]+\.[^\s@<>,;"]{2,}$/.test(to) ? 'That email address doesn’t look right.'
+    : !subject ? 'Add a subject.' : !body.trim() ? 'Write the email first.' : '';
+  $('#mErr').textContent = err;
+  if (err){ var f = $('#compose'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); return; }
+  if (!mNonce) mNonce = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  mBusy(true);
+  emailApi('POST', { op:'email', to: to, subject: subject, body: body, nonce: mNonce }).then(function(j){
+    mNonce = '';
+    $('#mTo').value = ''; $('#mSubject').value = ''; $('#mBody').value = '';
+    SENT = [j.email].concat(SENT || []); drawSent();
+    toast('Email sent to ' + to);
+  }).catch(function(e){
+    if (e.message !== 'key') $('#mErr').textContent = 'Not sent: ' + e.message;
+  }).then(function(){ mBusy(false); });
+});
+['#mTo','#mSubject','#mBody'].forEach(function(id){ $(id).addEventListener('input', function(){ $('#mErr').textContent = ''; mNonce = ''; }); });
 
 /* ---------- toast ---------- */
 var toastTimer = null, toastId = null;
@@ -982,7 +1129,7 @@ document.addEventListener('keydown', function(e){
   if (e.key === 'Enter' && document.activeElement && document.activeElement.matches('.row[data-id], .card[data-id]')) openSheet(document.activeElement.dataset.id);
   if (openId) return;
   if (e.key === '/'){ e.preventDefault(); $('#q').focus(); }
-  if (e.key === '1') show('pipeline'); if (e.key === '2') show('today'); if (e.key === '3') show('leads');
+  if (e.key === '1') show('pipeline'); if (e.key === '2') show('today'); if (e.key === '3') show('leads'); if (e.key === '4') show('emails');
 });
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-stab]'); if (!b) return;

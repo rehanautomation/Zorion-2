@@ -255,6 +255,28 @@ async function lock(name, seconds) {
   return true;
 }
 
+/* ---- emails sent from the CRM: newest first, last 200 kept ---- */
+const EMAILS = 'zorion_emails_v1';
+
+async function logEmail(row) {
+  if (KV_URL && KV_TOKEN) {
+    await kv(['LPUSH', EMAILS, JSON.stringify(row)]);
+    await kv(['LTRIM', EMAILS, 0, 199]);
+    return;
+  }
+  const list = readSide('emails'); const arr = Array.isArray(list) ? list : [];
+  arr.unshift(row); writeSide('emails', arr.slice(0, 200));
+}
+
+async function allEmails(n) {
+  if (KV_URL && KV_TOKEN) {
+    const out = await kv(['LRANGE', EMAILS, 0, (n || 50) - 1]);
+    return (out.result || []).map(r => { try { return JSON.parse(r); } catch (_) { return null; } }).filter(Boolean);
+  }
+  const list = readSide('emails');
+  return (Array.isArray(list) ? list : []).slice(0, n || 50);
+}
+
 function readBody(req) {
   return new Promise(resolve => {
     if (req.body && typeof req.body === 'object') return resolve(req.body);
@@ -270,6 +292,6 @@ function readBody(req) {
 module.exports = {
   push, all, clear, readBody, isAdmin, clientIp, adminIps,
   markClick, setDwell, allDwell, reserveSlot, allBookings,
-  crmAll, crmGet, crmSet, firstTime, forget, lock,
+  crmAll, crmGet, crmSet, firstTime, forget, lock, logEmail, allEmails,
   persistent: Boolean(KV_URL && KV_TOKEN)
 };
