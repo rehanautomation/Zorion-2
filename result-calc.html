@@ -98,8 +98,9 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 .r-sec{padding:30px 0}
 .r-first{padding-top:34px}
 .r-call{border-top:1px solid var(--rule);padding-top:28px}
-.r-h1{font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(32px,8vw,54px);line-height:1.05;letter-spacing:-.032em;color:var(--ink);margin:0;text-wrap:balance;max-width:16ch}
-.r-sub{margin:14px 0 0;font-size:clamp(17px,4.2vw,19px);line-height:1.5;color:var(--ink-2);max-width:40ch;text-wrap:pretty}
+.r-h1{font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(32px,8vw,54px);line-height:1.05;letter-spacing:-.032em;color:var(--ink);margin:0 auto;text-align:center;text-wrap:balance;max-width:16ch}
+.r-sub{margin:14px auto 0;text-align:center;font-size:clamp(17px,4.2vw,19px);line-height:1.5;color:var(--ink-2);max-width:40ch;text-wrap:pretty}
+.ctr{text-align:center}
 .r-h2{font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(21px,4.8vw,30px);letter-spacing:-.025em;color:var(--ink);margin:0 0 20px;text-wrap:balance}
 .r-h2.r-big{font-weight:800;font-size:clamp(27px,6.6vw,44px);line-height:1.07;letter-spacing:-.03em;margin:0 0 24px}
 .r-h2 em{font-style:normal;color:var(--blue-deep);white-space:nowrap}
@@ -161,6 +162,45 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 @media (hover:hover){ .seg button:hover{border-color:var(--blue)} }
 .seg button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
+/* ---------- the quick way: 4 taps instead of sliders ---------- */
+.calc[hidden],.quiz[hidden],.quick-wrap[hidden],.q-skip[hidden]{display:none}
+.quick-wrap{display:flex;justify-content:center;margin-top:22px}
+.quick{display:inline-flex;align-items:center;gap:9px;height:54px;padding:0 24px 0 20px;border-radius:999px;border:0;cursor:pointer;
+  background:var(--ink);color:#fff;font-family:Archivo,sans-serif;font-weight:600;font-size:17px;letter-spacing:-.005em;
+  box-shadow:0 10px 24px rgba(14,30,48,.22);-webkit-tap-highlight-color:transparent;transition:transform .14s cubic-bezier(.32,.72,0,1),background .2s ease}
+.quick svg{width:18px;height:18px;color:var(--gold)}
+.quick:active{transform:scale(.96)}
+@media (hover:hover){ .quick:hover{background:#1B3350} }
+.quick:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+.quiz{margin:22px auto 0;max-width:560px}
+.q-card{background:var(--paper);border:1px solid var(--rule);border-radius:22px;padding:clamp(20px,5vw,30px);box-shadow:0 18px 40px rgba(14,30,48,.08);overflow:hidden}
+.q-top{display:flex;align-items:center;justify-content:space-between;height:34px}
+.q-back{width:38px;height:38px;margin-left:-9px;border:0;border-radius:50%;background:transparent;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.q-back svg{width:19px;height:19px}
+.q-back:disabled{visibility:hidden}
+.q-count{font-size:13px;font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.q-bar{height:6px;margin-top:10px;border-radius:99px;background:#E6EDF5;overflow:hidden}
+.q-bar i{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.q-body{margin-top:22px;transition:opacity .2s ease,transform .2s ease}
+.q-body.out{opacity:0;transform:translateX(-18px)}
+.q-h{margin:0;font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(22px,5.6vw,27px);line-height:1.2;letter-spacing:-.02em;color:var(--ink);text-wrap:balance}
+.q-hint{margin:8px 0 0;font-size:15px;line-height:1.45;color:var(--ink-3)}
+.q-opts{display:grid;gap:10px;margin-top:20px}
+.q-opt{display:flex;align-items:center;gap:14px;width:100%;min-height:58px;padding:0 18px;border-radius:14px;border:1.5px solid var(--rule);background:var(--paper);cursor:pointer;text-align:left;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.01em;color:var(--ink);-webkit-tap-highlight-color:transparent;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .14s cubic-bezier(.32,.72,0,1),box-shadow .18s ease}
+.q-opt::before{content:'';flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #B9C8D8;box-sizing:border-box;transition:border .18s ease,background .18s ease}
+.q-opt:active{transform:scale(.98)}
+@media (hover:hover){ .q-opt:hover{border-color:var(--blue)} }
+.q-opt.is-on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 8px 20px rgba(58,134,255,.3)}
+.q-opt.is-on::before{border:6px solid #fff;background:var(--blue)}
+.q-opt:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.q-wait{display:flex;flex-direction:column;align-items:center;gap:16px;padding:34px 0 26px;font-family:Archivo,sans-serif;font-weight:600;font-size:19px;color:var(--ink)}
+.q-wait .spin{width:34px;height:34px;border-radius:50%;border:3px solid #DCE7F5;border-top-color:var(--blue);animation:vspin .7s linear infinite}
+.q-skip{display:block;margin:16px auto 0;padding:8px 12px;border:0;background:transparent;cursor:pointer;font:500 15px/1.3 Inter,system-ui,sans-serif;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px}
+@media (max-width:899px){ .calc.res-first .res-wrap{order:-1} }
+
 /* ---------- the number ---------- */
 .res{background:var(--ink);border-radius:22px;padding:clamp(24px,5.5vw,34px);color:#fff}
 .res-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -212,19 +252,19 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 @media (min-width:900px){ .livebar{display:none} }
 
 /* ---------- the closing line ---------- */
-.big-line{position:relative;margin:0;font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(25px,6.4vw,42px);line-height:1.2;letter-spacing:-.03em;
-  color:var(--ink);text-wrap:balance;border-left:4px solid var(--gold);padding-left:clamp(16px,4vw,28px)}
+.big-line{position:relative;margin:0 auto;max-width:22ch;text-align:center;padding-top:24px;font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(25px,6.4vw,42px);line-height:1.2;letter-spacing:-.03em;
+  color:var(--ink);text-wrap:balance}
+.big-line::before{content:'';position:absolute;left:50%;top:0;width:48px;height:4px;margin-left:-24px;border-radius:2px;background:var(--gold)}
 
 /* ---------- what this number can't tell you ---------- */
 .gap-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
-.gap-list li{position:relative;padding-left:24px;font-size:16px;line-height:1.45;color:var(--ink-2)}
-.gap-list li b{display:block;font-weight:600;color:var(--ink)}
+.gap-list li{position:relative;padding-left:26px;font-size:17px;line-height:1.4;font-weight:500;color:var(--ink)}
 .gap-list li::before{content:'';position:absolute;left:0;top:.42em;width:10px;height:10px;border-radius:50%;border:2px solid var(--blue-deep)}
-.gap-close{margin:22px 0 0;padding-top:20px;border-top:1px solid #EDF2F7;font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(18px,4.4vw,21px);letter-spacing:-.015em;color:var(--ink)}
+.gap-close{margin:22px 0 0;padding-top:20px;text-align:center;border-top:1px solid #EDF2F7;font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(18px,4.4vw,21px);letter-spacing:-.015em;color:var(--ink)}
 
 /* ---------- the call (same as the current results page) ---------- */
 .call-sub{margin:-10px 0 16px;font-size:17px;line-height:1.5;color:var(--ink-2);text-wrap:pretty}
-.call-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px}
+.call-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:0 0 22px}
 .call-chips span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px;font-weight:600;color:var(--blue-deep);background:var(--blue-wash);border-radius:999px;padding:6px 11px 6px 8px}
 .call-chips span::before{content:'';flex:none;width:13px;height:13px;border-radius:50%;background:var(--blue-deep) no-repeat center/8px 6px;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1 4.6l3.2 3L11 1' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
@@ -329,10 +369,9 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 .fx .res.is-in .rows li{opacity:1;transform:none}
 .fx .res-say{opacity:0;transition:opacity .6s 1.15s ease}
 .fx .res.is-in .res-say{opacity:1}
-.fx .big-line{border-left-color:transparent}
 .fx .big-line.rv{opacity:1;transform:none}
-.fx .big-line::before{content:'';position:absolute;left:-4px;top:0;bottom:0;width:4px;background:var(--gold);transform:scaleY(0);transform-origin:top;transition:transform .7s cubic-bezier(.6,0,.2,1)}
-.fx .big-line.is-in::before{transform:scaleY(1)}
+.fx .big-line::before{transform:scaleX(0);transition:transform .7s cubic-bezier(.6,0,.2,1)}
+.fx .big-line.is-in::before{transform:scaleX(1)}
 .fx .big-line .w{display:inline-block;opacity:0;transform:translateY(.35em);filter:blur(6px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1),filter .6s ease;transition-delay:calc(260ms + var(--i) * 45ms)}
 .fx .big-line.is-in .w{opacity:1;transform:none;filter:none}
 .fx .gap-list li{opacity:0;transform:translateX(-12px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(250ms + var(--i) * 130ms)}
@@ -374,65 +413,36 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 <!-- 1 | the promise, and up front: it's typical -------------------- -->
 <div class="wrap">
   <div class="r-sec r-first" style="padding-bottom:0">
-    <p class="pill-ok bi" style="--i:0"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Takes about a minute</p>
-    <h1 class="r-h1 bi" style="--i:1">How much would your wife actually need?</h1>
-    <p class="r-sub bi" style="--i:2">Set each one to your life. Your number builds as you go.</p>
-
-    <div class="honest narrow bi" style="--i:3" role="note">
-      <span class="honest-ic" aria-hidden="true">i</span>
-      <div>
-        <h2>This is a typical number, not a quote.</h2>
-        <p>It uses the rule of thumb advisors start with: add up what your wife would have to pay for, then take off what's already set aside for her.</p>
-        <p>It can't see your health, your contracts or the fine print on what you have now. Use it as your starting point.</p>
-      </div>
-    </div>
+    <h1 class="r-h1 bi" style="--i:0">How much would your wife actually need?</h1>
+    <p class="r-sub bi" style="--i:1" id="heroSub">Slide each one to your life. Your number builds as you go.</p>
+    <div class="quick-wrap bi" style="--i:2" id="quickWrap"><button type="button" class="quick" id="quickBtn"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.2 1.8L4 11.2h5l-1.2 7 7.2-9.4h-5z" fill="currentColor"/></svg>Do it for me in 4 taps</button></div>
   </div>
+
+  <div class="quiz" id="quiz" hidden></div>
 
   <!-- 2 | the calculator ------------------------------------------- -->
   <div class="calc" id="calc">
     <div class="card inputs bi" style="--i:4" id="inputs">
-      <div class="in-head"><span class="eyebrow-up">Set it to your life</span><span>Each starts in the middle. Rough is fine.</span></div>
+      <div class="in-head"><span class="eyebrow-up" id="inHead">Set it to your life</span></div>
 
       <div class="in-row">
-        <div class="in-top"><label for="in-signed">What you've signed for personally</label><output class="in-val" id="v-signed" for="in-signed"></output></div>
+        <div class="in-top"><label for="in-signed">Debt you signed for personally</label><output class="in-val" id="v-signed" for="in-signed"></output></div>
         <input class="rng" type="range" id="in-signed" data-k="signed">
-        <p class="in-help">Bank line, truck loans, shop lease, supplier accounts.</p>
       </div>
 
       <div class="in-row">
         <div class="in-top"><label for="in-mortgage">Mortgage left on your house</label><output class="in-val" id="v-mortgage" for="in-mortgage"></output></div>
         <input class="rng" type="range" id="in-mortgage" data-k="mortgage">
-        <p class="in-help">If the bank's mortgage insurance would pay it off, slide this to $0.</p>
       </div>
 
       <div class="in-row">
-        <div class="in-top"><label for="in-bills">What your house costs to run each month</label><output class="in-val" id="v-bills" for="in-bills"></output></div>
+        <div class="in-top"><label for="in-bills">Monthly bills, not the mortgage</label><output class="in-val" id="v-bills" for="in-bills"></output></div>
         <input class="rng" type="range" id="in-bills" data-k="bills">
-        <p class="in-help">Groceries, bills, car payments, the kids. Not the mortgage. That's above.</p>
-      </div>
-
-      <div class="in-row">
-        <div class="in-top"><label for="in-years">Years your wife should have that covered</label><output class="in-val" id="v-years" for="in-years"></output></div>
-        <input class="rng" type="range" id="in-years" data-k="years">
-        <p class="in-help">A common pick: until your youngest is done school.</p>
-      </div>
-
-      <div class="in-row">
-        <div class="in-top"><span id="l-kids" style="font-family:Archivo,sans-serif;font-weight:600;font-size:16.5px;line-height:1.3;color:var(--ink)">Kids who'll need school paid for</span></div>
-        <div class="seg" id="seg-kids" role="radiogroup" aria-labelledby="l-kids">
-          <button type="button" role="radio" data-v="0" aria-checked="false">0</button>
-          <button type="button" role="radio" data-v="1" aria-checked="false">1</button>
-          <button type="button" role="radio" data-v="2" aria-checked="false">2</button>
-          <button type="button" role="radio" data-v="3" aria-checked="false">3</button>
-          <button type="button" role="radio" data-v="4" aria-checked="false">4+</button>
-        </div>
-        <p class="in-help">About $40,000 each, for four years of tuition and fees.</p>
       </div>
 
       <div class="in-row">
         <div class="in-top"><label for="in-saved">Already set aside for your wife</label><output class="in-val" id="v-saved" for="in-saved"></output></div>
         <input class="rng" type="range" id="in-saved" data-k="saved">
-        <p class="in-help">Joint savings, plus any life insurance or RRSP with her name on it.</p>
       </div>
     </div>
 
@@ -446,7 +456,6 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
           <i data-k="signed" style="background:var(--c-signed)"></i>
           <i data-k="house"  style="background:var(--c-house)"></i>
           <i data-k="bills"  style="background:var(--c-bills)"></i>
-          <i data-k="school" style="background:var(--c-school)"></i>
           <i data-k="after"  style="background:var(--c-after)"></i>
           <span class="saved" id="stackSaved"></span>
         </div>
@@ -455,9 +464,8 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
           <li data-k="signed" style="--i:0"><span class="sw" style="background:var(--c-signed)"></span><span class="lab">What you signed for</span><span class="amt"></span></li>
           <li data-k="house"  style="--i:1"><span class="sw" style="background:var(--c-house)"></span><span class="lab">The house</span><span class="amt"></span></li>
           <li data-k="bills"  style="--i:2"><span class="sw" style="background:var(--c-bills)"></span><span class="lab" id="labBills"></span><span class="amt"></span></li>
-          <li data-k="school" style="--i:3"><span class="sw" style="background:var(--c-school)"></span><span class="lab" id="labSchool"></span><span class="amt"></span></li>
-          <li data-k="after"  style="--i:4"><span class="sw" style="background:var(--c-after)"></span><span class="lab">Costs right after<small>The lawyer, Ontario's estate tax, final costs</small></span><span class="amt"></span></li>
-          <li data-k="saved"  style="--i:5"><span class="sw sw-saved"></span><span class="lab">Already set aside</span><span class="amt"></span></li>
+          <li data-k="after"  style="--i:3"><span class="sw" style="background:var(--c-after)"></span><span class="lab">Costs right after</span><span class="amt"></span></li>
+          <li data-k="saved"  style="--i:4"><span class="sw sw-saved"></span><span class="lab">Already set aside</span><span class="amt"></span></li>
         </ul>
 
         <p class="res-say" id="resSay"></p>
@@ -467,8 +475,7 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
           <ul>
             <li><b>What you signed for.</b> Before your wife gets anything, your estate pays the people you owe. This puts that amount back in her hands.</li>
             <li><b>The house.</b> Pays off what's left, so she keeps it.</li>
-            <li><b>Running the house.</b> Your monthly number, times 12, times the years you picked. No interest earned and no inflation added, to keep it simple.</li>
-            <li><b>School.</b> $40,000 per child. University tuition in Canada averaged $7,734 a year in 2025/26 (<a href="https://www150.statcan.gc.ca/n1/daily-quotidien/250910/dq250910d-eng.htm" target="_blank" rel="noopener">Statistics Canada</a>), plus books and fees.</li>
+            <li><b>Bills.</b> Your monthly number, times 12, times 10 years. No interest earned and no inflation added, to keep it simple.</li>
             <li><b>Costs right after.</b> $25,000. A traditional service averages about $13,000 (<a href="https://www.empire.ca/scotia-insurance-termlife/needs-analysis" target="_blank" rel="noopener">Empire Life</a>). Add the lawyer and Ontario's estate administration tax: $15 for every $1,000 over $50,000 (<a href="https://www.ontario.ca/page/estate-administration-tax" target="_blank" rel="noopener">Ontario.ca</a>).</li>
             <li><b>Already set aside.</b> Taken off the total. Then it's rounded up to the nearest $25,000.</li>
           </ul>
@@ -480,20 +487,20 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 </div>
 
 <!-- 3 | the line --------------------------------------------------- -->
-<div class="wrap narrow">
+<div class="wrap narrow" id="after">
   <div class="r-sec" style="padding-top:44px">
     <p class="big-line rv" id="bigLine"></p>
   </div>
 
   <!-- 4 | what this number can't tell you ------------------------- -->
   <div class="r-sec">
-    <h2 class="r-h2 rv">What this number can't tell you</h2>
+    <h2 class="r-h2 ctr rv">What this number can't tell you</h2>
     <div class="card rv">
       <ul class="gap-list" id="gapList">
-        <li style="--i:0"><b id="gapCost"></b>That depends on your age, your health and your trade.</li>
-        <li style="--i:1"><b>Whether to cover it in one piece or two.</b>The part for what you signed only has to last as long as the debt does.</li>
-        <li style="--i:2"><b>Which insurer treats your trade fairly.</b>They don't all.</li>
-        <li style="--i:3"><b>How to put your wife's name on it the right way.</b>Done wrong, the money goes through the court anyway.</li>
+        <li style="--i:0" id="gapCost"></li>
+        <li style="--i:1">Whether one policy or two costs you less.</li>
+        <li style="--i:2">Which insurers treat your trade fairly.</li>
+        <li style="--i:3">How to set it up so it skips the court and goes straight to her.</li>
       </ul>
       <p class="gap-close">That takes one short call.</p>
     </div>
@@ -501,8 +508,8 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 
   <!-- 5 | the call: pick a time ---------------------------------- -->
   <div class="r-sec r-call">
-    <h2 class="r-h2 r-big rv" id="callHead"></h2>
-    <p class="call-sub rv">Pick a time. A licensed Ontario advisor calls you.</p>
+    <h2 class="r-h2 r-big ctr rv" id="callHead"></h2>
+    <p class="call-sub ctr rv">Pick a time. A licensed Ontario advisor calls you.</p>
     <div class="call-chips rv"><span>FSRA licensed</span><span>10+ yrs avg experience</span><span>Free call</span></div>
 
     <div class="rv" id="callBox"></div>
@@ -543,18 +550,21 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 "use strict";
 
 var NOLOG=!!window.ZL_NOLOG;
+var MODE=(new URLSearchParams(location.search).get('v')==='quiz')?'quiz':'calc';
+var VIA_QUIZ=false;
 
 /* ================================================================
    THE MATH (typical estimate, said up front on the page)
-   number = what he signed for + mortgage + monthly bills x 12 x years
-          + school ($40,000 a child) + costs right after ($25,000)
+   number = what he signed for + mortgage + monthly bills x 12 x 10 years
+          + costs right after ($25,000)
           - what's already set aside for her,
    rounded up to the nearest $25,000.
+   10 years is fixed (user, Oct 30: no years question, no kids question).
    Sources for the fixed figures are in "How this number is worked
    out" on the page.
    ================================================================ */
-var SCHOOL_EACH=40000, AFTER=25000, ROUND=25000;
-var DEF={signed:250000,mortgage:400000,bills:5000,years:10,kids:2,saved:0};
+var YEARS=10, AFTER=25000, ROUND=25000;
+var DEF={signed:250000,mortgage:400000,bills:5000,saved:0};
 
 /* each slider walks a ladder of round values: fine steps where most
    people are, bigger steps further out */
@@ -567,7 +577,6 @@ var STEPS={
   signed  :ladder([[0,100000,10000],[125000,500000,25000],[550000,1000000,50000],[1100000,2000000,100000],[2250000,3000000,250000]]),
   mortgage:ladder([[0,100000,10000],[125000,1000000,25000],[1050000,2000000,50000]]),
   bills   :ladder([[1000,10000,250],[10500,20000,500]]),
-  years   :ladder([[1,25,1]]),
   saved   :ladder([[0,100000,5000],[110000,500000,10000],[525000,1000000,25000],[1050000,2000000,50000]])
 };
 
@@ -595,8 +604,7 @@ function compute(){
   var parts={
     signed:S.signed,
     house:S.mortgage,
-    bills:S.bills*12*S.years,
-    school:S.kids*SCHOOL_EACH,
+    bills:S.bills*12*YEARS,
     after:AFTER
   };
   var gross=0; Object.keys(parts).forEach(function(k){ gross+=parts[k]; });
@@ -652,30 +660,11 @@ ranges.forEach(function(r){
   });
 });
 
-var seg=document.getElementById('seg-kids');
-function paintKids(){
-  [].forEach.call(seg.querySelectorAll('button'),function(b){
-    var on=+b.getAttribute('data-v')===Math.min(S.kids,4);
-    b.setAttribute('aria-checked',on?'true':'false'); b.tabIndex=on?0:-1;
-  });
-}
-seg.addEventListener('click',function(e){
-  var b=e.target.closest('button'); if(!b) return;
-  var v=+b.getAttribute('data-v'); if(v===S.kids) return;
-  S.kids=v; paintKids(); update(); save();
-});
-seg.addEventListener('keydown',function(e){
-  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
-  e.preventDefault();
-  S.kids=Math.max(0,Math.min(4,S.kids+(e.key==='ArrowRight'?1:-1)));
-  paintKids(); seg.querySelector('[aria-checked=true]').focus(); update(); save();
-});
-paintKids();
 
 /* ---------------- the number ---------------- */
 var resEl=document.getElementById('res'), resFig=document.getElementById('resFig'),
     liveFig=document.getElementById('liveFig'), revealed=!FX;
-var KEYS=['signed','house','bills','school','after'];
+var KEYS=['signed','house','bills','after'];
 var BIG_LINES={
   both  :'Your wife shouldn’t have to sell the house to pay what you signed for.',
   signed:'Your wife shouldn’t have to sell the trucks to pay what you signed for.',
@@ -707,8 +696,7 @@ function paintNumber(first){
     li.hidden=!(v>0);
     amt.textContent=k==='saved'?'−'+money(v):money(v);
   });
-  document.getElementById('labBills').textContent='Bills for '+S.years+(S.years===1?' year':' years');
-  document.getElementById('labSchool').textContent='School for '+(S.kids>=4?'4+':S.kids)+(S.kids===1?' kid':' kids');
+  document.getElementById('labBills').textContent='Bills for '+YEARS+' years';
 
   /* the figure */
   tweenText(resFig,c.num,first?1300:420,first?250:0,money);
@@ -721,11 +709,10 @@ function paintWords(){
   /* what the number does, in one sentence, from the parts he set */
   var does=[];
   if(S.mortgage>0) does.push('keep the house');
-  if(S.signed>0) does.push('pay off what you signed for');
-  does.push('cover the bills for '+S.years+(S.years===1?' year':' years'));
-  if(S.kids>0) does.push('put '+(S.kids===1?'your child':'the kids')+' through school');
+  if(S.signed>0) does.push('pay what you signed for');
+  does.push('cover '+YEARS+' years of bills');
   document.getElementById('resSay').textContent = c.num>0
-    ? 'That’s what it would take for your wife to '+joinAnd(does)+', without waiting on a court.'
+    ? 'Enough for your wife to '+joinAnd(does)+'.'
     : 'What’s set aside already covers this. The call can check that it actually reaches your wife.';
 
   /* the closing line follows what he has: a house, a guarantee, both, neither */
@@ -761,7 +748,7 @@ else{ liveFig.textContent=money(compute().num); liveFig._v=compute().num; }
 function calcSummary(){
   var c=compute();
   return money(c.num)+' · signed '+money(S.signed)+' · mortgage '+money(S.mortgage)
-    +' · '+money(S.bills)+'/mo for '+S.years+' yrs · kids '+(S.kids>=4?'4+':S.kids)+' · set aside '+money(S.saved);
+    +' · '+money(S.bills)+'/mo · set aside '+money(S.saved)+(VIA_QUIZ?' · via quiz':'');
 }
 
 /* ---------------- scroll: reveals, and the bar on a phone ---------------- */
@@ -799,6 +786,117 @@ if(FX){
     });
   },{threshold:.2,rootMargin:'0px 0px -6% 0px'});
   [].forEach.call(document.querySelectorAll('.rv'),function(el){ io.observe(el); });
+}
+
+/* ================================================================
+   THE QUICK WAY: 4 taps instead of sliders.
+   /result?v=quiz opens with it (the rest of the page waits until he
+   answers); /result?v=calc has a "Do it for me" button that opens it.
+   Each answer sets its slider to a round value inside the range he
+   tapped, so he can fine-tune after.
+   ================================================================ */
+var QUIZ=[
+  {k:'signed',q:'How much have you signed for personally?',hint:'Truck loans, bank line, shop lease, supplier accounts.',
+   opts:[['None',0],['Under $100K',50000],['$100K – $250K',175000],['$250K – $500K',375000],['$500K – $1M',750000],['Over $1M',1500000]]},
+  {k:'mortgage',q:'How much is left on your mortgage?',
+   opts:[['No mortgage',0],['Under $250K',150000],['$250K – $500K',375000],['$500K – $750K',625000],['Over $750K',1000000]]},
+  {k:'bills',q:'What does your family spend each month?',hint:'Not counting the mortgage.',
+   opts:[['Under $3,000',2500],['$3,000 – $5,000',4000],['$5,000 – $7,000',6000],['$7,000 – $10,000',8500],['Over $10,000',12000]]},
+  {k:'saved',q:'How much is already set aside for your wife?',hint:'Savings, plus any life insurance with her name on it.',
+   opts:[['Nothing yet',0],['Under $100K',50000],['$100K – $250K',180000],['$250K – $500K',380000],['Over $500K',750000]]}
+];
+var quizEl=document.getElementById('quiz'), calcEl=document.getElementById('calc'),
+    quickWrap=document.getElementById('quickWrap'), afterEl=document.getElementById('after');
+var QA={}, qi=0, qBusy=false;
+var BACK_SVG='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function quizOpen(){
+  QA={}; qi=0; qBusy=false;
+  quizEl.innerHTML='<div class="q-card bi" style="--i:2"><div class="q-top"><button type="button" class="q-back" id="qBack" aria-label="Back">'+BACK_SVG+'</button><span class="q-count" id="qCount"></span></div>'
+    +'<div class="q-bar"><i id="qBar"></i></div><div class="q-body" id="qBody"></div></div>'
+    +'<button type="button" class="q-skip" id="qSkip">'+(MODE==='quiz'?'Or set it yourself':'Back to the sliders')+'</button>';
+  quizEl.hidden=false; calcEl.hidden=true; quickWrap.hidden=true;
+  quizShow();
+}
+function quizShow(){
+  var q=QUIZ[qi];
+  document.getElementById('qCount').textContent=(qi+1)+' of '+QUIZ.length;
+  document.getElementById('qBar').style.width=(qi/QUIZ.length*100)+'%';
+  document.getElementById('qBack').disabled=qi===0;
+  document.getElementById('qBody').innerHTML='<h2 class="q-h">'+q.q+'</h2>'+(q.hint?'<p class="q-hint">'+q.hint+'</p>':'')
+    +'<div class="q-opts" role="group" aria-label="'+esc(q.q)+'">'+q.opts.map(function(o,n){
+      return '<button type="button" class="q-opt bi'+(QA[q.k]===o[1]?' is-on':'')+'" style="--i:'+n+'" data-v="'+o[1]+'">'+o[0]+'</button>';
+    }).join('')+'</div>';
+}
+function quizPick(btn){
+  if(qBusy) return; qBusy=true;
+  QA[QUIZ[qi].k]=+btn.getAttribute('data-v');
+  [].forEach.call(btn.parentNode.children,function(b){ b.classList.toggle('is-on',b===btn); });
+  document.getElementById('qBar').style.width=((qi+1)/QUIZ.length*100)+'%';
+  setTimeout(function(){
+    var body=document.getElementById('qBody'); body.classList.add('out');
+    setTimeout(function(){
+      body.classList.remove('out');
+      if(qi<QUIZ.length-1){ qi++; quizShow(); qBusy=false; }
+      else quizDone();
+    },RM?0:200);
+  },RM?0:260);
+}
+function quizBack(){ if(qBusy||qi===0) return; qi--; quizShow(); }
+function quizDone(){
+  document.getElementById('qBack').disabled=true;
+  document.getElementById('qSkip').hidden=true;
+  document.getElementById('qBody').innerHTML='<div class="q-wait bi"><span class="spin" aria-hidden="true"></span>Adding it up…</div>';
+  setTimeout(function(){
+    VIA_QUIZ=true;
+    ranges.forEach(function(r){
+      var k=r.getAttribute('data-k'), list=STEPS[k];
+      if(typeof QA[k]==='number'){ r.value=nearest(list,QA[k]); S[k]=list[+r.value]; paintRange(r); }
+    });
+    save();
+    quizEl.hidden=true; quizEl.innerHTML='';
+    calcEl.hidden=false; calcEl.classList.add('res-first'); afterEl.hidden=false;
+    document.getElementById('inHead').textContent='Fine-tune it';
+    showNumber();
+  },RM?200:1100);
+}
+function quizSkip(){
+  quizEl.hidden=true; quizEl.innerHTML='';
+  calcEl.hidden=false; afterEl.hidden=false;
+  if(MODE==='quiz') document.getElementById('heroSub').textContent='Slide each one to your life. Your number builds as you go.';
+  else quickWrap.hidden=false;
+  var r=calcEl.getBoundingClientRect();
+  window.scrollTo({top:Math.max(0,window.scrollY+r.top-140),behavior:RM?'auto':'smooth'});
+}
+/* his number builds in front of him: the bar from empty, the figure counting up */
+function showNumber(){
+  paintWords();
+  revealed=true;
+  [].forEach.call(document.querySelectorAll('#stack i'),function(s){ s.style.transitionDelay='0ms'; s.style.width='0'; });
+  document.getElementById('stackSaved').style.width='0';
+  resFig._v=0; resFig.textContent='$0';
+  resEl.classList.remove('is-in');
+  var off=document.querySelector('.header').offsetHeight+(document.body.classList.contains('has-devbar')&&!document.body.classList.contains('is-clean')?58:14);
+  var r=resEl.getBoundingClientRect();
+  window.scrollTo({top:Math.max(0,window.scrollY+r.top-off),behavior:RM?'auto':'smooth'});
+  void resEl.offsetWidth;
+  setTimeout(function(){ resEl.classList.add('is-in'); paintNumber(true); },RM?0:350);
+}
+quizEl.addEventListener('click',function(e){
+  var t;
+  if((t=e.target.closest('.q-opt'))) return quizPick(t);
+  if(e.target.closest('#qBack')) return quizBack();
+  if(e.target.closest('#qSkip')) return quizSkip();
+});
+document.getElementById('quickBtn').addEventListener('click',function(){
+  quizOpen();
+  var r=quizEl.getBoundingClientRect();
+  window.scrollTo({top:Math.max(0,window.scrollY+r.top-130),behavior:RM?'auto':'smooth'});
+});
+if(MODE==='quiz'){
+  document.getElementById('heroSub').textContent='Four quick taps. Your number shows at the end.';
+  afterEl.hidden=true;
+  quizOpen();
 }
 
 /* ---------------- carriers ---------------- */
@@ -1019,7 +1117,10 @@ calStart();
 if(NOLOG){
   var bar=document.createElement('nav');
   bar.className='devbar'; bar.setAttribute('aria-label','Test controls');
-  bar.innerHTML='<a href="/result">Current</a><a class="is-on" href="/result?v=calc" aria-current="page">Calculator</a><i></i><button type="button" id="devClean">Clean view</button>';
+  bar.innerHTML='<a href="/result">Current</a>'
+    +'<a'+(MODE==='calc'?' class="is-on" aria-current="page"':'')+' href="/result?v=calc">Calculator</a>'
+    +'<a'+(MODE==='quiz'?' class="is-on" aria-current="page"':'')+' href="/result?v=quiz">Quiz</a>'
+    +'<i></i><button type="button" id="devClean">Clean</button>';
   var dot=document.createElement('button');
   dot.type='button'; dot.className='dev-dot'; dot.setAttribute('aria-label','Show test controls');
   document.body.appendChild(bar); document.body.appendChild(dot);
