@@ -4,6 +4,11 @@
   "rewrites": [
     {
       "source": "/result",
+      "has": [{ "type": "query", "key": "v", "value": "calc" }],
+      "destination": "/result-calc"
+    },
+    {
+      "source": "/result",
       "destination": "/"
     }
   ],

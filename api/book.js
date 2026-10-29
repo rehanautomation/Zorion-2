@@ -57,7 +57,7 @@ function discordMessage(b, opts) {
         { name: 'When', value: whenLabel(b.ymd, b.hm), inline: false },
         { name: 'Phone', value: b.phone || '—', inline: true },
         { name: 'Email', value: b.email || '—', inline: true }
-      ],
+      ].concat(b.calc ? [{ name: 'Their number (calculator)', value: md(b.calc), inline: false }] : []),
       timestamp: new Date(b.ts || Date.now()).toISOString()
     }]
   };
@@ -114,6 +114,9 @@ async function handler(req, res) {
     sid: String(b.sid || '').slice(0, 40),
     ts: now
   };
+  /* Only the calculator results page (result-calc.html) sends this:
+     his number and the inputs behind it, for the advisor's opener. */
+  if (b.calc) booking.calc = String(b.calc).slice(0, 300);
 
   /* Hold the slot first. Losing the race means someone else has it. */
   if (!ours) {
