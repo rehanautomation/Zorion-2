@@ -1084,7 +1084,7 @@ document.addEventListener('click',function(e){
   if(e.target.closest('#calMore')) return calMore();
   if(e.target.closest('#calBook')) return calBook();
 });
-document.addEventListener('input',function(e){ if(e.target&&e.target.id==='whoEmail') e.target.classList.remove('is-bad'); });
+document.addEventListener('input',function(e){ if(e.target&&e.target.id==='whoEmail'){ e.target.classList.remove('is-bad'); var er=document.getElementById('calErr'); if(er) er.textContent=''; } });
 document.addEventListener('focusout',function(e){
   if(e.target&&e.target.id==='whoPhone'&&validPhone(e.target.value)) e.target.value=fmtPhone(e.target.value);
 });
