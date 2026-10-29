@@ -174,7 +174,18 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 @media (hover:hover){ .quick:hover{background:#1B3350} }
 .quick:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 
-.quiz{margin:22px auto 0;max-width:560px}
+.quiz{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(14,30,48,.55);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:qfade .22s ease}
+.quiz .q-card{width:100%;max-width:520px;max-height:94vh;overflow:auto;border-radius:24px 24px 0 0;border:0;
+  padding:16px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(14,30,48,.25);animation:qup .36s cubic-bezier(.2,.8,.2,1)}
+@media (min-width:621px){ .quiz{align-items:center;padding:20px} .quiz .q-card{border-radius:22px;padding:22px 28px 28px} }
+@keyframes qfade{from{opacity:0}}
+@keyframes qup{from{transform:translateY(60px);opacity:0}}
+.quiz .q-body{margin-top:18px}
+.quiz .q-opt{min-height:54px}
+.q-x{width:38px;height:38px;margin-right:-9px;border:0;border-radius:50%;background:var(--field);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.q-x svg{width:16px;height:16px}
+html.q-lock,html.q-lock body{overflow:hidden}
 .q-card{background:var(--paper);border:1px solid var(--rule);border-radius:22px;padding:clamp(20px,5vw,30px);box-shadow:0 18px 40px rgba(14,30,48,.08);overflow:hidden}
 .q-top{display:flex;align-items:center;justify-content:space-between;height:34px}
 .q-back{width:38px;height:38px;margin-left:-9px;border:0;border-radius:50%;background:transparent;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -797,10 +808,11 @@ var BACK_SVG='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 1
 
 function quizOpen(){
   QA={}; qi=0; qBusy=false;
-  quizEl.innerHTML='<div class="q-card bi" style="--i:2"><div class="q-top"><button type="button" class="q-back" id="qBack" aria-label="Back">'+BACK_SVG+'</button><span class="q-count" id="qCount"></span></div>'
+  quizEl.innerHTML='<div class="q-card" role="dialog" aria-modal="true" aria-label="4 quick questions"><div class="q-top"><button type="button" class="q-back" id="qBack" aria-label="Back">'+BACK_SVG+'</button><span class="q-count" id="qCount"></span>'
+    +'<button type="button" class="q-x" id="qSkip" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>'
     +'<div class="q-bar"><i id="qBar"></i></div><div class="q-body" id="qBody"></div></div>'
-    +'<button type="button" class="q-skip" id="qSkip">'+'Back to the sliders'+'</button>';
-  quizEl.hidden=false; calcEl.hidden=true; quickWrap.hidden=true;
+    ;
+  quizEl.hidden=false; document.documentElement.classList.add('q-lock');
   quizShow();
 }
 function quizShow(){
@@ -830,7 +842,7 @@ function quizPick(btn){
 function quizBack(){ if(qBusy||qi===0) return; qi--; quizShow(); }
 function quizDone(){
   document.getElementById('qBack').disabled=true;
-  document.getElementById('qSkip').hidden=true;
+  document.getElementById('qSkip').disabled=true;
   document.getElementById('qBody').innerHTML='<div class="q-wait bi"><span class="spin" aria-hidden="true"></span>Adding it up…</div>';
   setTimeout(function(){
     VIA_QUIZ=true;
@@ -839,19 +851,14 @@ function quizDone(){
       if(typeof QA[k]==='number'){ r.value=nearest(list,QA[k]); S[k]=list[+r.value]; paintRange(r); }
     });
     save();
-    quizEl.hidden=true; quizEl.innerHTML='';
-    calcEl.hidden=false; calcEl.classList.add('res-first'); afterEl.hidden=false;
+    quizClose();
+    calcEl.classList.add('res-first');
     document.getElementById('inHead').textContent='Fine-tune it';
     showNumber();
   },RM?200:1100);
 }
-function quizSkip(){
-  quizEl.hidden=true; quizEl.innerHTML='';
-  calcEl.hidden=false; afterEl.hidden=false;
-  quickWrap.hidden=false;
-  var r=calcEl.getBoundingClientRect();
-  window.scrollTo({top:Math.max(0,window.scrollY+r.top-140),behavior:RM?'auto':'smooth'});
-}
+function quizClose(){ quizEl.hidden=true; quizEl.innerHTML=''; document.documentElement.classList.remove('q-lock'); }
+function quizSkip(){ if(!qBusy||qi<QUIZ.length-1) quizClose(); }
 /* his number builds in front of him: the bar from empty, the figure counting up */
 function showNumber(){
   paintWords();
@@ -870,12 +877,11 @@ quizEl.addEventListener('click',function(e){
   var t;
   if((t=e.target.closest('.q-opt'))) return quizPick(t);
   if(e.target.closest('#qBack')) return quizBack();
-  if(e.target.closest('#qSkip')) return quizSkip();
+  if(e.target.closest('#qSkip')||e.target===quizEl) return quizSkip();
 });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!quizEl.hidden) quizSkip(); });
 document.getElementById('quickBtn').addEventListener('click',function(){
   quizOpen();
-  var r=quizEl.getBoundingClientRect();
-  window.scrollTo({top:Math.max(0,window.scrollY+r.top-130),behavior:RM?'auto':'smooth'});
 });
 
 /* ---------------- carriers ---------------- */
