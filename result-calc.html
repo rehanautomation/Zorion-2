@@ -1107,7 +1107,8 @@ calStart();
    visitor sees (a faint dot top-right brings it back). Same tab key
    as the current results page.
    ================================================================ */
-if(NOLOG){
+/* only when the link itself says ?nolog=1, never in a normal visit */
+if(NOLOG&&new URLSearchParams(location.search).get('nolog')==='1'){
   var bar=document.createElement('nav');
   bar.className='devbar'; bar.setAttribute('aria-label','Test controls');
   bar.innerHTML='<a href="/result?v=old">Old</a>'

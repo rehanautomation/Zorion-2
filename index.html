@@ -922,8 +922,9 @@ if(NOLOG){ (function(){
 })(); }
 /* Results page versions: on our own runs only, a switch to the
    calculator version (/result?v=calc, result-calc.html). It shows on
-   the results screen only, and Clean view hides it. */
-if(NOLOG){ (function(){
+   the results screen only, and Clean view hides it. Only when the
+   link itself says ?nolog=1. */
+if(NOLOG&&new URLSearchParams(location.search).get('nolog')==='1'){ (function(){
   function add(){
     var t=document.createElement('nav'); t.className='ver-toggle'; t.setAttribute('aria-label','Results page version');
     t.innerHTML='<a class="is-on" href="/result?v=old" aria-current="page">Old</a><a href="/result">Calculator</a>';
