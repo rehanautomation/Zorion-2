@@ -82,9 +82,10 @@ if(!window.ZL_NOLOG){
 @media (min-width:900px){ :root{ --header-h:66px; --pad:32px; --tap:60px; } }
 
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;background:var(--ink)}
+html{-webkit-text-size-adjust:100%;background:var(--ink);overflow-x:hidden}
+@supports (overflow:clip){ html{overflow-x:clip} }
 body{
-  margin:0;-webkit-tap-highlight-color:transparent;padding-top:var(--header-h);background:var(--field);color:var(--ink-2);
+  overflow-x:clip;margin:0;-webkit-tap-highlight-color:transparent;padding-top:var(--header-h);background:var(--field);color:var(--ink-2);
   font-family:Inter,system-ui,sans-serif;font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
 }
 main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc(100svh - var(--header-h))}
@@ -220,10 +221,10 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 .res{background:var(--ink);border-radius:22px;padding:clamp(24px,5.5vw,34px);color:#fff}
 .res-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .res .eyebrow-up{color:#7FA0C0;white-space:nowrap;letter-spacing:.1em}
-.res .chip-typ{font-size:10.5px;padding:4px 9px}
+.res .chip-typ{font-size:10.5px;padding:4px 9px;margin-right:9px}
 .chip-typ{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--gold);border:1px solid rgba(245,183,0,.5);border-radius:99px;padding:5px 10px;white-space:nowrap}
-.res-fig{margin-top:16px;font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(46px,12.5vw,72px);line-height:1;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.res-round{margin:10px 0 0;font-size:13px;color:#8FA3B7}
+.res-fig{max-width:100%;margin-top:16px;font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(46px,12.5vw,72px);line-height:1;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.res-round{display:flex;align-items:center;flex-wrap:wrap;gap:6px 0;margin:12px 0 0;font-size:13px;color:#8FA3B7}
 
 .stack{position:relative;display:flex;height:18px;margin-top:24px;border-radius:9px;overflow:hidden;background:rgba(255,255,255,.07)}
 .stack i{display:block;height:100%;width:0;flex:none;box-shadow:inset -2px 0 0 var(--ink);transition:width .6s cubic-bezier(.2,.8,.2,1)}
@@ -464,9 +465,9 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 
     <div class="res-wrap">
       <div class="res" id="res" aria-live="polite">
-        <div class="res-top"><span class="eyebrow-up">What your wife would need</span><span class="chip-typ">Typical estimate</span></div>
+        <div class="res-top"><span class="eyebrow-up">What your wife would need</span></div>
         <div class="res-fig" id="resFig">$0</div>
-        <p class="res-round">Rounded up to the nearest $25,000. Not a quote.</p>
+        <p class="res-round"><span class="chip-typ">Typical estimate</span>Rounded up. Not a quote.</p>
 
         <div class="stack" id="stack" aria-hidden="true">
           <i data-k="signed" style="background:var(--c-signed)"></i>
