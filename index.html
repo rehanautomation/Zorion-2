@@ -926,7 +926,7 @@ if(NOLOG){ (function(){
 if(NOLOG){ (function(){
   function add(){
     var t=document.createElement('nav'); t.className='ver-toggle'; t.setAttribute('aria-label','Results page version');
-    t.innerHTML='<a class="is-on" href="/result" aria-current="page">Current</a><a href="/result?v=calc">Calculator</a><a href="/result?v=quiz">Quiz</a>';
+    t.innerHTML='<a class="is-on" href="/result" aria-current="page">Current</a><a href="/result?v=calc">Calculator</a>';
     document.body.appendChild(t);
     document.body.classList.add('has-ver');
   }

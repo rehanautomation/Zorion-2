@@ -71,13 +71,14 @@ async function load() {
     leads.push(e);
   }
 
-  const bySid = {}, byPhone = {};
+  const bySid = {}, byPhone = {}, byEmail = {};
   for (const b of bookings) {
     const at = Date.parse(b.iso || '') || null;
     if (!at) continue;
     const row = { at, slot: b.slot };
     if (b.sid) bySid[b.sid] = row;
     if (digits(b.phone)) byPhone[digits(b.phone)] = row;
+    if (b.email) byEmail[String(b.email).trim().toLowerCase()] = row;   // calculator page books by email only
   }
 
   /* One-time restart (Oct 22, Rehan): the two older leads were barely
@@ -104,7 +105,7 @@ async function load() {
       name: e.name || '', email: e.email || '', phone: e.phone || '',
       answers: answers(e.answers),
       ad: tag ? (Z.AD_LABELS[tag] || tag) : '',
-      booking: (e.sid && bySid[e.sid]) || byPhone[digits(e.phone)] || null,
+      booking: (e.sid && bySid[e.sid]) || byPhone[digits(e.phone)] || byEmail[String(e.email || '').trim().toLowerCase()] || null,
       state: st,
       canUndo: Boolean(states[id] && (states[id].hist || []).length)
     };

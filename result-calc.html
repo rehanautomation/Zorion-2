@@ -291,7 +291,7 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 .cal-more[hidden],.cal-cta[hidden]{display:none}
 @media (hover:hover){ .cal-more:hover{background:rgba(255,255,255,.55)} }
 .slot:active,.cal-more:active,.cal-arrow:active:not(:disabled),.cal-cta .btn:active:not(:disabled){transform:scale(.97)}
-.cal-who{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.cal-who{display:grid;grid-template-columns:1fr;gap:8px;margin-top:16px}
 .cal-who input{width:100%;min-width:0;height:50px;padding:0 14px;border:1.5px solid transparent;border-radius:12px;background:var(--paper);font:inherit;font-size:16px;color:var(--ink)}
 .cal-who input:focus{outline:0;border-color:var(--blue)}
 .cal-who input.is-bad{border-color:#D9534F;background:#FFF7F6}
@@ -470,17 +470,6 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 
         <p class="res-say" id="resSay"></p>
 
-        <details class="how">
-          <summary>How this number is worked out<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-          <ul>
-            <li><b>What you signed for.</b> Before your wife gets anything, your estate pays the people you owe. This puts that amount back in her hands.</li>
-            <li><b>The house.</b> Pays off what's left, so she keeps it.</li>
-            <li><b>Bills.</b> Your monthly number, times 12, times 10 years. No interest earned and no inflation added, to keep it simple.</li>
-            <li><b>Costs right after.</b> $25,000. A traditional service averages about $13,000 (<a href="https://www.empire.ca/scotia-insurance-termlife/needs-analysis" target="_blank" rel="noopener">Empire Life</a>). Add the lawyer and Ontario's estate administration tax: $15 for every $1,000 over $50,000 (<a href="https://www.ontario.ca/page/estate-administration-tax" target="_blank" rel="noopener">Ontario.ca</a>).</li>
-            <li><b>Already set aside.</b> Taken off the total. Then it's rounded up to the nearest $25,000.</li>
-          </ul>
-          <p>It leaves out your wife's own income and anything the business might sell for. Those can bring the number down, and the call is where they get counted.</p>
-        </details>
       </div>
     </div>
   </div>
@@ -550,7 +539,6 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 "use strict";
 
 var NOLOG=!!window.ZL_NOLOG;
-var MODE=(new URLSearchParams(location.search).get('v')==='quiz')?'quiz':'calc';
 var VIA_QUIZ=false;
 
 /* ================================================================
@@ -790,8 +778,8 @@ if(FX){
 
 /* ================================================================
    THE QUICK WAY: 4 taps instead of sliders.
-   /result?v=quiz opens with it (the rest of the page waits until he
-   answers); /result?v=calc has a "Do it for me" button that opens it.
+   The "Do it for me in 4 taps" button opens it (user, Oct 30: keep the
+   calculator, drop the quiz-first version).
    Each answer sets its slider to a round value inside the range he
    tapped, so he can fine-tune after.
    ================================================================ */
@@ -814,7 +802,7 @@ function quizOpen(){
   QA={}; qi=0; qBusy=false;
   quizEl.innerHTML='<div class="q-card bi" style="--i:2"><div class="q-top"><button type="button" class="q-back" id="qBack" aria-label="Back">'+BACK_SVG+'</button><span class="q-count" id="qCount"></span></div>'
     +'<div class="q-bar"><i id="qBar"></i></div><div class="q-body" id="qBody"></div></div>'
-    +'<button type="button" class="q-skip" id="qSkip">'+(MODE==='quiz'?'Or set it yourself':'Back to the sliders')+'</button>';
+    +'<button type="button" class="q-skip" id="qSkip">'+'Back to the sliders'+'</button>';
   quizEl.hidden=false; calcEl.hidden=true; quickWrap.hidden=true;
   quizShow();
 }
@@ -863,8 +851,7 @@ function quizDone(){
 function quizSkip(){
   quizEl.hidden=true; quizEl.innerHTML='';
   calcEl.hidden=false; afterEl.hidden=false;
-  if(MODE==='quiz') document.getElementById('heroSub').textContent='Slide each one to your life. Your number builds as you go.';
-  else quickWrap.hidden=false;
+  quickWrap.hidden=false;
   var r=calcEl.getBoundingClientRect();
   window.scrollTo({top:Math.max(0,window.scrollY+r.top-140),behavior:RM?'auto':'smooth'});
 }
@@ -893,11 +880,6 @@ document.getElementById('quickBtn').addEventListener('click',function(){
   var r=quizEl.getBoundingClientRect();
   window.scrollTo({top:Math.max(0,window.scrollY+r.top-130),behavior:RM?'auto':'smooth'});
 });
-if(MODE==='quiz'){
-  document.getElementById('heroSub').textContent='Four quick taps. Your number shows at the end.';
-  afterEl.hidden=true;
-  quizOpen();
-}
 
 /* ---------------- carriers ---------------- */
 var CARRIERS=[
@@ -922,8 +904,9 @@ var CARRIERS=[
    BOOK A CALL (the current results page's calendar, same rules)
    Draws from assets/schedule.js, the file api/book.js checks every
    booking against. Ontario time. Taken times come from GET /api/book.
-   Visitors here come from the Meta form, so the page doesn't know
-   them: name and mobile are always asked.
+   Visitors here come from the Meta form, which already has their name
+   and phone, so the page asks for an email only (user, Oct 30). The
+   CRM matches the booking to the lead by that email.
    Our own browsers (?nolog=1) book as "Test", which api/book.js
    treats as inert: no Discord, no record, no Meta.
    ================================================================ */
@@ -985,8 +968,7 @@ function calRender(anim){
     + '<div class="cal-slots" id="calSlots" role="group" aria-label="Open times"></div>'
     + '<button type="button" class="cal-more" id="calMore" hidden>View more times</button>'
     + '<div class="cal-who" id="calWho">'
-      + '<input id="whoName" type="text" autocomplete="name" placeholder="Your name" aria-label="Your name">'
-      + '<input id="whoPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile number" aria-label="Mobile number">'
+      + '<input id="whoEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="Your email" aria-label="Your email">'
     + '</div>'
     + '<div class="cal-cta" id="calCta" hidden><button type="button" class="btn" id="calBook"></button><p class="cal-err" id="calErr" role="alert"></p></div>'
     + '</div>';
@@ -1041,11 +1023,11 @@ function calGo(step){
 function calBook(){
   if(CAL.sending||!CAL.pick) return;
   var err=document.getElementById('calErr');
-  var n=document.getElementById('whoName'), ph=document.getElementById('whoPhone');
-  var badName=!n.value.trim(), badPhone=!validPhone(ph.value);
-  n.classList.toggle('is-bad',badName); ph.classList.toggle('is-bad',badPhone);
-  if(badName||badPhone){ err.textContent='Add your name and mobile number so we can call you.'; return; }
-  var c={name:n.value.trim(),email:'',phone:fmtPhone(ph.value)};
+  var em=document.getElementById('whoEmail'), ev=em.value.trim();
+  var bad=!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(ev);
+  em.classList.toggle('is-bad',bad);
+  if(bad){ err.textContent='Add your email to book.'; em.focus(); return; }
+  var c={email:ev};
   var pick=CAL.pick, btn=document.getElementById('calBook'), label=btn.textContent;
   var eventId='schedule.'+Date.now()+'.'+Math.random().toString(36).slice(2,10);
   CAL.sending=true; err.textContent=''; btn.disabled=true;
@@ -1053,7 +1035,7 @@ function calBook(){
   var t0=Date.now();
   fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      name:NOLOG?'Test':c.name, email:'', phone:c.phone, slot:pick.iso,
+      name:NOLOG?'Test':'', email:c.email, phone:'', slot:pick.iso,
       sid:SID, nolog:NOLOG, event_id:eventId,
       fbp:getCookie('_fbp'), fbc:getFbc(), source_url:location.href,
       calc:calcSummary()
@@ -1064,7 +1046,7 @@ function calBook(){
       CAL.sending=false;
       if(res.d&&res.d.ok){
         if(!res.d.test&&!NOLOG){ try{ if(window.fbq) fbq('track','Schedule',{content_name:'Zorion call'},{eventID:eventId}); }catch(_){} }
-        var booking={key:pick.key,ymd:pick.ymd,hm:pick.hm,iso:pick.iso,phone:c.phone,ts:Date.now()};
+        var booking={key:pick.key,ymd:pick.ymd,hm:pick.hm,iso:pick.iso,email:c.email,ts:Date.now()};
         try{ sessionStorage.setItem(BOOKING_KEY,JSON.stringify(booking)); }catch(_){}
         renderBooked(booking,true);
         return;
@@ -1090,7 +1072,7 @@ function renderBooked(b,anim){
     + '<svg'+cls('booked-check')+' viewBox="0 0 68 68" aria-hidden="true"><circle cx="34" cy="34" r="34"/><path d="M22 35.5l8 7.5 16-17"/></svg>'
     + '<h3'+cls('b-head')+'>You’re booked.</h3>'
     + '<p'+cls('b-when')+'>'+Z.dayLong(b.ymd)+' at '+Z.time12(b.hm)+', Ontario time.</p>'
-    + '<p'+cls('b-then')+'>We’ll call you at <b>'+esc(fmtPhone(b.phone)||b.phone)+'</b>. Bring your wife if you can.</p>'
+    + '<p'+cls('b-then')+'>We’ll call you on the number you gave us. Bring your wife if you can.</p>'
     + '</div>';
 }
 document.addEventListener('click',function(e){
@@ -1102,7 +1084,7 @@ document.addEventListener('click',function(e){
   if(e.target.closest('#calMore')) return calMore();
   if(e.target.closest('#calBook')) return calBook();
 });
-document.addEventListener('input',function(e){ if(e.target&&(e.target.id==='whoName'||e.target.id==='whoPhone')) e.target.classList.remove('is-bad'); });
+document.addEventListener('input',function(e){ if(e.target&&e.target.id==='whoEmail') e.target.classList.remove('is-bad'); });
 document.addEventListener('focusout',function(e){
   if(e.target&&e.target.id==='whoPhone'&&validPhone(e.target.value)) e.target.value=fmtPhone(e.target.value);
 });
@@ -1118,8 +1100,7 @@ if(NOLOG){
   var bar=document.createElement('nav');
   bar.className='devbar'; bar.setAttribute('aria-label','Test controls');
   bar.innerHTML='<a href="/result">Current</a>'
-    +'<a'+(MODE==='calc'?' class="is-on" aria-current="page"':'')+' href="/result?v=calc">Calculator</a>'
-    +'<a'+(MODE==='quiz'?' class="is-on" aria-current="page"':'')+' href="/result?v=quiz">Quiz</a>'
+    +'<a class="is-on" aria-current="page" href="/result?v=calc">Calculator</a>'
     +'<i></i><button type="button" id="devClean">Clean</button>';
   var dot=document.createElement('button');
   dot.type='button'; dot.className='dev-dot'; dot.setAttribute('aria-label','Show test controls');

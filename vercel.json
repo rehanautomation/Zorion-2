@@ -9,11 +9,6 @@
     },
     {
       "source": "/result",
-      "has": [{ "type": "query", "key": "v", "value": "quiz" }],
-      "destination": "/result-calc"
-    },
-    {
-      "source": "/result",
       "destination": "/"
     }
   ],

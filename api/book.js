@@ -51,11 +51,11 @@ function discordMessage(b, opts) {
     allowed_mentions: { parse: ['everyone'], users: [ALICIA_ID] },  // @here + Alicia
     embeds: [{
       title: '📅 Call booked' + (test ? ' · TEST' : ''),
-      description: '**' + md(b.name) + '** booked a call',
+      description: '**' + md(b.name || b.email) + '** booked a call',
       color: COLOR,
       fields: [
         { name: 'When', value: whenLabel(b.ymd, b.hm), inline: false },
-        { name: 'Phone', value: b.phone || '—', inline: true },
+        { name: 'Phone', value: b.phone || (b.calc ? 'On their Meta form' : '—'), inline: true },
         { name: 'Email', value: b.email || '—', inline: true }
       ].concat(b.calc ? [{ name: 'Their number (calculator)', value: md(b.calc), inline: false }] : []),
       timestamp: new Date(b.ts || Date.now()).toISOString()
@@ -99,7 +99,11 @@ async function handler(req, res) {
   const email = String(b.email || '').trim().slice(0, 160);
   const phone = fmtPhone(b.phone);
 
-  if (!name || !phone) return res.status(400).json({ ok: false, error: 'missing_contact' });
+  /* The calculator results page (Meta-form visitors) books with an
+     email only: the form already has his name and phone. Everywhere
+     else: name + phone, as before. */
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  if (b.calc ? !emailOk : (!name || !phone)) return res.status(400).json({ ok: false, error: 'missing_contact' });
 
   const slot = S.check(b.slot, now, await takenMap());
   if (!slot.ok) {
