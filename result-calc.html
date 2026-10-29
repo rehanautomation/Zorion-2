@@ -174,18 +174,21 @@ main{background:inherit;min-height:calc(100vh - var(--header-h));min-height:calc
 @media (hover:hover){ .quick:hover{background:#1B3350} }
 .quick:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 
-.quiz{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(14,30,48,.55);
-  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:qfade .22s ease}
-.quiz .q-card{width:100%;max-width:520px;max-height:94vh;overflow:auto;border-radius:24px 24px 0 0;border:0;
-  padding:16px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(14,30,48,.25);animation:qup .36s cubic-bezier(.2,.8,.2,1)}
-@media (min-width:621px){ .quiz{align-items:center;padding:20px} .quiz .q-card{border-radius:22px;padding:22px 28px 28px} }
+.quiz{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(14,30,48,.55);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:qfade .22s ease;overscroll-behavior:contain;touch-action:none;transition:opacity .28s ease}
+.quiz.is-closing{opacity:0}
+/* one fixed size for every question, so the box never jumps */
+.quiz .q-card{width:100%;max-width:500px;height:min(620px,calc(100vh - 32px));height:min(620px,calc(100svh - 32px));overflow-y:auto;border:0;border-radius:22px;
+  padding:16px 20px 20px;box-shadow:0 20px 50px rgba(14,30,48,.3);animation:qup .32s cubic-bezier(.2,.8,.2,1);touch-action:pan-y;overscroll-behavior:contain}
+@media (min-width:621px){ .quiz .q-card{padding:22px 28px 28px} }
 @keyframes qfade{from{opacity:0}}
-@keyframes qup{from{transform:translateY(60px);opacity:0}}
+@keyframes qup{from{transform:translateY(24px) scale(.97);opacity:0}}
+.quiz .q-wait{height:calc(100% - 60px);justify-content:center}
 .quiz .q-body{margin-top:18px}
 .quiz .q-opt{min-height:54px}
 .q-x{width:38px;height:38px;margin-right:-9px;border:0;border-radius:50%;background:var(--field);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .q-x svg{width:16px;height:16px}
-html.q-lock,html.q-lock body{overflow:hidden}
+
 .q-card{background:var(--paper);border:1px solid var(--rule);border-radius:22px;padding:clamp(20px,5vw,30px);box-shadow:0 18px 40px rgba(14,30,48,.08);overflow:hidden}
 .q-top{display:flex;align-items:center;justify-content:space-between;height:34px}
 .q-back{width:38px;height:38px;margin-left:-9px;border:0;border-radius:50%;background:transparent;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -812,7 +815,7 @@ function quizOpen(){
     +'<button type="button" class="q-x" id="qSkip" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>'
     +'<div class="q-bar"><i id="qBar"></i></div><div class="q-body" id="qBody"></div></div>'
     ;
-  quizEl.hidden=false; document.documentElement.classList.add('q-lock');
+  quizEl.classList.remove('is-closing'); quizEl.hidden=false;
   quizShow();
 }
 function quizShow(){
@@ -851,16 +854,19 @@ function quizDone(){
       if(typeof QA[k]==='number'){ r.value=nearest(list,QA[k]); S[k]=list[+r.value]; paintRange(r); }
     });
     save();
-    quizClose();
+    /* behind the popup: put the number in place and jump to it (no
+       long scroll), then fade the popup away and let the number count up */
     calcEl.classList.add('res-first');
     document.getElementById('inHead').textContent='Fine-tune it';
-    showNumber();
+    showNumber(true);
+    quizEl.classList.add('is-closing');
+    setTimeout(quizClose,RM?0:300);
   },RM?200:1100);
 }
-function quizClose(){ quizEl.hidden=true; quizEl.innerHTML=''; document.documentElement.classList.remove('q-lock'); }
+function quizClose(){ quizEl.hidden=true; quizEl.innerHTML=''; quizEl.classList.remove('is-closing'); }
 function quizSkip(){ if(!qBusy||qi<QUIZ.length-1) quizClose(); }
 /* his number builds in front of him: the bar from empty, the figure counting up */
-function showNumber(){
+function showNumber(jump){
   paintWords();
   revealed=true;
   [].forEach.call(document.querySelectorAll('#stack i'),function(s){ s.style.transitionDelay='0ms'; s.style.width='0'; });
@@ -869,9 +875,9 @@ function showNumber(){
   resEl.classList.remove('is-in');
   var off=document.querySelector('.header').offsetHeight+(document.body.classList.contains('has-devbar')&&!document.body.classList.contains('is-clean')?58:14);
   var r=resEl.getBoundingClientRect();
-  window.scrollTo({top:Math.max(0,window.scrollY+r.top-off),behavior:RM?'auto':'smooth'});
+  window.scrollTo({top:Math.max(0,window.scrollY+r.top-off),behavior:(RM||jump)?'auto':'smooth'});
   void resEl.offsetWidth;
-  setTimeout(function(){ resEl.classList.add('is-in'); paintNumber(true); },RM?0:350);
+  setTimeout(function(){ resEl.classList.add('is-in'); paintNumber(true); },RM?0:(jump?320:350));
 }
 quizEl.addEventListener('click',function(e){
   var t;
