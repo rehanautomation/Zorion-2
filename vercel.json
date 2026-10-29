@@ -9,7 +9,12 @@
     },
     {
       "source": "/result",
+      "has": [{ "type": "query", "key": "v", "value": "old" }],
       "destination": "/"
+    },
+    {
+      "source": "/result",
+      "destination": "/result-calc"
     }
   ],
   "crons": [

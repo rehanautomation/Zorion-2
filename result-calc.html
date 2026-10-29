@@ -449,7 +449,7 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 
     <div class="res-wrap">
       <div class="res" id="res" aria-live="polite">
-        <div class="res-top"><span class="eyebrow-up">Your wife's number</span><span class="chip-typ">Typical estimate</span></div>
+        <div class="res-top"><span class="eyebrow-up">What your wife would need</span><span class="chip-typ">Typical estimate</span></div>
         <div class="res-fig" id="resFig">$0</div>
         <p class="res-round">Rounded up to the nearest $25,000. Not a quote.</p>
 
@@ -485,9 +485,8 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
     <div class="card rv">
       <ul class="gap-list" id="gapList">
         <li style="--i:0" id="gapCost"></li>
-        <li style="--i:1">Whether one policy or two costs you less.</li>
-        <li style="--i:2">Which insurers treat your trade fairly.</li>
-        <li style="--i:3">How to set it up so it skips the court and goes straight to her.</li>
+        <li style="--i:1">Which insurers treat your trade fairly.</li>
+        <li style="--i:2">How to set it up so it skips the court and goes straight to her.</li>
       </ul>
       <p class="gap-close">That takes one short call.</p>
     </div>
@@ -527,7 +526,7 @@ body.has-devbar:not(.is-clean) main{padding-top:48px}
 </footer>
 
 <div class="livebar" id="livebar" aria-hidden="true">
-  <div><small>Your wife's number</small><b id="liveFig">$0</b></div>
+  <div><small>What your wife would need</small><b id="liveFig">$0</b></div>
   <button type="button" id="liveGo" tabindex="-1">See it<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5L8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 </div>
 
@@ -1097,8 +1096,8 @@ calStart();
 if(NOLOG){
   var bar=document.createElement('nav');
   bar.className='devbar'; bar.setAttribute('aria-label','Test controls');
-  bar.innerHTML='<a href="/result">Current</a>'
-    +'<a class="is-on" aria-current="page" href="/result?v=calc">Calculator</a>'
+  bar.innerHTML='<a href="/result?v=old">Old</a>'
+    +'<a class="is-on" aria-current="page" href="/result">Calculator</a>'
     +'<i></i><button type="button" id="devClean">Clean</button>';
   var dot=document.createElement('button');
   dot.type='button'; dot.className='dev-dot'; dot.setAttribute('aria-label','Show test controls');
