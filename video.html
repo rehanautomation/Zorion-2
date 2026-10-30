@@ -3,6 +3,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Videos</title>
+<link rel="preload" as="image" href="/assets/video/v1.jpg">
+<link rel="preload" as="video" href="/assets/video/v1.mp4?v=2" type="video/mp4">
 <style>
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
 #feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -20,7 +22,7 @@ const vids=[["v1","Video 1"],["v2","Video 2"],["v3","Video 3"],["v4","Video 4"]]
 const feed=document.getElementById('feed');
 [...vids,vids[0]].forEach(([f,t],i)=>{
   const s=document.createElement('div');s.className='s';
-  s.innerHTML=`<video src="/assets/video/${f}.mp4?v=2" playsinline loop muted preload="${i<2?'auto':'metadata'}"></video><div class="tag">${t}</div>`;
+  s.innerHTML=`<video src="/assets/video/${f}.mp4?v=2" poster="/assets/video/${f}.jpg" playsinline loop muted preload="${i==0?'auto':'metadata'}"></video><div class="tag">${t}</div>`;
   feed.appendChild(s);
 });
 const els=[...feed.querySelectorAll('video')];
@@ -36,6 +38,10 @@ let t;feed.addEventListener('scroll',()=>{clearTimeout(t);t=setTimeout(()=>{
   if(Math.round(feed.scrollTop/feed.clientHeight)>=vids.length) feed.scrollTo({top:0,behavior:'instant'});
 },120)});
 els.forEach(v=>v.addEventListener('click',()=>{v.paused?v.play():v.pause()}));
+// download every video fully in the background (in order) and swap in the local copy -> instant playback
+(async()=>{for(const [f] of vids){try{const b=await (await fetch(`/assets/video/${f}.mp4?v=2`)).blob();const u=URL.createObjectURL(b);
+ els.forEach(v=>{if(v.src.includes(`/${f}.mp4`)&&v.paused){v.src=u;v.load();}else if(v.src.includes(`/${f}.mp4`)){v.dataset.blob=u;}});}catch(e){}}})();
+els.forEach(v=>v.addEventListener('pause',()=>{if(v.dataset.blob){v.src=v.dataset.blob;delete v.dataset.blob;v.load();}}));
 document.querySelector('#go button').onclick=()=>{sound=true;document.getElementById('go').remove();els[0].muted=false;els[0].currentTime=0;els[0].play();};
 </script>
 </body></html>
