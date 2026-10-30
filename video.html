@@ -1,47 +1,50 @@
 <!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Videos</title>
-<link rel="preload" as="image" href="/assets/video/v1.jpg">
-<link rel="preload" as="video" href="/assets/video/v1.mp4?v=2" type="video/mp4">
 <style>
-html,body{margin:0;height:100%;background:#000;overflow:hidden}
-#feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-#feed::-webkit-scrollbar{display:none}
-.s{height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;position:relative;display:flex;align-items:center;justify-content:center}
-video{width:100%;height:100%;object-fit:contain;background:#000}
-.tag{position:absolute;top:14px;left:14px;color:#fff;font:600 14px system-ui;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:20px}
-#go{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)}
-#go button{font:700 20px system-ui;padding:16px 32px;border-radius:40px;border:0;background:#fff;color:#000}
+body{margin:0;background:#111;color:#fff;font:16px system-ui,sans-serif;padding:16px}
+h1{font-size:20px;margin:4px 0 16px}
+.c{background:#1c1c1c;border-radius:12px;padding:14px;margin-bottom:14px}
+.r{display:flex;justify-content:space-between;align-items:center;gap:10px}
+b{font-size:17px}small{color:#999}
+button{font:600 15px system-ui;padding:12px 18px;border:0;border-radius:8px;background:#fff;color:#000;min-width:130px}
+button:disabled{opacity:.6}
+.bar{height:6px;background:#333;border-radius:3px;margin-top:12px;overflow:hidden;display:none}
+.bar i{display:block;height:100%;width:0;background:#4ade80;transition:width .15s}
+.p{font-size:13px;color:#aaa;margin-top:6px;min-height:16px}
+.p a{color:#4ade80}
 </style></head><body>
-<div id="go"><button>Start scrolling ▶</button></div>
-<div id="feed"></div>
+<h1>Final videos</h1>
+<div id="list"></div>
 <script>
-const vids=[["v1","Video 1"],["v2","Video 2"],["v3","Video 3"],["v4","Video 4"]];
-const feed=document.getElementById('feed');
-[...vids,vids[0]].forEach(([f,t],i)=>{
-  const s=document.createElement('div');s.className='s';
-  s.innerHTML=`<video src="/assets/video/${f}.mp4?v=2" poster="/assets/video/${f}.jpg" playsinline loop muted preload="${i==0?'auto':'metadata'}"></video><div class="tag">${t}</div>`;
-  feed.appendChild(s);
+const vids=[["V1_final.mp4","Video 1","31 MB"],["V2_final.mp4","Video 2","23 MB"],["V3_final.mp4","Video 3","45 MB"],["V4_final.mp4","Video 4","27 MB"]];
+const list=document.getElementById('list');
+vids.forEach(([f,t,sz])=>{
+  const c=document.createElement('div');c.className='c';
+  c.innerHTML=`<div class="r"><div><b>${t}</b><br><small>${sz}</small></div><button>Download</button></div><div class="bar"><i></i></div><div class="p"></div>`;
+  list.appendChild(c);
+  const btn=c.querySelector('button'),bar=c.querySelector('.bar'),fill=c.querySelector('i'),p=c.querySelector('.p');
+  btn.onclick=async()=>{
+    btn.disabled=true;btn.textContent='Downloading…';bar.style.display='block';fill.style.width='0';
+    try{
+      const r=await fetch('/assets/video/'+f);if(!r.ok)throw 0;
+      const total=+r.headers.get('content-length')||0;
+      const rd=r.body.getReader();const parts=[];let got=0;
+      for(;;){const {done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;
+        const pc=total?Math.round(got/total*100):0;fill.style.width=pc+'%';
+        p.textContent=(got/1048576).toFixed(1)+' MB'+(total?' / '+(total/1048576).toFixed(1)+' MB · '+pc+'%':'');}
+      const u=URL.createObjectURL(new Blob(parts,{type:'video/mp4'}));
+      const a=document.createElement('a');a.href=u;a.download=f;document.body.appendChild(a);a.click();a.remove();
+      fill.style.width='100%';btn.textContent='Saved ✓';
+      p.innerHTML='Done. Nothing saved? <a href="'+u+'" download="'+f+'">Tap here</a>.';
+      setTimeout(()=>{btn.disabled=false;btn.textContent='Download again'},1500);
+    }catch(e){
+      p.innerHTML='Download failed. <a href="/assets/video/'+f+'" download>Open the file directly</a>.';
+      btn.disabled=false;btn.textContent='Retry';
+    }
+  };
 });
-const els=[...feed.querySelectorAll('video')];
-let sound=false;
-const io=new IntersectionObserver(es=>es.forEach(e=>{
-  const v=e.target;
-  if(e.isIntersecting){v.muted=!sound;v.play().catch(()=>{v.muted=true;v.play()});}
-  else{v.pause();v.currentTime=0;}
-}),{threshold:.6});
-els.forEach(v=>io.observe(v));
-// infinite loop: clone of video 1 sits at the end; when we land on it, jump to the real first
-let t;feed.addEventListener('scroll',()=>{clearTimeout(t);t=setTimeout(()=>{
-  if(Math.round(feed.scrollTop/feed.clientHeight)>=vids.length) feed.scrollTo({top:0,behavior:'instant'});
-},120)});
-els.forEach(v=>v.addEventListener('click',()=>{v.paused?v.play():v.pause()}));
-// download every video fully in the background (in order) and swap in the local copy -> instant playback
-(async()=>{for(const [f] of vids){try{const b=await (await fetch(`/assets/video/${f}.mp4?v=2`)).blob();const u=URL.createObjectURL(b);
- els.forEach(v=>{if(v.src.includes(`/${f}.mp4`)&&v.paused){v.src=u;v.load();}else if(v.src.includes(`/${f}.mp4`)){v.dataset.blob=u;}});}catch(e){}}})();
-els.forEach(v=>v.addEventListener('pause',()=>{if(v.dataset.blob){v.src=v.dataset.blob;delete v.dataset.blob;v.load();}}));
-document.querySelector('#go button').onclick=()=>{sound=true;document.getElementById('go').remove();els[0].muted=false;els[0].currentTime=0;els[0].play();};
 </script>
 </body></html>
