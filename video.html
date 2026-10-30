@@ -20,7 +20,7 @@ const vids=[["v1","Video 1"],["v2","Video 2"],["v3","Video 3"],["v4","Video 4"]]
 const feed=document.getElementById('feed');
 [...vids,vids[0]].forEach(([f,t],i)=>{
   const s=document.createElement('div');s.className='s';
-  s.innerHTML=`<video src="/assets/video/${f}.mp4" playsinline loop muted preload="${i<2?'auto':'metadata'}"></video><div class="tag">${t}</div>`;
+  s.innerHTML=`<video src="/assets/video/${f}.mp4?v=2" playsinline loop muted preload="${i<2?'auto':'metadata'}"></video><div class="tag">${t}</div>`;
   feed.appendChild(s);
 });
 const els=[...feed.querySelectorAll('video')];
