@@ -1,4 +1,5 @@
-const { push, readBody, isAdmin } = require('./_store');
+const crypto = require('crypto');
+const { push, readBody, isAdmin, firstTime } = require('./_store');
 const { sendEvent } = require('./_meta');
 
 const WEBHOOK = process.env.DISCORD_WEBHOOK_URL
@@ -51,6 +52,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ ok: false });
 
   const b = await readBody(req);
+  if (b.op === 'meta_form') return metaForm(req, res, b);
   const name = String(b.name || '').slice(0, 120);
   const email = String(b.email || '').slice(0, 160);
   const phone = String(b.phone || '').slice(0, 60);
@@ -108,6 +110,85 @@ module.exports = async (req, res) => {
 
   res.status(200).json({ ok: true, test: isTest, discord: !isTest, recorded: !ours, meta: meta ? true : false });
 };
+
+/* ------------------------------------------------------------------
+   Meta lead form leads (the Batch 3 video ads), sent by Make.com
+   scenario "Zorion: Meta lead form -> CRM + Discord DM":
+   Facebook Lead Ads "New Lead" -> HTTP POST here (op:'meta_form')
+   -> Discord DM to Rehan, using the "message" this endpoint returns.
+
+   - The key Make sends must hash to MAKE_KEY_SHA256 (the key itself
+     lives only in the Make scenario; the repo is public).
+   - Stored as type 'formlead' (not 'lead'), so the CRM and Alicia's
+     call reminders get it but the website funnel numbers in /report
+     stay clean. No Discord channel ping from here.
+   - Meta's Lead Ads Testing Tool leads ("dummy data") come back with
+     a TEST message and are not stored.
+   - The same Meta lead ID is only stored once (Make retries).
+   ------------------------------------------------------------------ */
+const MAKE_KEY_SHA256 = '66d5e2b28a58b0a4a0936597154aa0e1b85b8723b318d9117b141beb3fb882f4';
+const pretty = s => {
+  s = String(s || '').replace(/_/g, ' ').replace(/\s+/g, ' ').replace(/\bi\b/g, 'I').trim();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+};
+function shortQ(q) {
+  if (/worr/i.test(q)) return 'Worries most';
+  if (/business account|name is on|name on/i.test(q)) return 'Business account';
+  return q.length > 40 ? q.slice(0, 38) + '…' : q;
+}
+function keyOk(given) {
+  const h = crypto.createHash('sha256').update(String(given || '')).digest();
+  return crypto.timingSafeEqual(h, Buffer.from(MAKE_KEY_SHA256, 'hex'));
+}
+
+async function metaForm(req, res, b) {
+  if (!keyOk(b.key)) return res.status(401).json({ ok: false });
+
+  let fd = b.field_data;
+  if (typeof fd === 'string') { try { fd = JSON.parse(fd); } catch (_) { fd = []; } }
+  if (!Array.isArray(fd)) fd = [];
+  const f = {};
+  const qa = [];
+  for (const x of fd) {
+    if (!x || !x.name) continue;
+    const vals = Array.isArray(x.values) ? x.values : (x.values != null ? [x.values] : []);
+    const v = vals.map(String).join(', ');
+    const k = String(x.name).toLowerCase();
+    f[k] = v;
+    if (!/^(full_name|first_name|last_name|email|phone_number|phone)$/.test(k)) {
+      const q = pretty(x.name).replace(/\s*\?$/, '?');
+      qa.push({ q: shortQ(q), full: q, a: pretty(v) || '—' });
+    }
+  }
+  const name = String(f.full_name || [f.first_name, f.last_name].filter(Boolean).join(' ')).slice(0, 120);
+  const email = String(f.email || '').slice(0, 160);
+  const phone = String(f.phone_number || f.phone || '').slice(0, 60);
+  const leadId = String(b.lead_id || '').slice(0, 40);
+  const ad = String(b.ad_name || '').slice(0, 120);
+  const isTest = /dummy data|test lead/i.test(name + ' ' + email) || b.test === true || b.test === 'true';
+
+  if (leadId && !isTest) {
+    let first = true;
+    try { first = await firstTime('formlead:' + leadId); } catch (_) {}
+    if (!first) return res.status(200).json({ ok: true, duplicate: true, message: '(repeat of lead ' + leadId + ', already in the CRM)' });
+  }
+
+  if (!isTest) {
+    await push({
+      type: 'formlead', ts: Date.now(), name, email, phone, qa,
+      ad, campaign: String(b.campaign_name || '').slice(0, 120),
+      lead_id: leadId, form_id: String(b.form_id || '').slice(0, 40),
+      platform: String(b.platform || '').slice(0, 20)
+    });
+  }
+
+  const lines = [(isTest ? '🧪 **TEST lead (not saved)**' : '🟢 **NEW LEAD · Meta form**'),
+    '**' + (name || 'No name') + '**' + (phone ? ' · ' + phone : ''), email].filter(Boolean);
+  qa.forEach(x => lines.push(x.full + '\n**' + x.a + '**'));
+  if (ad) lines.push('Ad: ' + ad);
+  if (!isTest) lines.push('<https://www.zorionlife.com/crm>');
+  res.status(200).json({ ok: true, test: isTest, recorded: !isTest, message: lines.join('\n').slice(0, 1990) });
+}
 
 /* api/book.js posts call bookings to the same channel unless
    BOOKING_WEBHOOK_URL is set. */

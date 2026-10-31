@@ -62,7 +62,7 @@ async function load() {
 
   /* one lead per person: a repeat submit with the same phone folds into the first */
   const leads = [], seen = {};
-  const raw = events.filter(e => e.type === 'lead').sort((a, b) => a.ts - b.ts);
+  const raw = events.filter(e => e.type === 'lead' || e.type === 'formlead').sort((a, b) => a.ts - b.ts);
   for (const e of raw) {
     const d = digits(e.phone);
     const k = d || String(e.email || '').toLowerCase() || leadId(e);
@@ -103,8 +103,8 @@ async function load() {
     return {
       id, ts: e.ts,
       name: e.name || '', email: e.email || '', phone: e.phone || '',
-      answers: answers(e.answers),
-      ad: tag ? (Z.AD_LABELS[tag] || tag) : '',
+      answers: e.type === 'formlead' ? (e.qa || []) : answers(e.answers),
+      ad: e.type === 'formlead' ? ('Meta form' + (e.ad ? ' · ' + e.ad : '')) : (tag ? (Z.AD_LABELS[tag] || tag) : ''),
       booking: (e.sid && bySid[e.sid]) || byPhone[digits(e.phone)] || byEmail[String(e.email || '').trim().toLowerCase()] || null,
       state: st,
       canUndo: Boolean(states[id] && (states[id].hist || []).length)
