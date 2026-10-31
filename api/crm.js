@@ -62,7 +62,7 @@ async function load() {
 
   /* one lead per person: a repeat submit with the same phone folds into the first */
   const leads = [], seen = {};
-  const raw = events.filter(e => e.type === 'lead' || e.type === 'formlead').sort((a, b) => a.ts - b.ts);
+  const raw = events.filter(e => e.type === 'lead' || (e.type === 'formlead' && (e.name || e.email || e.phone))).sort((a, b) => a.ts - b.ts);
   for (const e of raw) {
     const d = digits(e.phone);
     const k = d || String(e.email || '').toLowerCase() || leadId(e);
