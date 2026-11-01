@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
   const isTest = name.trim().toLowerCase() === 'test'
               || email.trim().toLowerCase() === 'test@gmail.com';
 
-  let content = [MENTION + ' **NEW FACEBOOK LEAD**', 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
+  let content = ['🟢 **NEW FACEBOOK LEAD** ' + MENTION, 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
   const answerBlock = formatAnswers(b.answers);
   if (answerBlock) content += '\n\n' + answerBlock;
   if (content.length > 1990) content = content.slice(0, 1990) + '...';
@@ -191,7 +191,7 @@ async function metaForm(req, res, b) {
   });
 
   /* Same post and format as the website leads, in the sales channel */
-  let content = [MENTION + ' **NEW FACEBOOK LEAD**', 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
+  let content = ['🟢 **NEW FACEBOOK LEAD** ' + MENTION, 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
   const blocks = qa.map((x, i) => 'Q' + (i + 1) + ' : ' + x.full + '\n**' + x.a + '**');
   if (blocks.length) content += '\n\n' + blocks.join('\n\n');
   if (content.length > 1990) content = content.slice(0, 1990) + '...';

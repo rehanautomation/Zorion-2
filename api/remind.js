@@ -33,9 +33,28 @@ const md = s => String(s || '').replace(/([\\*_~`|>])/g, '\\$1');
 const CRM = 'https://www.zorionlife.com/crm?lead=';
 const first = l => (l.name || 'lead').split(' ')[0];
 
+/* Short, top-priority-first messages (Nov 1, user). The first line is
+   what a phone notification shows: emoji, 2-4 word headline, first
+   name, then the mention. It never says "NEW FACEBOOK LEAD", so a
+   reminder can't be mistaken for a new opt-in (that message is 🟢). */
+const link = (l, text) => '[' + text + '](<' + CRM + encodeURIComponent(l.id) + '>)';
+const APPT_HEAD = { 'Appointment in 1 hr': 'Call in 1 hr', 'Appointment in 15 min': 'Call in 15 min' };
+
 function msg(head, l, what) {
-  const who = md(l.name || 'Lead'), ph = l.phone ? ' · ' + l.phone : '';
-  return '🔔 **' + head + '** ' + AT + '\n' + who + ph + (what ? ' · ' + what : '') + '\n<' + CRM + encodeURIComponent(l.id) + '>';
+  const ph = l.phone ? md(l.phone) + ' · ' : '';
+  return '📅 **' + (APPT_HEAD[head] || head) + ': ' + md(first(l)) + '** ' + AT + '\n'
+    + ph + (what ? what + ' · ' : '') + link(l, 'Open in CRM');
+}
+
+/* new lead nobody has called > a follow-up she promised > the next try */
+const RANK = { new: 0, followup: 1, call: 2 };
+const HEAD = { new: 'New lead, not called', followup: 'Follow-up due', call: 'Call again' };
+function kindOf(r) { return r.d.fresh ? 'new' : (r.d.kind === 'followup' ? 'followup' : 'call'); }
+function status(r) {
+  const k = kindOf(r);
+  if (k === 'new') return 'new lead, not called';
+  if (k === 'followup') return 'follow-up due';
+  return 'call ' + (r.d.noAnswers + 1) + ' of ' + r.d.total;
 }
 
 /* One lead right now: its latest ping (if any, and fresh), whether its
@@ -52,24 +71,31 @@ function plan(l, now) {
   if (d.kind !== 'cadence' && d.kind !== 'followup') return out;
   out.open = d.next <= now;
   const last = list.filter(n => now - n.t <= NAG_FRESH).pop();
-  if (last) { out.ping = { key: l.id + ':nag:' + last.t, label: last.label }; out.open = true; }
+  if (last) { out.ping = { key: l.id + ':nag:' + last.t, label: last.label, n: last.n }; out.open = true; }
   return out;
 }
 
-/* The round message: every open call, follow-ups first, then newest lead first. */
+/* The round message: every open call, most urgent first, newest lead first within each. */
 function roundText(rows, now) {
-  rows = rows.slice().sort((a, b) =>
-    ((b.d.kind === 'followup') - (a.d.kind === 'followup')) || (b.lead.ts - a.lead.ts));
+  rows = rows.slice().sort((a, b) => (RANK[kindOf(a)] - RANK[kindOf(b)]) || (b.lead.ts - a.lead.ts));
+  const top = rows[0], k = kindOf(top);
+  const more = rows.length > 1 ? ' · +' + (rows.length - 1) + ' more' : '';
+  const head = '🚨 **' + HEAD[k] + ': ' + md(first(top.lead)) + '**' + more + ' ' + AT;
+  if (rows.length === 1) {
+    const l = top.lead, bits = [];
+    if (l.phone) bits.push(md(l.phone));
+    if (k === 'call') bits.push(status(top));
+    if (top.ping && top.ping.n) bits.push('reminder ' + top.ping.n + '/3');
+    bits.push(link(l, 'Open in CRM'));
+    return head + '\n' + bits.join(' · ');
+  }
   const MAX = 10, lines = [];
   rows.slice(0, MAX).forEach((r, i) => {
-    const l = r.lead, ph = l.phone ? ' · ' + l.phone : '';
-    const what = r.ping ? r.ping.label
-      : (r.d.kind === 'followup' ? 'Follow-up' : 'Call ' + (r.d.noAnswers + 1) + '/' + r.d.total) + ' · open since ' + Z.when(r.d.next, now);
-    lines.push((i + 1) + '. **' + md(l.name || 'Lead') + '**' + ph + ' · ' + what + '\n<' + CRM + encodeURIComponent(l.id) + '>');
+    const l = r.lead;
+    lines.push((i + 1) + '. **' + md(l.name || 'Lead') + '** · ' + status(r) + (l.phone ? ' · ' + md(l.phone) : '') + ' · ' + link(l, 'Open'));
   });
   if (rows.length > MAX) lines.push('…and ' + (rows.length - MAX) + ' more in the CRM');
-  const head = rows.length === 1 ? 'Call now' : 'Call now · ' + rows.length + ' leads, top first';
-  return '🔔 **' + head + '** ' + AT + '\n' + lines.join('\n') + '\nTap the outcome in the CRM to stop these.';
+  return head + '\n' + lines.join('\n');
 }
 
 async function post(hook, text) {
