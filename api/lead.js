@@ -137,6 +137,23 @@ function shortQ(q) {
   if (/business account|name is on|name on/i.test(q)) return 'Business account';
   return q.length > 40 ? q.slice(0, 38) + '…' : q;
 }
+/* Meta adds an "inbox_url" field to leads: a Business Suite link that opens a
+   Messenger chat with the lead. It's a link, not a question: kept raw (never
+   prettified, or it breaks) and shown as a clickable "Message him" line. */
+const isInbox = (k, v) => /inbox/i.test(k) || /^https?:\/\/(business|www|m)\.facebook\.com\//i.test(String(v || ''));
+/* "fb" / "ig" (Make sends Meta's platform code) → a word people read */
+const PLATFORMS = { fb: 'Facebook', facebook: 'Facebook', ig: 'Instagram', instagram: 'Instagram', msg: 'Messenger', an: 'Audience Network' };
+/* Backup names, used only if Make doesn't pass ad_name: the live B6 ads. */
+const AD_NAMES = {
+  '120255481422790440': 'B6 | V1 : Her question', '120255481424320440': 'B6 | V2 : Black ice',
+  '120255481424660440': 'B6 | V3 : Mortgage insurance', '120255481425180440': 'B6 | V4 : What scared me',
+  '120255481426420440': 'B6 | V5 : In the trades', '120255481428090440': 'B6 | V6 : The ladder'
+};
+function sourceLine(ad, platform) {
+  const where = PLATFORMS[String(platform || '').toLowerCase()] || '';
+  const what = ad || 'Facebook lead form';
+  return '📣 **Source:** ' + what + (where ? ' · ' + where : '');
+}
 function keyOk(given) {
   const h = crypto.createHash('sha256').update(String(given || '')).digest();
   return crypto.timingSafeEqual(h, Buffer.from(MAKE_KEY_SHA256, 'hex'));
@@ -156,12 +173,14 @@ async function metaForm(req, res, b) {
   if (!Array.isArray(fd)) fd = [];
   const f = {};
   const qa = [];
+  let inbox = '';
   for (const x of fd) {
     if (!x || !x.name) continue;
     const vals = Array.isArray(x.values) ? x.values : (x.values != null ? [x.values] : []);
     const v = vals.map(String).join(', ');
     const k = String(x.name).toLowerCase();
     f[k] = v;
+    if (isInbox(k, v)) { if (!inbox && /^https?:\/\//i.test(v.trim())) inbox = v.trim().slice(0, 400); continue; }
     if (!/^(full_name|first_name|last_name|email|phone_number|phone)$/.test(k)) {
       const q = pretty(x.name).replace(/\s*\?$/, '?');
       qa.push({ q: shortQ(q), full: q, a: pretty(v) || '—' });
@@ -171,7 +190,7 @@ async function metaForm(req, res, b) {
   const email = String(f.email || '').slice(0, 160);
   const phone = String(f.phone_number || f.phone || '').slice(0, 60);
   const leadId = String(b.lead_id || '').slice(0, 40);
-  const ad = String(b.ad_name || '').slice(0, 120);
+  const ad = String(b.ad_name || AD_NAMES[String(b.ad_id || '')] || '').slice(0, 120);
   const isTest = /dummy data|test lead/i.test(name + ' ' + email) || b.test === true || b.test === 'true';
 
   /* Meta's testing tool, or a lead with nothing in it: no post, no CRM row */
@@ -187,13 +206,21 @@ async function metaForm(req, res, b) {
     type: 'formlead', ts: Date.now(), name, email, phone, qa,
     ad, campaign: String(b.campaign_name || '').slice(0, 120),
     lead_id: leadId, form_id: String(b.form_id || '').slice(0, 40),
-    platform: String(b.platform || '').slice(0, 20)
+    platform: String(b.platform || '').slice(0, 20), inbox
   });
 
-  /* Same post and format as the website leads, in the sales channel */
-  let content = ['🟢 **NEW FACEBOOK LEAD** ' + MENTION, 'name : ' + name, 'email : ' + email, 'phone : ' + phone].join('\n');
+  /* Same post and format as the website leads, in the sales channel.
+     Empty contact lines are left out (the B6 form asks name + phone only). */
+  const lines = ['🟢 **NEW FACEBOOK LEAD** ' + MENTION];
+  if (name) lines.push('name : ' + name);
+  if (email) lines.push('email : ' + email);
+  if (phone) lines.push('phone : ' + phone);
+  let content = lines.join('\n');
   const blocks = qa.map((x, i) => 'Q' + (i + 1) + ' : ' + x.full + '\n**' + x.a + '**');
   if (blocks.length) content += '\n\n' + blocks.join('\n\n');
+  const tail = [sourceLine(ad, b.platform)];
+  if (inbox) tail.push('💬 [Message him on Messenger](<' + inbox + '>)');   // <…> = clickable, no big preview card
+  content += '\n\n' + tail.join('\n');
   if (content.length > 1990) content = content.slice(0, 1990) + '...';
   let discord = false;
   try {

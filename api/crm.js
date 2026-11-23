@@ -95,6 +95,13 @@ async function load() {
     try { await crmSet(id, next); states[id] = next; } catch (_) {}
   }
 
+  /* Messenger link: stored raw on new leads; the first B6 leads (Nov 23) kept it
+     as a prettified "Inbox url" answer, which is repaired here. */
+  const inboxOf = e => {
+    if (e.inbox) return e.inbox;
+    const x = (e.qa || []).find(q => /inbox url/i.test(q.full || q.q || ''));
+    return x ? String(x.a || '').replace(/^Https/, 'https').replace(/ /g, '_') : '';
+  };
   return leads.map(e => {
     const id = leadId(e);
     const st = states[id] || null;
@@ -103,7 +110,8 @@ async function load() {
     return {
       id, ts: e.ts,
       name: e.name || '', email: e.email || '', phone: e.phone || '',
-      answers: e.type === 'formlead' ? (e.qa || []) : answers(e.answers),
+      answers: e.type === 'formlead' ? (e.qa || []).filter(q => !/inbox url/i.test(q.full || q.q || '')) : answers(e.answers),
+      inbox: e.type === 'formlead' ? inboxOf(e) : '',
       ad: e.type === 'formlead' ? ('Meta form' + (e.ad ? ' · ' + e.ad : '')) : (tag ? (Z.AD_LABELS[tag] || tag) : ''),
       booking: (e.sid && bySid[e.sid]) || byPhone[digits(e.phone)] || byEmail[String(e.email || '').trim().toLowerCase()] || null,
       state: st,

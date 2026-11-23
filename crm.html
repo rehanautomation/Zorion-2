@@ -439,6 +439,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   <symbol id="i-pipe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="5" height="16" rx="1.6"/><rect x="9.5" y="4" width="5" height="11" rx="1.6"/><rect x="16" y="4" width="5" height="7" rx="1.6"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 3.8 9 6.7a1.5 1.5 0 0 1-.2 2l-1.4 1.1a11 11 0 0 0 6.8 6.8l1.1-1.4a1.5 1.5 0 0 1 2-.2l2.9 2.4a1.5 1.5 0 0 1 .1 2.2l-1.2 1.2c-1 1-2.6 1.3-3.9.7A18 18 0 0 1 3.2 9.6c-.6-1.3-.3-2.9.7-3.9l1.2-1.2a1.5 1.5 0 0 1 1.5-.7Z"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20.5 11.5a8.5 8 0 0 1-12 7.3L4 20l1.2-3.6A8 8 0 1 1 20.5 11.5Z"/></symbol>
   <symbol id="i-ads" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="3"/><path d="m10.5 9.2 4 2.8-4 2.8Z" fill="currentColor"/></symbol>
   <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
@@ -1031,6 +1032,7 @@ function sheetHTML(l){
   h += '<div class="contact" style="--i:' + (i++) + '">'
     + (l.phone ? '<a class="tel" href="tel:' + esc(l.phone.replace(/[^\d+]/g,'')) + '"><svg><use href="#i-phone"/></svg>' + esc(l.phone) + '</a><button class="cp" type="button" data-copy="' + esc(l.phone) + '" title="Copy number"><svg><use href="#i-copy"/></svg>Copy</button>' : '')
     + (l.email ? '<a href="mailto:' + esc(l.email) + '"><svg><use href="#i-mail"/></svg>' + esc(l.email) + '</a>' : '')
+    + (/^https:\/\/[a-z.]*facebook\.com\//.test(l.inbox || '') ? '<a href="' + esc(l.inbox) + '" target="_blank" rel="noopener"><svg><use href="#i-chat"/></svg>Messenger</a>' : '')
     + '</div>';
   h += '<div class="meta" style="--i:' + (i++) + '">Lead ' + esc(Z.when(l.ts, t)) + (l.ad ? ' · ' + esc(l.ad) + ' ad' : '') + '</div>';
 
