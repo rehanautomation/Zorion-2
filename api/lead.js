@@ -192,6 +192,8 @@ async function metaForm(req, res, b) {
   const leadId = String(b.lead_id || '').slice(0, 40);
   const ad = String(b.ad_name || AD_NAMES[String(b.ad_id || '')] || '').slice(0, 120);
   const isTest = /dummy data|test lead/i.test(name + ' ' + email) || b.test === true || b.test === 'true';
+  /* What Make passed about where the lead came from (no personal data). Vercel → Logs → "formlead source". */
+  console.log('formlead source', JSON.stringify({ ad_id: b.ad_id || null, ad_name: b.ad_name || null, campaign_name: b.campaign_name || null, platform: b.platform || null, form_id: b.form_id || null, fields: fd.map(x => x && x.name) }));
 
   /* Meta's testing tool, or a lead with nothing in it: no post, no CRM row */
   if (isTest || !(name || email || phone)) return res.status(200).json({ ok: true, test: isTest, recorded: false });
