@@ -307,6 +307,71 @@ function warmAround(b, i){
 }
 function warmAll(){ ADS_DATA.forEach(function(b){ b.items.slice(0, 3).forEach(function(x){ warmUrl(x.poster || x.img); }); }); }
 
+/* ---------- streaming, the way the apps do it ----------
+   Each video is cut into 2-second pieces at 2–3 quality levels (HLS, fMP4).
+   - start: the player picks a level from the last measured speed, so the first piece arrives fast
+   - then it climbs to HD as soon as the connection proves it can keep up (and never above screen size)
+   - the next videos load their first pieces while you watch, so a swipe starts instantly
+   - videos far from the screen are unloaded, so memory stays low
+   iPhone/Mac Safari streams HLS natively; everything else uses hls.js (served from our own site). */
+var HLS_SRC = '/assets/vendor/hls-1.7.4.light.min.js', hlsP = null, BW = 1e6, MEASURED = false;   // first guess is low on purpose: start small, climb to HD once measured
+var APPLE_NATIVE = (function(){
+  var v = document.createElement('video'), ua = navigator.userAgent;
+  return !!(v.canPlayType && v.canPlayType('application/vnd.apple.mpegurl')) && /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|Android/.test(ua);
+})();
+function isHls(u){ return /\.m3u8(\?|$)/.test(u || ''); }
+function loadHls(){
+  if (window.Hls) return Promise.resolve(window.Hls);
+  if (!hlsP) hlsP = new Promise(function(res, rej){
+    var sc = document.createElement('script'); sc.src = HLS_SRC; sc.async = true;
+    sc.onload = function(){ res(window.Hls); }; sc.onerror = function(){ hlsP = null; rej(); };
+    document.head.appendChild(sc);
+  });
+  return hlsP;
+}
+function needsHlsJs(){ return ADS_DATA.some(function(b){ return b.items.some(function(x){ return isHls(x.video); }); }) && !APPLE_NATIVE; }
+function playV(v){
+  v._want = true; v.muted = S.muted;
+  if (!v._on) return;                                   // starts as soon as the stream is attached
+  var p = v.play(); if (p && p.catch) p.catch(function(){});
+}
+function stream(v, mode){                               // mode: 'play' | 'warm' | 'off'
+  var url = v.dataset.src; if (!url) return;
+  if (mode === 'off'){
+    v._want = false;
+    if (v._hls){ v._hls.destroy(); v._hls = null; }
+    if (v._on){ v.pause(); v.removeAttribute('src'); v.load(); v._on = false; }
+    return;
+  }
+  var buf = mode === 'play' ? 20 : 4, cap = mode === 'play' ? 30 : 4;   // neighbours keep ~2 pieces ready; the one on screen stays ~20 s ahead (saves phone data)
+  if (!isHls(url) || APPLE_NATIVE || !(window.MediaSource || window.ManagedMediaSource)){
+    if (!v._on){ v.preload = 'auto'; v.src = url; v._on = true; if (v._want) playV(v); }
+    return;
+  }
+  if (v._hls){ v._hls.config.maxBufferLength = buf; v._hls.config.maxMaxBufferLength = cap; return; }
+  if (v._pending) return; v._pending = true;
+  loadHls().then(function(Hls){
+    v._pending = false;
+    if (!v.isConnected || v._hls) return;
+    if (!Hls.isSupported()){ v.src = url; v._on = true; if (v._want) playV(v); return; }
+    var h = new Hls({
+      startLevel: MEASURED ? -1 : 0, abrEwmaDefaultEstimate: BW,   // very first video: lowest level, so it starts at once capLevelToPlayerSize: true, startFragPrefetch: true,
+      maxBufferLength: buf, maxMaxBufferLength: cap, backBufferLength: 8, enableWorker: true
+    });
+    h.on(Hls.Events.FRAG_LOADED, function(){ if (h.bandwidthEstimate > 0){ BW = h.bandwidthEstimate; MEASURED = true; } });   // the next video starts at the speed we just measured
+    h.on(Hls.Events.ERROR, function(e, d){
+      if (!d.fatal) return;
+      if (d.type === Hls.ErrorTypes.NETWORK_ERROR) h.startLoad();
+      else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) h.recoverMediaError();
+      else { h.destroy(); v._hls = null; v._on = false; }
+    });
+    h.loadSource(url); h.attachMedia(v); v._hls = h; v._on = true;
+    if (v._want) playV(v);
+  }).catch(function(){ v._pending = false; v.src = url; v._on = true; if (v._want) playV(v); });
+}
+var warmGen = 0;
+function killVideos(el){ if (el) $$('video[data-src]', el).forEach(function(v){ stream(v, 'off'); }); }
+
 /* ---------- markup ---------- */
 function statusBar(){
   return '<div class="sbar"><span>9:41</span><span class="sig">'
@@ -334,7 +399,7 @@ function bottomNav(){
 }
 function media(b, it, j){
   var near = Math.abs(j - S.i) <= 2;
-  if (it.video) return '<video playsinline muted loop preload="' + (near ? 'auto' : 'none') + '" poster="' + esc(it.poster || '') + '" src="' + esc(it.video) + '"></video>';
+  if (it.video) return '<video playsinline webkit-playsinline muted loop preload="none" disableremoteplayback poster="' + esc(it.poster || '') + '" data-src="' + esc(it.video) + '"></video>';
   return '<img alt="' + esc(b.label + ' V' + it.v) + '" src="' + esc(it.img) + '" decoding="async"' + (j === S.i ? ' fetchpriority="high"' : '') + (near ? '' : ' loading="lazy"') + '>';
 }
 function slide(b, it, j){
@@ -433,14 +498,16 @@ function mount(el){
   root.addEventListener('click', onClick);
   mounted = true;
   warmAll();
+  if (needsHlsJs()) loadHls().catch(function(){});
 }
 function renderBar(){
   $('#adsBar', root).innerHTML = segHTML() + '<span class="grow"></span><button type="button" class="ads-go" data-a="fs">' + ic('expand') + 'Scroll mode</button>';
   movePills();
 }
 function renderFeed(anim){
-  if (!S.fs && MQ.matches){ if (io) io.disconnect(); stageWrap.innerHTML = ''; return; }   // phones: nothing plays until scroll mode
+  if (!S.fs && MQ.matches){ if (io) io.disconnect(); killVideos(stageWrap); stageWrap.innerHTML = ''; return; }   // phones: nothing plays until scroll mode
   var host = S.fs ? $('.reel', fsEl) : stageWrap;
+  killVideos(host);
   host.innerHTML = feedHTML(!S.fs);
   var fw = $('.feed-wrap', host);
   if (anim){ fw.classList.add('swap'); }
@@ -491,13 +558,24 @@ function activate(j, force){
   var sls = $$('.sl', f);
   setActiveSlide(sls[j]);
   warmAround(b, j);
-  // videos: play the one on screen, preload its neighbours, park the rest
+  // videos: the one on screen loads first; once it plays, the next two (and the last one) get ready; the rest unload
+  var cur = sls[j] && $('video', sls[j]), gen = ++warmGen;
+  var warmRest = function(){
+    if (gen !== warmGen) return;
+    sls.forEach(function(sl, k){ var v = $('video', sl); if (v && (k === j + 1 || k === j + 2 || k === j - 1)) stream(v, 'warm'); });
+  };
   sls.forEach(function(sl, k){
-    var v = $('video', sl); if (!v) return;
-    if (Math.abs(k - j) <= 2 && v.preload !== 'auto'){ v.preload = 'auto'; v.load(); }
-    if (k === j){ v.muted = S.muted; var p = v.play(); if (p && p.catch) p.catch(function(){}); }
-    else { v.pause(); if (Math.abs(k - j) > 1) try{ v.currentTime = 0; }catch(_){} }
+    var v = $('video', sl); if (!v || k === j) return;
+    var wasPlaying = v._want; v._want = false;
+    if (k === j + 1 || k === j + 2 || k === j - 1){
+      if (wasPlaying || !v.paused){ v.pause(); try{ v.currentTime = 0; }catch(_){} }   // swipe back = starts from the top, like the apps
+    } else stream(v, 'off');
   });
+  if (cur){
+    stream(cur, 'play'); playV(cur);
+    if (!cur.paused && cur.readyState >= 3) warmRest();
+    else { cur.addEventListener('playing', warmRest, { once: true }); setTimeout(warmRest, 4000); }
+  } else warmRest();
   // lazy images near the new spot: load now
   sls.forEach(function(sl, k){ var im = $('img[loading="lazy"]', sl); if (im && Math.abs(k - j) <= 2) im.removeAttribute('loading'); });
   sls.forEach(function(sl, k){ if (k !== j){ sl.classList.remove('capo'); var c = $('.cap.open', sl); if (c) c.classList.remove('open'); } });
@@ -605,7 +683,7 @@ function enterFs(){
     e.preventDefault(); var t = Date.now(); if (t - wheelLock < 550 || Math.abs(e.deltaY) < 8) return;
     wheelLock = t; step(e.deltaY > 0 ? 1 : -1);
   }, { passive: false });
-  stageWrap.innerHTML = '';
+  killVideos(stageWrap); stageWrap.innerHTML = '';
   renderFeed(false);
   var rq = fsEl.requestFullscreen || fsEl.webkitRequestFullscreen;
   if (rq && !matchMedia('(pointer:coarse)').matches){ try{ var p = rq.call(fsEl); if (p && p.catch) p.catch(function(){}); }catch(_){} }
@@ -614,7 +692,7 @@ function enterFs(){
 function exitFs(){
   if (!S.fs) return;
   S.fs = false; closeMenu();
-  var el = fsEl; fsEl = null;
+  var el = fsEl; fsEl = null; killVideos(el);
   if (document.fullscreenElement || document.webkitFullscreenElement){ try{ (document.exitFullscreen || document.webkitExitFullscreen).call(document); }catch(_){} }
   el.classList.add('out'); setTimeout(function(){ el.remove(); }, 300);
   document.documentElement.style.overflow = '';
@@ -677,7 +755,7 @@ window.ZADS = {
   key: key,
   enterFs: enterFs,
   isOpen: function(){ return S.fs; },
-  leave: function(){ if (S.fs) exitFs(); var f = feedEl(); if (f) $$('video', f).forEach(function(v){ v.pause(); }); },
+  leave: function(){ if (S.fs) exitFs(); killVideos(stageWrap); },
   data: ADS_DATA
 };
 })();
