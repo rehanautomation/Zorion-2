@@ -432,6 +432,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   <symbol id="i-pipe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="5" height="16" rx="1.6"/><rect x="9.5" y="4" width="5" height="11" rx="1.6"/><rect x="16" y="4" width="5" height="7" rx="1.6"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 3.8 9 6.7a1.5 1.5 0 0 1-.2 2l-1.4 1.1a11 11 0 0 0 6.8 6.8l1.1-1.4a1.5 1.5 0 0 1 2-.2l2.9 2.4a1.5 1.5 0 0 1 .1 2.2l-1.2 1.2c-1 1-2.6 1.3-3.9.7A18 18 0 0 1 3.2 9.6c-.6-1.3-.3-2.9.7-3.9l1.2-1.2a1.5 1.5 0 0 1 1.5-.7Z"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-ads" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="3"/><path d="m10.5 9.2 4 2.8-4 2.8Z" fill="currentColor"/></symbol>
   <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
@@ -456,6 +457,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
       <button data-view="today"><svg><use href="#i-phone"/></svg>Today<span class="count" id="todayCount" hidden>0</span></button>
       <button data-view="leads"><svg><use href="#i-cal"/></svg>Leads</button>
       <button data-view="emails"><svg><use href="#i-mail"/></svg>Emails</button>
+      <button data-view="ads"><svg><use href="#i-ads"/></svg>Ads</button>
     </nav>
     <div class="side-foot">
       <div class="clock"><b id="clock">--:--</b><span>Toronto</span></div>
@@ -505,6 +507,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
         <div id="m-auto" hidden><div class="soonbox"><b>Automation</b>Coming soon.</div></div>
       </div></div>
     </section>
+    <section class="view" id="v-ads" hidden></section>
   </main>
 </div>
 
@@ -513,6 +516,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   <button data-view="today"><span class="ti"><svg><use href="#i-phone"/></svg><span class="count" id="todayCount2" hidden>0</span></span>Today</button>
   <button data-view="leads"><svg><use href="#i-cal"/></svg>Leads</button>
   <button data-view="emails"><svg><use href="#i-mail"/></svg>Emails</button>
+  <button data-view="ads"><svg><use href="#i-ads"/></svg>Ads</button>
 </nav>
 
 <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shName"></div></div>
@@ -529,6 +533,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 </div>
 
 <script src="/assets/crm-core.js"></script>
+<script src="/assets/crm-ads.js"></script>
 <script>
 (function(){
 'use strict';
@@ -549,7 +554,7 @@ var KEY = (function(){
 var LEADS = [];            // [{id, ts, name, ..., state, canUndo}]
 var SEEN = {};             // ids already drawn, so only new ones animate in
 var view = store('zcrm_view') || 'pipeline';
-if (['pipeline','today','leads','emails'].indexOf(view) === -1) view = 'pipeline';
+if (['pipeline','today','leads','emails','ads'].indexOf(view) === -1) view = 'pipeline';
 var openId = null, pickMode = null, query = '', bellOn = false;
 var calMonth = null, calDay = null;
 var lastSync = 0, timeOff = 0;
@@ -588,7 +593,7 @@ function stepLabel(d){
 }
 
 /* ---------- header ---------- */
-var TITLES = { pipeline:'Pipeline', today:'Today', leads:'Leads', emails:'Emails' };
+var TITLES = { pipeline:'Pipeline', today:'Today', leads:'Leads', emails:'Emails', ads:'Ads' };
 function sabEnd(sab, t){ return (Z.dayStart(sab.end) === Z.dayStart(t) ? '' : Z.DOW[Z.parts(sab.end).dow] + ' ') + Z.time12(sab.end); }
 function renderHeader(){
   var t = now(), p = Z.parts(t);
@@ -740,18 +745,21 @@ function render(anim){
   if (view === 'pipeline') renderBoard(anim);
   else if (view === 'today') renderToday(anim);
   else if (view === 'emails') renderEmails(anim);
+  else if (view === 'ads') return;   // the ads feed draws itself on show(), so syncs never reset the scroll
   else renderLeads(anim);
 }
 function show(v, first){
   if (v === view && !first) return;
+  if (view === 'ads' && v !== 'ads' && window.ZADS) ZADS.leave();
   view = v; store('zcrm_view', v);
-  ['pipeline','today','leads','emails'].forEach(function(k){ $('#v-' + k).hidden = k !== v; });
+  ['pipeline','today','leads','emails','ads'].forEach(function(k){ $('#v-' + k).hidden = k !== v; });
   $$('[data-view]').forEach(function(b){ b.classList.toggle('on', b.dataset.view === v); });
   $('#title').textContent = TITLES[v];
-  $('.search').style.visibility = v === 'emails' ? 'hidden' : '';
+  $('.search').style.visibility = v === 'emails' || v === 'ads' ? 'hidden' : '';
   $('#title').classList.remove('rv'); void $('#title').offsetWidth; $('#title').classList.add('rv');
   moveNavPill();
   render(true);
+  if (v === 'ads' && window.ZADS){ if (!$('#v-ads').firstChild) ZADS.mount($('#v-ads')); ZADS.render(true); }
 }
 $$('[data-view]').forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.view); }); });
 
@@ -1123,13 +1131,14 @@ document.addEventListener('click', function(e){
   if (db && !db.disabled){ calDay = db.dataset.day; renderLeads(false); }
 });
 document.addEventListener('keydown', function(e){
+  if (window.ZADS && !openId && (view === 'ads' || ZADS.isOpen()) && ZADS.key(e)) return;
   if (e.key === 'Escape'){ if (openId) return closeSheet(); if (document.activeElement === $('#q')){ $('#q').value = ''; query = ''; render(false); $('#q').blur(); } }
   var typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName);
   if (typing) return;
   if (e.key === 'Enter' && document.activeElement && document.activeElement.matches('.row[data-id], .card[data-id]')) openSheet(document.activeElement.dataset.id);
   if (openId) return;
   if (e.key === '/'){ e.preventDefault(); $('#q').focus(); }
-  if (e.key === '1') show('pipeline'); if (e.key === '2') show('today'); if (e.key === '3') show('leads'); if (e.key === '4') show('emails');
+  if (e.key === '1') show('pipeline'); if (e.key === '2') show('today'); if (e.key === '3') show('leads'); if (e.key === '4') show('emails'); if (e.key === '5') show('ads');
 });
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-stab]'); if (!b) return;
