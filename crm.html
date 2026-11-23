@@ -533,6 +533,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 </div>
 
 <script src="/assets/crm-core.js"></script>
+<script src="/assets/crm-ads-data.js"></script>
 <script src="/assets/crm-ads.js"></script>
 <script>
 (function(){
@@ -555,6 +556,7 @@ var LEADS = [];            // [{id, ts, name, ..., state, canUndo}]
 var SEEN = {};             // ids already drawn, so only new ones animate in
 var view = store('zcrm_view') || 'pipeline';
 if (['pipeline','today','leads','emails','ads'].indexOf(view) === -1) view = 'pipeline';
+var adsBack = 'pipeline';
 var openId = null, pickMode = null, query = '', bellOn = false;
 var calMonth = null, calDay = null;
 var lastSync = 0, timeOff = 0;
@@ -751,6 +753,7 @@ function render(anim){
 function show(v, first){
   if (v === view && !first) return;
   if (view === 'ads' && v !== 'ads' && window.ZADS) ZADS.leave();
+  if (v === 'ads' && view !== 'ads') adsBack = view;
   view = v; store('zcrm_view', v);
   ['pipeline','today','leads','emails','ads'].forEach(function(k){ $('#v-' + k).hidden = k !== v; });
   $$('[data-view]').forEach(function(b){ b.classList.toggle('on', b.dataset.view === v); });
@@ -759,7 +762,10 @@ function show(v, first){
   $('#title').classList.remove('rv'); void $('#title').offsetWidth; $('#title').classList.add('rv');
   moveNavPill();
   render(true);
-  if (v === 'ads' && window.ZADS){ if (!$('#v-ads').firstChild) ZADS.mount($('#v-ads')); ZADS.render(true); }
+  if (v === 'ads' && window.ZADS){
+    if (!$('#v-ads').firstChild){ ZADS.mount($('#v-ads')); ZADS.onExit = function(){ show(adsBack === 'ads' ? 'pipeline' : adsBack); }; }
+    ZADS.render(true);
+  }
 }
 $$('[data-view]').forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.view); }); });
 
