@@ -95,6 +95,8 @@ var CSS = [
 '.athumb .eq i{width:3px;background:#fff;border-radius:2px;animation:eq 0.9s ease-in-out infinite}',
 '.athumb .eq i:nth-child(2){animation-delay:-.3s}.athumb .eq i:nth-child(3){animation-delay:-.6s}',
 '@keyframes eq{0%,100%{height:3px}50%{height:12px}}',
+'.athumb .pl{display:none;position:absolute;z-index:1;top:8px;right:8px;width:24px;height:24px;place-items:center;border-radius:50%;background:rgba(0,0,0,.35);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}',
+'.athumb .pl svg{width:12px;height:12px;fill:currentColor}',
 '.athumb.on{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px var(--blue),var(--shadow-2)}',
 '.athumb.on .eq{display:flex}',
 '.akeys{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--muted);font-size:12px}',
@@ -257,13 +259,20 @@ var CSS = [
 '  .ads-bar .grow{display:none}',
 '  .ads-go{width:100%;justify-content:center;height:50px;font-size:15px;border-radius:16px}',
 '  .ads-main{display:flex;flex-direction:column;gap:18px}',
-'  .ads-stage{height:auto;display:block;padding:0}',
+'  .ads-stage{display:none}',
 '  .phone{height:min(64vh,560px);min-height:0;max-height:none;width:auto;margin:0 auto;aspect-ratio:9/16;padding:0;border-radius:24px;background:#000;box-shadow:var(--shadow-2)}',
 '  .phone .scr{border-radius:24px}',
 '  .phone .island,.phone .sbar,.phone .bnav{display:none}',
 '  .phone .tbar{top:4px}',
 '  .ads-side{overflow:visible;padding:0}',
-'  .agrid{grid-template-columns:repeat(3,1fr);gap:10px}',
+'  .agrid{grid-template-columns:repeat(3,1fr);gap:6px}',
+'  .athumb{border-radius:12px}',
+'  .athumb:hover{transform:none}',
+'  .athumb:active{transform:scale(.96)}',
+'  .athumb.on{box-shadow:var(--shadow-1)}',
+'  .athumb.on .eq{display:none}',
+'  .athumb .pl{display:grid}',
+'  .ads-head h2{font-size:22px}',
 '  .akeys{display:none}',
 '  .fsov .reel{height:100%;height:100dvh;width:100%;aspect-ratio:auto;border-radius:0;display:flex;flex-direction:column}',
 '  .fsov .reel .feed-wrap{position:relative;flex:1}',
@@ -395,7 +404,7 @@ function sideHTML(){
     + '<span class="when">' + b.items.length + ' ads · ' + esc(b.when) + '</span></div>'
     + '<div class="agrid">' + b.items.map(function(it, j){
         return '<button type="button" class="athumb' + (j === S.i ? ' on' : '') + '" data-a="jump" data-j="' + j + '" aria-label="' + esc(b.label + ' V' + it.v) + '">'
-          + (it.poster || it.img ? '<img src="' + esc(it.poster || it.img) + '" alt="" decoding="async">' : '<video muted playsinline preload="metadata" src="' + esc(it.video) + '#t=0.5"></video>') + (it.name ? '<small>' + esc(it.name) + '</small>' : '') + '<b>V' + it.v + '</b><span class="eq"><i></i><i></i><i></i></span></button>';
+          + (it.poster || it.img ? '<img src="' + esc(it.poster || it.img) + '" alt="" decoding="async">' : '<video muted playsinline preload="metadata" src="' + esc(it.video) + '#t=0.5"></video>') + (it.name ? '<small>' + esc(it.name) + '</small>' : '') + '<b>V' + it.v + '</b><span class="eq"><i></i><i></i><i></i></span>' + (it.video ? '<span class="pl"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z"/></svg></span>' : '') + '</button>';
       }).join('') + '</div>'
     + '<div id="adInfo">' + infoHTML() + '</div>'
     + '<div class="akeys"><span><kbd>↑</kbd><kbd>↓</kbd>next ad</span><span><kbd>←</kbd><kbd>→</kbd>batch</span><span><kbd>P</kbd>Instagram / Facebook</span><span><kbd>F</kbd>scroll mode</span></div>';
@@ -430,6 +439,7 @@ function renderBar(){
   movePills();
 }
 function renderFeed(anim){
+  if (!S.fs && MQ.matches){ if (io) io.disconnect(); stageWrap.innerHTML = ''; return; }   // phones: nothing plays until scroll mode
   var host = S.fs ? $('.reel', fsEl) : stageWrap;
   host.innerHTML = feedHTML(!S.fs);
   var fw = $('.feed-wrap', host);
@@ -441,7 +451,6 @@ function renderFeed(anim){
 }
 function render(anim){
   if (!mounted) return;
-  if (MQ.matches){ if (!S.fs) enterFs(); return; }   // phones: straight into the app-style feed
   renderBar(); $('#adsSide', root).innerHTML = sideHTML(); renderFeed(anim);
 }
 
@@ -602,15 +611,14 @@ function enterFs(){
   if (rq && !matchMedia('(pointer:coarse)').matches){ try{ var p = rq.call(fsEl); if (p && p.catch) p.catch(function(){}); }catch(_){} }
   else if (rq){ try{ var p2 = rq.call(fsEl); if (p2 && p2.catch) p2.catch(function(){}); }catch(_){} }
 }
-function exitFs(silent){
+function exitFs(){
   if (!S.fs) return;
   S.fs = false; closeMenu();
   var el = fsEl; fsEl = null;
   if (document.fullscreenElement || document.webkitFullscreenElement){ try{ (document.exitFullscreen || document.webkitExitFullscreen).call(document); }catch(_){} }
   el.classList.add('out'); setTimeout(function(){ el.remove(); }, 300);
   document.documentElement.style.overflow = '';
-  if (!MQ.matches){ renderBar(); $('#adsSide', root).innerHTML = sideHTML(); renderFeed(false); }
-  if (!silent && MQ.matches && typeof window.ZADS.onExit === 'function') window.ZADS.onExit();
+  renderBar(); $('#adsSide', root).innerHTML = sideHTML(); renderFeed(false);
 }
 document.addEventListener('fullscreenchange', function(){ if (!document.fullscreenElement && S.fs) exitFs(); });
 document.addEventListener('webkitfullscreenchange', function(){ if (!document.webkitFullscreenElement && S.fs) exitFs(); });
@@ -625,7 +633,10 @@ function onClick(e){
   else if (act === 'plat') setPlat(a.dataset.p);
   else if (act === 'fs') enterFs();
   else if (act === 'exit'){ if (S.fs) exitFs(); }
-  else if (act === 'jump'){ if (a.closest('.bmenu')) closeMenu(); go(+a.dataset.j, !a.closest('.bmenu')); }
+  else if (act === 'jump'){
+    if (!S.fs && MQ.matches){ S.i = +a.dataset.j; enterFs(); }
+    else { if (a.closest('.bmenu')) closeMenu(); go(+a.dataset.j, !a.closest('.bmenu')); }
+  }
   else if (act === 'up') step(-1);
   else if (act === 'dn') step(1);
   else if (act === 'restart') go(0);
@@ -654,6 +665,7 @@ function key(e){
   if (k === 'Escape' && S.fs){ if ($('.bmenu')) closeMenu(); else exitFs(); return true; }
   return false;
 }
+MQ.addEventListener && MQ.addEventListener('change', function(){ if (mounted && !S.fs) render(false); });
 window.addEventListener('resize', function(){
   if (!mounted) return; movePills();
   var f = feedEl(); if (f) f.scrollTop = S.i * f.clientHeight;
@@ -664,9 +676,8 @@ window.ZADS = {
   render: render,
   key: key,
   enterFs: enterFs,
-  onExit: null,
   isOpen: function(){ return S.fs; },
-  leave: function(){ if (S.fs) exitFs(true); var f = feedEl(); if (f) $$('video', f).forEach(function(v){ v.pause(); }); },
+  leave: function(){ if (S.fs) exitFs(); var f = feedEl(); if (f) $$('video', f).forEach(function(v){ v.pause(); }); },
   data: ADS_DATA
 };
 })();

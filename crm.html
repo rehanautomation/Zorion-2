@@ -28,6 +28,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
+html{-webkit-tap-highlight-color:transparent}
+*{-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--ink);font:14px/1.4 var(--body);-webkit-font-smoothing:antialiased;overflow:hidden}
 button,input,textarea{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer;padding:0}
@@ -408,7 +410,12 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
   .leads{grid-template-columns:1fr;gap:16px}
   .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;justify-content:space-around;padding:8px 12px calc(8px + env(safe-area-inset-bottom));
     background:var(--glass-hi);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border-top:1px solid var(--line)}
-  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--faint);padding:6px 0;transition:color .3s}
+  .tabbar button{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--faint);padding:6px 0;transition:color .35s var(--ease);-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  .tabbar button svg{transition:transform .35s var(--spring)}
+  .tabbar button:active svg{transform:scale(.86)}
+  .tabbar .tpill{position:absolute;z-index:0;top:8px;left:0;height:calc(100% - 16px - env(safe-area-inset-bottom));border-radius:16px;background:var(--blue-soft);transition:transform .45s var(--spring),width .45s var(--spring)}
+  .view:not([hidden]){animation:vin .38s var(--ease) both}
+  @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .tabbar button.on{color:var(--blue)}
   .tabbar svg{width:26px;height:26px}
   .tabbar .ti{position:relative}
@@ -512,6 +519,7 @@ main{min-width:0;height:100%;display:flex;flex-direction:column;padding:26px 28p
 </div>
 
 <nav class="tabbar" id="tabbar" aria-label="Main">
+  <span class="tpill" id="tabPill" aria-hidden="true"></span>
   <button data-view="pipeline" class="on"><svg><use href="#i-pipe"/></svg>Pipeline</button>
   <button data-view="today"><span class="ti"><svg><use href="#i-phone"/></svg><span class="count" id="todayCount2" hidden>0</span></span>Today</button>
   <button data-view="leads"><svg><use href="#i-cal"/></svg>Leads</button>
@@ -556,7 +564,6 @@ var LEADS = [];            // [{id, ts, name, ..., state, canUndo}]
 var SEEN = {};             // ids already drawn, so only new ones animate in
 var view = store('zcrm_view') || 'pipeline';
 if (['pipeline','today','leads','emails','ads'].indexOf(view) === -1) view = 'pipeline';
-var adsBack = 'pipeline';
 var openId = null, pickMode = null, query = '', bellOn = false;
 var calMonth = null, calDay = null;
 var lastSync = 0, timeOff = 0;
@@ -739,6 +746,8 @@ function renderLeads(anim){
 
 /* ---------- views ---------- */
 function moveNavPill(){
+  var t = $('#tabbar button.on'), tp = $('#tabPill');
+  if (t && tp){ tp.style.width = t.offsetWidth + 'px'; tp.style.transform = 'translateX(' + t.offsetLeft + 'px)'; }
   var on = $('#nav button.on'); if (!on) return;
   $('#navPill').style.transform = 'translateY(' + on.offsetTop + 'px)';
 }
@@ -753,7 +762,6 @@ function render(anim){
 function show(v, first){
   if (v === view && !first) return;
   if (view === 'ads' && v !== 'ads' && window.ZADS) ZADS.leave();
-  if (v === 'ads' && view !== 'ads') adsBack = view;
   view = v; store('zcrm_view', v);
   ['pipeline','today','leads','emails','ads'].forEach(function(k){ $('#v-' + k).hidden = k !== v; });
   $$('[data-view]').forEach(function(b){ b.classList.toggle('on', b.dataset.view === v); });
@@ -763,7 +771,7 @@ function show(v, first){
   moveNavPill();
   render(true);
   if (v === 'ads' && window.ZADS){
-    if (!$('#v-ads').firstChild){ ZADS.mount($('#v-ads')); ZADS.onExit = function(){ show(adsBack === 'ads' ? 'pipeline' : adsBack); }; }
+    if (!$('#v-ads').firstChild) ZADS.mount($('#v-ads'));
     ZADS.render(true);
   }
 }
